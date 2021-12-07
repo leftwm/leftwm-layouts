@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use layouts::main_and_vert_stack::MainAndVertStack;
 
 use crate::geometry::Rect;
@@ -9,6 +11,19 @@ pub mod layouts;
 pub enum Layouts {
     Monocle,
     MainAndVertStack,
+}
+
+pub struct LayoutParseError;
+impl FromStr for Layouts {
+    type Err = LayoutParseError;
+
+    fn from_str(name: &str) -> Result<Self, Self::Err> {
+        match name {
+            "Monocle" => Ok(Layouts::Monocle),
+            "MainAndVertStack" => Ok(Layouts::MainAndVertStack),
+            _ => Err(LayoutParseError),
+        }
+    }
 }
 
 pub trait Layout {
