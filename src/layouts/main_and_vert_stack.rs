@@ -15,17 +15,19 @@ impl Layout for MainAndVertStack {
         //    1 => 1,
         //    _ => 2,
         //};
+        
 
         let master_width = match window_count {
             1 => modifiers.container_size.w,
             _ => (modifiers.container_size.w as f32 / 100.0 * modifiers.master_width_percentage) as i32
         };
+        let stack_width = modifiers.container_size.w - master_width;
 
         let mut master_x = modifiers.container_size.x;
         let stack_x = if modifiers.flipped_horizontal {
             master_x = match window_count {
                 1 => master_x,
-                _ => master_x + modifiers.container_size.w - master_width,
+                _ => master_x + stack_width,
             };
             match window_count {
                 1 => 0,
@@ -53,7 +55,7 @@ impl Layout for MainAndVertStack {
             vec.push(Some(Rect {
                 x: stack_x,
                 y: modifiers.container_size.y + y,
-                w: modifiers.container_size.w - master_width,
+                w: stack_width,
                 h: height,
             }));
             y += height
