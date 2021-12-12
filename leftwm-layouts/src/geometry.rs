@@ -1,20 +1,20 @@
 use std::ops::{Add, Rem};
 
 #[derive(Debug, Clone, Copy)]
-pub struct Rect {
+pub struct Tile {
     pub x: i32,
     pub y: i32,
     pub h: i32, // QUESTION: why signed?
     pub w: i32, // QUESTION: why signed?
 }
 
-impl Rect {
+impl Tile {
     pub fn surface_area(&self) -> i32 {
         self.h * self.w
     }
 }
 
-impl Default for Rect {
+impl Default for Tile {
     fn default() -> Self {
         Self {
             x: 0,
@@ -25,7 +25,7 @@ impl Default for Rect {
     }
 }
 
-impl Add for Rect {
+impl Add for Tile {
     type Output = i32;
 
     fn add(self, rhs: Self) -> Self::Output {
@@ -43,7 +43,7 @@ impl Util {
 }
 
 mod tests {
-    use super::Util;
+    use crate::geometry::Util;
 
     #[test]
     fn divrem_100_by_3_gives_33_1() {

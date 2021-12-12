@@ -1,11 +1,11 @@
-use crate::{Layout, geometry::Rect, LayoutModifiers};
+use crate::{Layout, geometry::Tile, LayoutModifiers};
 
 
 #[derive(Debug)]
 pub struct MainAndVertStack;
 
 impl Layout for MainAndVertStack {
-    fn apply(&self, window_count: usize, modifiers: &LayoutModifiers) -> Vec<Option<Rect>> {
+    fn apply(&self, window_count: usize, modifiers: &LayoutModifiers) -> Vec<Option<Tile>> {
         if window_count == 0 {
             return vec![];
         }
@@ -39,8 +39,8 @@ impl Layout for MainAndVertStack {
 
 
         // build the master window
-        let mut vec: Vec<Option<Rect>> = Vec::new();
-        vec.push(Some(Rect {
+        let mut vec: Vec<Option<Tile>> = Vec::new();
+        vec.push(Some(Tile {
             x: master_x,
             y: modifiers.container_size.y,
             w: master_width,
@@ -52,7 +52,7 @@ impl Layout for MainAndVertStack {
         let height = height_f.floor() as i32;
         let mut y = 0;
         for _ in 1..window_count {
-            vec.push(Some(Rect {
+            vec.push(Some(Tile {
                 x: stack_x,
                 y: modifiers.container_size.y + y,
                 w: stack_width,
@@ -66,13 +66,5 @@ impl Layout for MainAndVertStack {
 }
 
 mod tests {
-    use crate::{Layout, LayoutModifiers, geometry::Rect};
-    use crate::MainAndVertStack;
-
-    #[test]
-    fn monocle_returns_only_one_rect() {
-        //let rects = Monocle.apply(3, &LayoutModifiers::default());
-        //let present: Vec<Rect> = rects.into_iter().filter_map(|e| e).collect();
-        //assert_eq!(present.len(), 1);
-    }
+    
 }

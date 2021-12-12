@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use layouts::main_and_vert_stack::MainAndVertStack;
 
-use crate::geometry::Rect;
+use crate::geometry::Tile;
 use crate::layouts::monocle::Monocle;
 
 pub mod geometry;
@@ -32,7 +32,7 @@ pub trait Layout {
     // it may return a list smaller than the window_count (monocle, main_and_deck, ...) 
     // but in this case the returned list should be applied to the first windows in order 
     // and the reset should be hidden
-    fn apply(&self, window_count: usize, modifiers: &LayoutModifiers) -> Vec<Option<Rect>>;
+    fn apply(&self, window_count: usize, modifiers: &LayoutModifiers) -> Vec<Option<Tile>>;
     
     // QUESTION: might be helpful if the layout_manager can find out if the layout even supports 
     // multiple_master_windows, some might not (monocle?, main_and_deck?)
@@ -54,7 +54,7 @@ pub trait Layout {
 }
 
 pub struct LayoutModifiers {
-    pub container_size: Rect,
+    pub container_size: Tile,
     pub master_width_percentage: f32,
     pub master_window_count: usize,
     pub max_column_width: Option<u32>,
@@ -65,7 +65,7 @@ pub struct LayoutModifiers {
 impl Default for LayoutModifiers {
     fn default() -> Self {
         Self { 
-            container_size: Rect::default(), 
+            container_size: Tile::default(), 
             master_width_percentage: 60.0, 
             master_window_count: 1,
             max_column_width: None,
@@ -97,9 +97,9 @@ mod tests {
     ];
 
     // todo
-    fn no_overlap_of_rects() {
-        todo!()
-    }
+    //fn no_overlap_of_rects() {
+    //    todo!()
+    //}
 
     // QUESTION: is that a fair assumption?
     // -> follow-up: only works if remaining space is accounted for instead
