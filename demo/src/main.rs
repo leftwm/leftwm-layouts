@@ -1,14 +1,14 @@
 use std::cmp;
 use std::str::FromStr;
 
-use druid::piet::{TextLayout, TextLayoutBuilder, Text};
-use druid::widget::{Align, Button, Container, Flex, Painter, SizedBox, Label};
+use druid::piet::{Text, TextLayout, TextLayoutBuilder};
+use druid::widget::{Align, Button, Container, Flex, Label, Painter, Radio, RadioGroup, SizedBox};
 use druid::{
-    theme, AppLauncher, Color, Data, Lens, LocalizedString, Rect, RenderContext, Widget, WidgetExt,
-    WindowDesc, Point,
+    theme, AppLauncher, Color, Data, Lens, LocalizedString, Point, Rect, RenderContext, Widget,
+    WidgetExt, WindowDesc,
 };
 use leftwm_layouts::geometry::Tile;
-use leftwm_layouts::{LayoutModifiers, Layouts};
+use leftwm_layouts::{LayoutEnum, LayoutModifiers};
 
 const PRIMARY: Color = Color::rgb8(0x08, 0x0f, 0x0f);
 //const ACCENT: Color = Color::rgb8(0x65, 0x64, 0xdb);
@@ -20,6 +20,7 @@ const WINDOW_TITLE: LocalizedString<DemoState> = LocalizedString::new("Hello Wor
 
 #[derive(Clone, Data, Lens)]
 struct DemoState {
+    layout: LayoutOption,
     window_count: usize,
     master_width_percentage: f32,
     master_window_count: usize,
@@ -31,6 +32,7 @@ struct DemoState {
 impl Default for DemoState {
     fn default() -> Self {
         Self {
+            layout: LayoutOption::MainAndVertStack,
             window_count: 5,
             master_width_percentage: 60.0,
             master_window_count: 1,
@@ -108,6 +110,21 @@ impl From<&DemoState> for LayoutModifiers {
     }
 }
 
+#[derive(Debug, Clone, Copy, Data, PartialEq)]
+enum LayoutOption {
+    Monocle,
+    MainAndVertStack,
+}
+
+impl Into<LayoutEnum> for LayoutOption {
+    fn into(self) -> LayoutEnum {
+        match self {
+            Self::Monocle => LayoutEnum::Monocle,
+            Self::MainAndVertStack => LayoutEnum::MainAndVertStack,
+        }
+    }
+}
+
 fn main() {
     // describe the main window
     let main_window = WindowDesc::new(build_root_widget)
@@ -130,7 +147,12 @@ fn build_root_widget() -> impl Widget<DemoState> {
 }
 
 fn controls() -> impl Widget<DemoState> {
-    
+    let selector = RadioGroup::new(vec![
+        ("Monocle", LayoutOption::Monocle),
+        ("MainAndVertStack", LayoutOption::MainAndVertStack),
+    ])
+    .lens(DemoState::layout);
+
     let inc_master = Button::new("IncreaseMainWidth")
         .on_click(move |_ctx, data: &mut DemoState, _env| data.increase_master_width());
 
@@ -151,13 +173,15 @@ fn controls() -> impl Widget<DemoState> {
 
     let flip_h = Button::new(|data: &DemoState, _env: &_| {
         format!("FlipHorziontal: {}", data.flipped_horizontal)
-    }).on_click(move |_ctx, data: &mut DemoState, _env| data.toggle_flipped_horizontal());
+    })
+    .on_click(move |_ctx, data: &mut DemoState, _env| data.toggle_flipped_horizontal());
 
     let flip_v = Button::new(|data: &DemoState, _env: &_| {
         format!("FlipVertical: {}", data.flipped_vertical)
-    }).on_click(move |_ctx, data: &mut DemoState, _env| data.toggle_flipped_vertical());
+    })
+    .on_click(move |_ctx, data: &mut DemoState, _env| data.toggle_flipped_vertical());
 
-    Flex::row()
+    let flex = Flex::row()
         .with_flex_child(inc_master, 1.0)
         .with_flex_child(dec_master, 1.0)
         .with_flex_child(inc_master_count, 1.0)
@@ -166,12 +190,12 @@ fn controls() -> impl Widget<DemoState> {
         .with_flex_child(remove_window, 1.0)
         .with_flex_child(flip_h, 1.0)
         .with_flex_child(flip_v, 1.0)
-        .fix_height(60.0)
-        .background(PRIMARY)
+        .with_child(selector);
+
+    flex.fix_height(60.0).background(PRIMARY)
 }
 
 fn layout_preview() -> impl Widget<DemoState> {
-
     Painter::new(|ctx, data: &DemoState, env| {
         let parent_size = ctx.size();
         let mut modifiers = LayoutModifiers::from(data);
@@ -181,56 +205,51 @@ fn layout_preview() -> impl Widget<DemoState> {
             w: parent_size.width as i32,
             h: parent_size.height as i32,
         };
-        let layout = Layouts::from_str("MainAndVertStack");
 
-        if let Ok(layout) = layout {
-            let calcs = layout.get().apply(data.window_count, &modifiers);
-            let mut master_count = layout.get().master_window_count(6, &modifiers);
-            // println!("{:?}", calcs);
-            calcs
-                .into_iter()
-                .enumerate()
-                .filter(|(_, o)| o.is_some())
-                .map(|(i, o)| (i, o.unwrap()))
-                .for_each(|(i, o)| {
-                    let rect = Rect::new(
-                        o.x.into(),
-                        o.y.into(),
-                        (o.x + o.w).into(),
-                        (o.y + o.h).into(),
-                    );
-                    if master_count > 0 {
-                        ctx.fill(rect, &ACCENT);
-                        master_count = master_count - 1;
-                    } else {
-                        ctx.fill(rect, &ACCENT_SHADE);
-                    }
-                    ctx.stroke(rect.inset(-0.5), &Color::WHITE, 1.0);
+        let layout: LayoutEnum = data.layout.into();
 
+        let calcs = layout.get().apply(data.window_count, &modifiers);
+        let mut master_count = layout.get().master_window_count(6, &modifiers);
+        // println!("{:?}", calcs);
+        calcs
+            .into_iter()
+            .enumerate()
+            .filter(|(_, o)| o.is_some())
+            .map(|(i, o)| (i, o.unwrap()))
+            .for_each(|(i, o)| {
+                let rect = Rect::new(
+                    o.x.into(),
+                    o.y.into(),
+                    (o.x + o.w).into(),
+                    (o.y + o.h).into(),
+                );
+                if master_count > 0 {
+                    ctx.fill(rect, &ACCENT);
+                    master_count = master_count - 1;
+                } else {
+                    ctx.fill(rect, &ACCENT_SHADE);
+                }
+                ctx.stroke(rect.inset(-0.5), &Color::WHITE, 1.0);
 
-                    let text = ctx.text();
-                    let font = text.font_family("monospace").unwrap();
+                let text = ctx.text();
+                let font = text.font_family("monospace").unwrap();
 
-                    let text_layout = text
-                        .new_text_layout(format!("{}", i+1))
-                        .text_color(Color::BLACK)
-                        .font(font, 22.0)
-                        .build()
-                        .unwrap();
+                let text_layout = text
+                    .new_text_layout(format!("{}", i + 1))
+                    .text_color(Color::BLACK)
+                    .font(font, 22.0)
+                    .build()
+                    .unwrap();
 
-                    let center = o.center();
-                    
-                    
-                    let pos = Point {
-                        x: center.0 as f64 - (text_layout.size().width / 2.0),
-                        y: center.1 as f64 - (text_layout.size().height / 2.0)
-                    };
+                let center = o.center();
 
-                    
-                    
-                    ctx.draw_text(&text_layout, pos);
-                })
-                
-        }
-    }).expand()
+                let pos = Point {
+                    x: center.0 as f64 - (text_layout.size().width / 2.0),
+                    y: center.1 as f64 - (text_layout.size().height / 2.0),
+                };
+
+                ctx.draw_text(&text_layout, pos);
+            })
+    })
+    .expand()
 }

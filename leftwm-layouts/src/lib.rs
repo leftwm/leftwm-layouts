@@ -8,19 +8,20 @@ use crate::layouts::monocle::Monocle;
 pub mod geometry;
 pub mod layouts;
 
-pub enum Layouts {
+#[derive(PartialEq)]
+pub enum LayoutEnum {
     Monocle,
     MainAndVertStack,
 }
 
 pub struct LayoutParseError;
-impl FromStr for Layouts {
+impl FromStr for LayoutEnum {
     type Err = LayoutParseError;
 
     fn from_str(name: &str) -> Result<Self, Self::Err> {
         match name {
-            "Monocle" => Ok(Layouts::Monocle),
-            "MainAndVertStack" => Ok(Layouts::MainAndVertStack),
+            "Monocle" => Ok(LayoutEnum::Monocle),
+            "MainAndVertStack" => Ok(LayoutEnum::MainAndVertStack),
             _ => Err(LayoutParseError),
         }
     }
@@ -77,11 +78,11 @@ impl Default for LayoutModifiers {
 
 #[derive(Debug)]
 pub struct LayoutNotFoundError;
-impl Layouts {
+impl LayoutEnum {
     pub fn get(&self) -> Box<dyn Layout> {
         match self {
-            Layouts::Monocle => Box::new(Monocle),
-            Layouts::MainAndVertStack => Box::new(MainAndVertStack),
+            LayoutEnum::Monocle => Box::new(Monocle),
+            LayoutEnum::MainAndVertStack => Box::new(MainAndVertStack),
         }
     }
 }
@@ -89,11 +90,11 @@ impl Layouts {
 
 #[cfg(test)]
 mod tests {
-    use crate::{LayoutModifiers, Layouts};
+    use crate::{LayoutModifiers, LayoutEnum};
 
-    const ALL_LAYOUTS: &[Layouts] = &[
-        Layouts::Monocle,
-        Layouts::MainAndVertStack,
+    const ALL_LAYOUTS: &[LayoutEnum] = &[
+        LayoutEnum::Monocle,
+        LayoutEnum::MainAndVertStack,
     ];
 
     // todo
@@ -125,7 +126,7 @@ mod tests {
     #[test]
     fn test_monocle_layout() {
         let modifiers: LayoutModifiers = LayoutModifiers::default();
-        let monocle = Layouts::Monocle.get();
+        let monocle = LayoutEnum::Monocle.get();
         let monocle_positions = monocle.apply(1, &modifiers);
         assert_eq!(monocle_positions.len(), 1);
     }
