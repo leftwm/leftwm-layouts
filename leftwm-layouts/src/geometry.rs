@@ -79,7 +79,7 @@ impl Tile {
                 let min_rows = (amount as f64 / cols as f64).floor() as usize;
                 // the amount of columns in which there are only the minimum amount of rows
                 let min_row_amount = col_tiles.len() - Util::divrem(amount, cols).1;
-                
+
                 col_tiles
                     .iter()
                     .enumerate()

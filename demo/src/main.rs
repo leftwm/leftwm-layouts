@@ -1,11 +1,11 @@
 use druid::piet::{Text, TextLayout, TextLayoutBuilder};
-use druid::widget::{Button, Container, Flex, Painter, RadioGroup, LabelText};
+use druid::widget::{Button, Container, Flex, LabelText, Painter, RadioGroup};
 use druid::{
-    AppLauncher, Color, Data, Lens, LocalizedString, Point, Rect, RenderContext, Widget,
-    WidgetExt, WindowDesc,
+    AppLauncher, Color, Data, Lens, LocalizedString, Point, Rect, RenderContext, Widget, WidgetExt,
+    WindowDesc,
 };
 use leftwm_layouts::geometry::Tile;
-use leftwm_layouts::{LayoutEnum, LayoutModifiers, Flipped};
+use leftwm_layouts::{Flipped, LayoutEnum, LayoutModifiers};
 
 const PRIMARY: Color = Color::rgb8(0x08, 0x0f, 0x0f);
 //const ACCENT: Color = Color::rgb8(0x65, 0x64, 0xdb);
@@ -22,8 +22,8 @@ struct DemoState {
     master_width_percentage: f32,
     master_window_count: usize,
     max_column_width: Option<u32>,
-    
-    #[data(same_fn="PartialEq::eq")]
+
+    #[data(same_fn = "PartialEq::eq")]
     flipped: Flipped,
 }
 
@@ -35,7 +35,7 @@ impl Default for DemoState {
             master_width_percentage: 60.0,
             master_window_count: 1,
             max_column_width: None,
-            flipped: Flipped::default()
+            flipped: Flipped::default(),
         }
     }
 }
@@ -164,8 +164,8 @@ fn controls() -> impl Widget<DemoState> {
     let dec_master = button("DecreaseMainWidth")
         .on_click(move |_ctx, data: &mut DemoState, _env| data.decrease_master_width());
 
-    let add_window = button("AddWindow")
-        .on_click(move |_ctx, data: &mut DemoState, _env| data.add_window());
+    let add_window =
+        button("AddWindow").on_click(move |_ctx, data: &mut DemoState, _env| data.add_window());
 
     let remove_window = button("RemoveWindow")
         .on_click(move |_ctx, data: &mut DemoState, _env| data.remove_window());
@@ -214,51 +214,48 @@ fn layout_preview() -> impl Widget<DemoState> {
         let layout: LayoutEnum = data.layout.into();
 
         let calcs = layout.get().apply(data.window_count, &modifiers);
-        let mut master_count = layout.get().master_window_count(data.window_count, &modifiers);
+        let mut master_count = layout
+            .get()
+            .master_window_count(data.window_count, &modifiers);
         // println!("{:?}", calcs);
-        calcs
-            .into_iter()
-            .enumerate()
-            .for_each(|(i, o)| {
-                let rect = Rect::new(
-                    o.x.into(),
-                    o.y.into(),
-                    (o.x + o.w).into(),
-                    (o.y + o.h).into(),
-                );
-                if master_count > 0 {
-                    ctx.fill(rect, &ACCENT);
-                    master_count -= 1;
-                } else {
-                    ctx.fill(rect, &ACCENT_SHADE);
-                }
-                ctx.stroke(rect.inset(-0.5), &Color::WHITE, 1.0);
+        calcs.into_iter().enumerate().for_each(|(i, o)| {
+            let rect = Rect::new(
+                o.x.into(),
+                o.y.into(),
+                (o.x + o.w).into(),
+                (o.y + o.h).into(),
+            );
+            if master_count > 0 {
+                ctx.fill(rect, &ACCENT);
+                master_count -= 1;
+            } else {
+                ctx.fill(rect, &ACCENT_SHADE);
+            }
+            ctx.stroke(rect.inset(-0.5), &Color::WHITE, 1.0);
 
-                let text = ctx.text();
-                let font = text.font_family("monospace").unwrap();
+            let text = ctx.text();
+            let font = text.font_family("monospace").unwrap();
 
-                let text_layout = text
-                    .new_text_layout(format!("{}", i + 1))
-                    .text_color(Color::BLACK)
-                    .font(font, 22.0)
-                    .build()
-                    .unwrap();
+            let text_layout = text
+                .new_text_layout(format!("{}", i + 1))
+                .text_color(Color::BLACK)
+                .font(font, 22.0)
+                .build()
+                .unwrap();
 
-                let center = o.center();
+            let center = o.center();
 
-                let pos = Point {
-                    x: center.0 as f64 - (text_layout.size().width / 2.0),
-                    y: center.1 as f64 - (text_layout.size().height / 2.0),
-                };
+            let pos = Point {
+                x: center.0 as f64 - (text_layout.size().width / 2.0),
+                y: center.1 as f64 - (text_layout.size().height / 2.0),
+            };
 
-                ctx.draw_text(&text_layout, pos);
-            })
+            ctx.draw_text(&text_layout, pos);
+        })
     })
     .expand()
 }
 
 fn button(text: impl Into<LabelText<DemoState>>) -> impl Widget<DemoState> {
-    Button::new(text)
-        .expand_width()
-        .padding(4.0)
+    Button::new(text).expand_width().padding(4.0)
 }

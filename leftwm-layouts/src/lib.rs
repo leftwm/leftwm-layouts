@@ -67,7 +67,7 @@ pub enum Flipped {
     None,
     Horizontal,
     Vertical,
-    Both
+    Both,
 }
 
 impl Flipped {
@@ -139,9 +139,7 @@ mod tests {
         for window_count in 0..25 {
             for layout in ALL_LAYOUTS {
                 let layout = layout.get();
-                let len = layout
-                    .apply(window_count, &modifiers)
-                    .len();
+                let len = layout.apply(window_count, &modifiers).len();
                 assert!(len <= window_count);
             }
         }

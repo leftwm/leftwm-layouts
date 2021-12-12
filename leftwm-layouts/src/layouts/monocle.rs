@@ -1,13 +1,12 @@
-use crate::{Layout, geometry::Tile, LayoutModifiers};
-
+use crate::{geometry::Tile, Layout, LayoutModifiers};
 
 #[derive(Debug)]
 pub struct Monocle;
 
 impl Layout for Monocle {
     fn apply(&self, window_count: usize, modifiers: &LayoutModifiers) -> Vec<Tile> {
-        if window_count < 1 { 
-            return vec![] 
+        if window_count < 1 {
+            return vec![];
         }
         vec![modifiers.container_size.to_owned()]
     }
@@ -15,8 +14,8 @@ impl Layout for Monocle {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Layout, LayoutModifiers, geometry::Tile};
     use crate::Monocle;
+    use crate::{geometry::Tile, Layout, LayoutModifiers};
 
     #[test]
     fn monocle_returns_only_one_rect() {
