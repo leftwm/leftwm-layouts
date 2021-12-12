@@ -15,23 +15,23 @@ impl Layout for MainAndVertStack {
         //    1 => 1,
         //    _ => 2,
         //};
+
         
 
         let master_width = match window_count {
             1 => modifiers.container_size.w,
-            _ => (modifiers.container_size.w as f32 / 100.0 * modifiers.master_width_percentage) as i32
+            _ => (modifiers.container_size.w as f32 / 100.0 * modifiers.master_width_percentage) as i32,
         };
         let stack_width = modifiers.container_size.w - master_width;
 
         let mut master_x = modifiers.container_size.x;
         let stack_x = if modifiers.flipped_horizontal {
-            master_x = match window_count {
-                1 => master_x,
-                _ => master_x + stack_width,
-            };
             match window_count {
                 1 => 0,
-                _ => modifiers.container_size.x
+                _ => {
+                    master_x = modifiers.container_size.x + master_width;
+                    modifiers.container_size.x
+                }
             }
         } else {
             modifiers.container_size.x + master_width

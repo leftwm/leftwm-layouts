@@ -41,9 +41,9 @@ pub trait Layout {
     // helper method
     fn master_window_count(&self, window_count: usize, modifiers: &LayoutModifiers) -> usize {
         if window_count < modifiers.master_window_count {
-            modifiers.master_window_count as usize
-        } else {
             window_count
+        } else {
+            modifiers.master_window_count as usize
         }
     }
 
@@ -66,8 +66,8 @@ impl Default for LayoutModifiers {
     fn default() -> Self {
         Self { 
             container_size: Rect::default(), 
-            master_width_percentage: Default::default(), 
-            master_window_count: Default::default(),
+            master_width_percentage: 60.0, 
+            master_window_count: 1,
             max_column_width: None,
             flipped_horizontal: false,
             flipped_vertical: false
