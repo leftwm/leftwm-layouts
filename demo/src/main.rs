@@ -11,7 +11,10 @@ use leftwm_layouts::geometry::Tile;
 use leftwm_layouts::{LayoutModifiers, Layouts};
 
 const PRIMARY: Color = Color::rgb8(0x08, 0x0f, 0x0f);
-const ACCENT: Color = Color::rgb8(0x65, 0x64, 0xdb);
+//const ACCENT: Color = Color::rgb8(0x65, 0x64, 0xdb);
+//const ACCENT_DARK: Color = Color::rgb8(0x2d, 0x2b, 0xb6);
+const ACCENT: Color = Color::rgb8(0xff, 0xd6, 0x22);
+const ACCENT_SHADE: Color = Color::rgb8(0xff, 0xe9, 0x85);
 
 const WINDOW_TITLE: LocalizedString<DemoState> = LocalizedString::new("Hello World!");
 
@@ -82,6 +85,14 @@ impl DemoState {
         };
         self.master_window_count = new_count;
     }
+
+    fn toggle_flipped_horizontal(&mut self) {
+        self.flipped_horizontal = !self.flipped_horizontal
+    }
+
+    fn toggle_flipped_vertical(&mut self) {
+        self.flipped_vertical = !self.flipped_vertical
+    }
 }
 
 impl From<&DemoState> for LayoutModifiers {
@@ -119,6 +130,7 @@ fn build_root_widget() -> impl Widget<DemoState> {
 }
 
 fn controls() -> impl Widget<DemoState> {
+    
     let inc_master = Button::new("IncreaseMainWidth")
         .on_click(move |_ctx, data: &mut DemoState, _env| data.increase_master_width());
 
@@ -137,6 +149,14 @@ fn controls() -> impl Widget<DemoState> {
     let dec_master_count = Button::new("DecreaseMasterCount")
         .on_click(move |_ctx, data: &mut DemoState, _env| data.decrease_master_count());
 
+    let flip_h = Button::new(|data: &DemoState, _env: &_| {
+        format!("FlipHorziontal: {}", data.flipped_horizontal)
+    }).on_click(move |_ctx, data: &mut DemoState, _env| data.toggle_flipped_horizontal());
+
+    let flip_v = Button::new(|data: &DemoState, _env: &_| {
+        format!("FlipVertical: {}", data.flipped_vertical)
+    }).on_click(move |_ctx, data: &mut DemoState, _env| data.toggle_flipped_vertical());
+
     Flex::row()
         .with_flex_child(inc_master, 1.0)
         .with_flex_child(dec_master, 1.0)
@@ -144,21 +164,22 @@ fn controls() -> impl Widget<DemoState> {
         .with_flex_child(dec_master_count, 1.0)
         .with_flex_child(add_window, 1.0)
         .with_flex_child(remove_window, 1.0)
+        .with_flex_child(flip_h, 1.0)
+        .with_flex_child(flip_v, 1.0)
         .fix_height(60.0)
         .background(PRIMARY)
 }
 
 fn layout_preview() -> impl Widget<DemoState> {
 
-    let painter = Painter::new(|ctx, data: &DemoState, env| {
-        let parent_rect = ctx.size().to_rect();
-
+    Painter::new(|ctx, data: &DemoState, env| {
+        let parent_size = ctx.size();
         let mut modifiers = LayoutModifiers::from(data);
         modifiers.container_size = Tile {
-            x: parent_rect.x0 as i32,
-            y: parent_rect.y0 as i32,
-            w: (parent_rect.x1 - parent_rect.x0) as i32,
-            h: (parent_rect.y1 - parent_rect.y0) as i32,
+            x: 0,
+            y: 0,
+            w: parent_size.width as i32,
+            h: parent_size.height as i32,
         };
         let layout = Layouts::from_str("MainAndVertStack");
 
@@ -179,10 +200,10 @@ fn layout_preview() -> impl Widget<DemoState> {
                         (o.y + o.h).into(),
                     );
                     if master_count > 0 {
-                        ctx.fill(rect, &env.get(theme::PRIMARY_LIGHT));
+                        ctx.fill(rect, &ACCENT);
                         master_count = master_count - 1;
                     } else {
-                        ctx.fill(rect, &env.get(theme::PRIMARY_DARK));
+                        ctx.fill(rect, &ACCENT_SHADE);
                     }
                     ctx.stroke(rect.inset(-0.5), &Color::WHITE, 1.0);
 
@@ -192,7 +213,7 @@ fn layout_preview() -> impl Widget<DemoState> {
 
                     let text_layout = text
                         .new_text_layout(format!("{}", i+1))
-                        .text_color(Color::WHITE)
+                        .text_color(Color::BLACK)
                         .font(font, 22.0)
                         .build()
                         .unwrap();
@@ -211,29 +232,5 @@ fn layout_preview() -> impl Widget<DemoState> {
                 })
                 
         }
-    });
-
-
-    painter.expand()
-
-
-    /*
-    // a label that will determine its text based on the current app data.
-    let label = Label::new(|data: &HelloState, _env: &Env| format!("Hello {}!", data.name));
-    // a textbox that modifies `name`.
-    let textbox = TextBox::new()
-        .with_placeholder("Who are we greeting?")
-        .fix_width(TEXT_BOX_WIDTH)
-        .lens(HelloState::name);
-
-    // arrange the two widgets vertically, with some padding
-    let layout = Flex::column()
-        .with_child(label)
-        .with_spacer(VERTICAL_WIDGET_SPACING)
-        .with_child(textbox);
-
-    // center the two widgets in the available space
-    Align::centered(layout)
-
-    */
+    }).expand()
 }

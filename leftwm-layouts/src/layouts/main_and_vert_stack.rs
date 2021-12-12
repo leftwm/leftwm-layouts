@@ -29,7 +29,7 @@ impl Layout for MainAndVertStack {
             match window_count {
                 1 => 0,
                 _ => {
-                    master_x = modifiers.container_size.x + master_width;
+                    master_x = modifiers.container_size.x + stack_width;
                     modifiers.container_size.x
                 }
             }
