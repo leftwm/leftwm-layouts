@@ -5,7 +5,7 @@ use druid::{
     WidgetExt, WindowDesc,
 };
 use leftwm_layouts::geometry::Tile;
-use leftwm_layouts::{LayoutEnum, LayoutModifiers};
+use leftwm_layouts::{LayoutEnum, LayoutModifiers, Flipped};
 
 const PRIMARY: Color = Color::rgb8(0x08, 0x0f, 0x0f);
 //const ACCENT: Color = Color::rgb8(0x65, 0x64, 0xdb);
@@ -22,8 +22,9 @@ struct DemoState {
     master_width_percentage: f32,
     master_window_count: usize,
     max_column_width: Option<u32>,
-    flipped_horizontal: bool,
-    flipped_vertical: bool,
+    
+    #[data(same_fn="PartialEq::eq")]
+    flipped: Flipped,
 }
 
 impl Default for DemoState {
@@ -34,8 +35,7 @@ impl Default for DemoState {
             master_width_percentage: 60.0,
             master_window_count: 1,
             max_column_width: None,
-            flipped_horizontal: false,
-            flipped_vertical: false,
+            flipped: Flipped::default()
         }
     }
 }
@@ -86,11 +86,11 @@ impl DemoState {
     }
 
     fn toggle_flipped_horizontal(&mut self) {
-        self.flipped_horizontal = !self.flipped_horizontal
+        self.flipped = Flipped::toggle_horizontal(&self.flipped)
     }
 
     fn toggle_flipped_vertical(&mut self) {
-        self.flipped_vertical = !self.flipped_vertical
+        self.flipped = Flipped::toggle_vertical(&self.flipped)
     }
 }
 
@@ -100,8 +100,7 @@ impl From<&DemoState> for LayoutModifiers {
             master_width_percentage: value.master_width_percentage,
             master_window_count: value.master_window_count,
             max_column_width: value.max_column_width,
-            flipped_horizontal: value.flipped_horizontal,
-            flipped_vertical: value.flipped_vertical,
+            flipped: value.flipped,
             ..Default::default()
         }
     }
@@ -113,14 +112,23 @@ enum LayoutOption {
     MainAndVertStack,
 }
 
-impl Into<LayoutEnum> for LayoutOption {
-    fn into(self) -> LayoutEnum {
-        match self {
-            Self::Monocle => LayoutEnum::Monocle,
-            Self::MainAndVertStack => LayoutEnum::MainAndVertStack,
+impl From<LayoutOption> for LayoutEnum {
+    fn from(option: LayoutOption) -> Self {
+        match option {
+            LayoutOption::Monocle => Self::Monocle,
+            LayoutOption::MainAndVertStack => Self::MainAndVertStack,
         }
     }
 }
+
+//impl Into<LayoutEnum> for LayoutOption {
+//    fn into(self) -> LayoutEnum {
+//        match self {
+//            Self::Monocle => LayoutEnum::Monocle,
+//            Self::MainAndVertStack => LayoutEnum::MainAndVertStack,
+//        }
+//    }
+//}
 
 fn main() {
     // describe the main window
@@ -169,12 +177,12 @@ fn controls() -> impl Widget<DemoState> {
         .on_click(move |_ctx, data: &mut DemoState, _env| data.decrease_master_count());
 
     let flip_h = button(|data: &DemoState, _env: &_| {
-        format!("FlipHorziontal: {}", data.flipped_horizontal)
+        format!("FlipHorziontal: {}", data.flipped.is_flipped_horizontal())
     })
     .on_click(move |_ctx, data: &mut DemoState, _env| data.toggle_flipped_horizontal());
 
     let flip_v = button(|data: &DemoState, _env: &_| {
-        format!("FlipVertical: {}", data.flipped_vertical)
+        format!("FlipVertical: {}", data.flipped.is_flipped_vertical())
     })
     .on_click(move |_ctx, data: &mut DemoState, _env| data.toggle_flipped_vertical());
 
@@ -206,13 +214,11 @@ fn layout_preview() -> impl Widget<DemoState> {
         let layout: LayoutEnum = data.layout.into();
 
         let calcs = layout.get().apply(data.window_count, &modifiers);
-        let mut master_count = layout.get().master_window_count(6, &modifiers);
+        let mut master_count = layout.get().master_window_count(data.window_count, &modifiers);
         // println!("{:?}", calcs);
         calcs
             .into_iter()
             .enumerate()
-            .filter(|(_, o)| o.is_some())
-            .map(|(i, o)| (i, o.unwrap()))
             .for_each(|(i, o)| {
                 let rect = Rect::new(
                     o.x.into(),
@@ -222,7 +228,7 @@ fn layout_preview() -> impl Widget<DemoState> {
                 );
                 if master_count > 0 {
                     ctx.fill(rect, &ACCENT);
-                    master_count = master_count - 1;
+                    master_count -= 1;
                 } else {
                     ctx.fill(rect, &ACCENT_SHADE);
                 }

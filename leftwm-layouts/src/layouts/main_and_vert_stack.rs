@@ -5,63 +5,42 @@ use crate::{Layout, geometry::Tile, LayoutModifiers};
 pub struct MainAndVertStack;
 
 impl Layout for MainAndVertStack {
-    fn apply(&self, window_count: usize, modifiers: &LayoutModifiers) -> Vec<Option<Tile>> {
+    fn apply(&self, window_count: usize, modifiers: &LayoutModifiers) -> Vec<Tile> {
+        let tiles: &mut Vec<Tile> = &mut Vec::new();
         if window_count == 0 {
-            return vec![];
+            return tiles.to_vec();
         }
 
-        // QUESTION: where should the width limiter be implemented?
-        //let column_count = match window_count {
-        //    1 => 1,
-        //    _ => 2,
-        //};
-
-        
-
-        let master_width = match window_count {
-            1 => modifiers.container_size.w,
-            _ => (modifiers.container_size.w as f32 / 100.0 * modifiers.master_width_percentage) as i32,
-        };
-        let stack_width = modifiers.container_size.w - master_width;
-
-        let mut master_x = modifiers.container_size.x;
-        let stack_x = if modifiers.flipped_horizontal {
-            match window_count {
-                1 => 0,
+        let master_tile = if modifiers.master_window_count > 0 {
+            match window_count - modifiers.master_window_count {
+                0 => Some(modifiers.container_size),
                 _ => {
-                    master_x = modifiers.container_size.x + stack_width;
-                    modifiers.container_size.x
+                    Some(Tile {
+                        w: (modifiers.container_size.w as f32 / 100.0 * modifiers.master_width_percentage) as i32,
+                        ..modifiers.container_size
+                    })
                 }
             }
         } else {
-            modifiers.container_size.x + master_width
+            None
         };
 
-
-        // build the master window
-        let mut vec: Vec<Option<Tile>> = Vec::new();
-        vec.push(Some(Tile {
-            x: master_x,
-            y: modifiers.container_size.y,
-            w: master_width,
-            h: modifiers.container_size.h,
-        }));
-
-        // stack all the others
-        let height_f = modifiers.container_size.h as f32 / (window_count - 1) as f32;
-        let height = height_f.floor() as i32;
-        let mut y = 0;
-        for _ in 1..window_count {
-            vec.push(Some(Tile {
-                x: stack_x,
-                y: modifiers.container_size.y + y,
-                w: stack_width,
-                h: height,
-            }));
-            y += height
+        if let Some(tile) = master_tile {
+            tiles.append(&mut tile.split(modifiers.master_window_count, crate::geometry::SplitAxis::Both));
+        }
+        
+        let stack_window_count = window_count - modifiers.master_window_count;
+        if stack_window_count > 0 {
+            let stack_tile = Tile {
+                x: modifiers.container_size.x + master_tile.map_or(0, |t| t.w),
+                w: modifiers.container_size.w - master_tile.map_or(0, |t| t.w),
+                ..modifiers.container_size
+            };
+            tiles.append(&mut stack_tile.split(stack_window_count, crate::geometry::SplitAxis::Horizontal));
         }
 
-        vec
+        crate::geometry::Util::flip(modifiers.container_size, tiles, &modifiers.flipped);
+        tiles.to_vec()
     }
 }
 
