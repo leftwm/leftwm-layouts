@@ -1,10 +1,7 @@
-use std::cmp;
-use std::str::FromStr;
-
 use druid::piet::{Text, TextLayout, TextLayoutBuilder};
-use druid::widget::{Align, Button, Container, Flex, Label, Painter, Radio, RadioGroup, SizedBox};
+use druid::widget::{Button, Container, Flex, Painter, RadioGroup, LabelText};
 use druid::{
-    theme, AppLauncher, Color, Data, Lens, LocalizedString, Point, Rect, RenderContext, Widget,
+    AppLauncher, Color, Data, Lens, LocalizedString, Point, Rect, RenderContext, Widget,
     WidgetExt, WindowDesc,
 };
 use leftwm_layouts::geometry::Tile;
@@ -141,7 +138,7 @@ fn main() {
 }
 
 fn build_root_widget() -> impl Widget<DemoState> {
-    Flex::column()
+    Flex::row()
         .with_child(controls())
         .with_flex_child(Container::new(layout_preview()).background(Color::RED), 2.0)
 }
@@ -153,35 +150,36 @@ fn controls() -> impl Widget<DemoState> {
     ])
     .lens(DemoState::layout);
 
-    let inc_master = Button::new("IncreaseMainWidth")
+    let inc_master = button("IncreaseMainWidth")
         .on_click(move |_ctx, data: &mut DemoState, _env| data.increase_master_width());
 
-    let dec_master = Button::new("DecreaseMainWidth")
+    let dec_master = button("DecreaseMainWidth")
         .on_click(move |_ctx, data: &mut DemoState, _env| data.decrease_master_width());
 
-    let add_window = Button::new("AddWindow")
+    let add_window = button("AddWindow")
         .on_click(move |_ctx, data: &mut DemoState, _env| data.add_window());
 
-    let remove_window = Button::new("RemoveWindow")
+    let remove_window = button("RemoveWindow")
         .on_click(move |_ctx, data: &mut DemoState, _env| data.remove_window());
 
-    let inc_master_count = Button::new("IncreaseMasterCount")
+    let inc_master_count = button("IncreaseMasterCount")
         .on_click(move |_ctx, data: &mut DemoState, _env| data.increase_master_count());
 
-    let dec_master_count = Button::new("DecreaseMasterCount")
+    let dec_master_count = button("DecreaseMasterCount")
         .on_click(move |_ctx, data: &mut DemoState, _env| data.decrease_master_count());
 
-    let flip_h = Button::new(|data: &DemoState, _env: &_| {
+    let flip_h = button(|data: &DemoState, _env: &_| {
         format!("FlipHorziontal: {}", data.flipped_horizontal)
     })
     .on_click(move |_ctx, data: &mut DemoState, _env| data.toggle_flipped_horizontal());
 
-    let flip_v = Button::new(|data: &DemoState, _env: &_| {
+    let flip_v = button(|data: &DemoState, _env: &_| {
         format!("FlipVertical: {}", data.flipped_vertical)
     })
     .on_click(move |_ctx, data: &mut DemoState, _env| data.toggle_flipped_vertical());
 
-    let flex = Flex::row()
+    let flex = Flex::column()
+        .with_flex_child(selector, 1.0)
         .with_flex_child(inc_master, 1.0)
         .with_flex_child(dec_master, 1.0)
         .with_flex_child(inc_master_count, 1.0)
@@ -189,14 +187,13 @@ fn controls() -> impl Widget<DemoState> {
         .with_flex_child(add_window, 1.0)
         .with_flex_child(remove_window, 1.0)
         .with_flex_child(flip_h, 1.0)
-        .with_flex_child(flip_v, 1.0)
-        .with_child(selector);
+        .with_flex_child(flip_v, 1.0);
 
-    flex.fix_height(60.0).background(PRIMARY)
+    flex.fix_width(240.0).background(PRIMARY)
 }
 
 fn layout_preview() -> impl Widget<DemoState> {
-    Painter::new(|ctx, data: &DemoState, env| {
+    Painter::new(|ctx, data: &DemoState, _| {
         let parent_size = ctx.size();
         let mut modifiers = LayoutModifiers::from(data);
         modifiers.container_size = Tile {
@@ -252,4 +249,10 @@ fn layout_preview() -> impl Widget<DemoState> {
             })
     })
     .expand()
+}
+
+fn button(text: impl Into<LabelText<DemoState>>) -> impl Widget<DemoState> {
+    Button::new(text)
+        .expand_width()
+        .padding(4.0)
 }
