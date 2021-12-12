@@ -26,7 +26,7 @@ impl Layout for MainAndVertStack {
         if let Some(tile) = master_tile {
             tiles.append(&mut tile.split(
                 modifiers.master_window_count,
-                crate::geometry::SplitAxis::Both,
+                crate::geometry::SplitAxis::Vertical,
             ));
         }
 
