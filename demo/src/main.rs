@@ -1,12 +1,17 @@
 use std::cmp;
 use std::str::FromStr;
 
-use druid::widget::{Button, Flex, Painter};
+use druid::piet::{TextLayout, TextLayoutBuilder, Text};
+use druid::widget::{Align, Button, Container, Flex, Painter, SizedBox, Label};
 use druid::{
-    theme, AppLauncher, Color, Data, Lens, LocalizedString, Rect, RenderContext, Widget, WindowDesc,
+    theme, AppLauncher, Color, Data, Lens, LocalizedString, Rect, RenderContext, Widget, WidgetExt,
+    WindowDesc, Point,
 };
 use leftwm_layouts::geometry::Tile;
 use leftwm_layouts::{LayoutModifiers, Layouts};
+
+const PRIMARY: Color = Color::rgb8(0x08, 0x0f, 0x0f);
+const ACCENT: Color = Color::rgb8(0x65, 0x64, 0xdb);
 
 const WINDOW_TITLE: LocalizedString<DemoState> = LocalizedString::new("Hello World!");
 
@@ -35,11 +40,16 @@ impl Default for DemoState {
 
 impl DemoState {
     fn add_window(&mut self) {
-        self.window_count += 1
+        self.window_count += 1;
     }
 
     fn remove_window(&mut self) {
-        self.window_count = cmp::max(self.window_count - 1, 0);
+        let new_count = if self.window_count > 0 {
+            self.window_count - 1
+        } else {
+            0
+        };
+        self.window_count = new_count;
     }
 
     fn increase_master_width(&mut self) {
@@ -58,6 +68,19 @@ impl DemoState {
         } else {
             self.master_width_percentage = new_width;
         }
+    }
+
+    fn increase_master_count(&mut self) {
+        self.master_window_count += 1;
+    }
+
+    fn decrease_master_count(&mut self) {
+        let new_count = if self.master_window_count > 0 {
+            self.master_window_count - 1
+        } else {
+            0
+        };
+        self.master_window_count = new_count;
     }
 }
 
@@ -91,8 +114,8 @@ fn main() {
 
 fn build_root_widget() -> impl Widget<DemoState> {
     Flex::column()
-        .with_flex_child(controls(), 1.0)
-        .with_flex_child(layout_preview(), 1.0)
+        .with_child(controls())
+        .with_flex_child(Container::new(layout_preview()).background(Color::RED), 2.0)
 }
 
 fn controls() -> impl Widget<DemoState> {
@@ -102,21 +125,40 @@ fn controls() -> impl Widget<DemoState> {
     let dec_master = Button::new("DecreaseMainWidth")
         .on_click(move |_ctx, data: &mut DemoState, _env| data.decrease_master_width());
 
+    let add_window = Button::new("AddWindow")
+        .on_click(move |_ctx, data: &mut DemoState, _env| data.add_window());
+
+    let remove_window = Button::new("RemoveWindow")
+        .on_click(move |_ctx, data: &mut DemoState, _env| data.remove_window());
+
+    let inc_master_count = Button::new("IncreaseMasterCount")
+        .on_click(move |_ctx, data: &mut DemoState, _env| data.increase_master_count());
+
+    let dec_master_count = Button::new("DecreaseMasterCount")
+        .on_click(move |_ctx, data: &mut DemoState, _env| data.decrease_master_count());
+
     Flex::row()
         .with_flex_child(inc_master, 1.0)
         .with_flex_child(dec_master, 1.0)
+        .with_flex_child(inc_master_count, 1.0)
+        .with_flex_child(dec_master_count, 1.0)
+        .with_flex_child(add_window, 1.0)
+        .with_flex_child(remove_window, 1.0)
+        .fix_height(60.0)
+        .background(PRIMARY)
 }
 
 fn layout_preview() -> impl Widget<DemoState> {
-    Painter::new(|ctx, data: &DemoState, env| {
+
+    let painter = Painter::new(|ctx, data: &DemoState, env| {
         let parent_rect = ctx.size().to_rect();
 
         let mut modifiers = LayoutModifiers::from(data);
         modifiers.container_size = Tile {
-                x: parent_rect.x0 as i32,
-                y: parent_rect.y0 as i32,
-                w: (parent_rect.x1 - parent_rect.x0) as i32,
-                h: (parent_rect.y1 - parent_rect.y0) as i32,
+            x: parent_rect.x0 as i32,
+            y: parent_rect.y0 as i32,
+            w: (parent_rect.x1 - parent_rect.x0) as i32,
+            h: (parent_rect.y1 - parent_rect.y0) as i32,
         };
         let layout = Layouts::from_str("MainAndVertStack");
 
@@ -126,9 +168,10 @@ fn layout_preview() -> impl Widget<DemoState> {
             // println!("{:?}", calcs);
             calcs
                 .into_iter()
-                .filter(|o| o.is_some())
-                .map(|o| o.unwrap())
-                .for_each(|o| {
+                .enumerate()
+                .filter(|(_, o)| o.is_some())
+                .map(|(i, o)| (i, o.unwrap()))
+                .for_each(|(i, o)| {
                     let rect = Rect::new(
                         o.x.into(),
                         o.y.into(),
@@ -142,9 +185,37 @@ fn layout_preview() -> impl Widget<DemoState> {
                         ctx.fill(rect, &env.get(theme::PRIMARY_DARK));
                     }
                     ctx.stroke(rect.inset(-0.5), &Color::WHITE, 1.0);
+
+
+                    let text = ctx.text();
+                    let font = text.font_family("monospace").unwrap();
+
+                    let text_layout = text
+                        .new_text_layout(format!("{}", i+1))
+                        .text_color(Color::WHITE)
+                        .font(font, 22.0)
+                        .build()
+                        .unwrap();
+
+                    let center = o.center();
+                    
+                    
+                    let pos = Point {
+                        x: center.0 as f64 - (text_layout.size().width / 2.0),
+                        y: center.1 as f64 - (text_layout.size().height / 2.0)
+                    };
+
+                    
+                    
+                    ctx.draw_text(&text_layout, pos);
                 })
+                
         }
-    })
+    });
+
+
+    painter.expand()
+
 
     /*
     // a label that will determine its text based on the current app data.

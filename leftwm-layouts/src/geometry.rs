@@ -12,6 +12,12 @@ impl Tile {
     pub fn surface_area(&self) -> i32 {
         self.h * self.w
     }
+
+    pub fn center(&self) -> (i32, i32) {
+        let x = self.x + (self.w / 2);
+        let y = self.y + (self.h / 2);
+        (x,y)
+    }
 }
 
 impl Default for Tile {
