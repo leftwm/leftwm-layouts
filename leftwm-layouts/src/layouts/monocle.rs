@@ -15,12 +15,12 @@ impl Layout for Monocle {
 #[cfg(test)]
 mod tests {
     use crate::Monocle;
-    use crate::{geometry::Tile, Layout, LayoutModifiers};
+    use crate::{Layout, LayoutModifiers};
 
     #[test]
     fn monocle_returns_only_one_rect() {
         let rects = Monocle.apply(3, &LayoutModifiers::default());
-        let present: Vec<Tile> = rects.into_iter().collect();
+        let present = rects.into_iter();
         assert_eq!(present.len(), 1);
     }
 }
