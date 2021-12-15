@@ -10,8 +10,11 @@ impl Layout for MainAndVertStack {
             return tiles.to_vec();
         }
 
+        let main_window_count = self.main_window_count(window_count, modifiers);
+        let stack_window_count = self.stack_window_count(window_count, modifiers);
+
         let master_tile = if modifiers.master_window_count > 0 {
-            match window_count - modifiers.master_window_count {
+            match stack_window_count {
                 0 => Some(modifiers.container_size),
                 _ => Some(Tile {
                     w: (modifiers.container_size.w as f32 / 100.0
@@ -24,13 +27,9 @@ impl Layout for MainAndVertStack {
         };
 
         if let Some(tile) = master_tile {
-            tiles.append(&mut tile.split(
-                modifiers.master_window_count,
-                crate::geometry::SplitAxis::Vertical,
-            ));
+            tiles.append(&mut tile.split(main_window_count, crate::geometry::SplitAxis::Vertical));
         }
 
-        let stack_window_count = window_count - modifiers.master_window_count;
         if stack_window_count > 0 {
             let stack_tile = Tile {
                 x: modifiers.container_size.x + master_tile.map_or(0, |t| t.w),
