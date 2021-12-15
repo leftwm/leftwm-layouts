@@ -110,6 +110,7 @@ impl From<&DemoState> for LayoutModifiers {
 enum LayoutOption {
     Monocle,
     MainAndVertStack,
+    CenterMain,
 }
 
 impl From<LayoutOption> for LayoutEnum {
@@ -117,6 +118,7 @@ impl From<LayoutOption> for LayoutEnum {
         match option {
             LayoutOption::Monocle => Self::Monocle,
             LayoutOption::MainAndVertStack => Self::MainAndVertStack,
+            LayoutOption::CenterMain => Self::CenterMain,
         }
     }
 }
@@ -155,6 +157,7 @@ fn controls() -> impl Widget<DemoState> {
     let selector = RadioGroup::new(vec![
         ("Monocle", LayoutOption::Monocle),
         ("MainAndVertStack", LayoutOption::MainAndVertStack),
+        ("CenterMain", LayoutOption::CenterMain),
     ])
     .lens(DemoState::layout);
 
@@ -216,7 +219,7 @@ fn layout_preview() -> impl Widget<DemoState> {
         let calcs = layout.get().apply(data.window_count, &modifiers);
         let mut master_count = layout
             .get()
-            .master_window_count(data.window_count, &modifiers);
+            .main_window_count(data.window_count, &modifiers);
         // println!("{:?}", calcs);
         calcs.into_iter().enumerate().for_each(|(i, o)| {
             let rect = Rect::new(

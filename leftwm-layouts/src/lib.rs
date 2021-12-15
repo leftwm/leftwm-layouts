@@ -1,5 +1,6 @@
 use std::str::FromStr;
 
+use layouts::center_main::CenterMain;
 use layouts::main_and_vert_stack::MainAndVertStack;
 
 use crate::geometry::Tile;
@@ -12,6 +13,7 @@ pub mod layouts;
 pub enum LayoutEnum {
     Monocle,
     MainAndVertStack,
+    CenterMain,
 }
 
 pub struct LayoutParseError;
@@ -22,6 +24,7 @@ impl FromStr for LayoutEnum {
         match name {
             "Monocle" => Ok(LayoutEnum::Monocle),
             "MainAndVertStack" => Ok(LayoutEnum::MainAndVertStack),
+            "CenterMain" => Ok(LayoutEnum::CenterMain),
             _ => Err(LayoutParseError),
         }
     }
@@ -40,7 +43,7 @@ pub trait Layout {
     //fn supports_multiple_master_windows() -> bool;
 
     // helper method
-    fn master_window_count(&self, window_count: usize, modifiers: &LayoutModifiers) -> usize {
+    fn main_window_count(&self, window_count: usize, modifiers: &LayoutModifiers) -> usize {
         if window_count < modifiers.master_window_count {
             window_count
         } else {
@@ -48,9 +51,9 @@ pub trait Layout {
         }
     }
 
-    // helper methodo
+    // helper method
     fn stack_window_count(&self, window_count: usize, modifiers: &LayoutModifiers) -> usize {
-        window_count - self.master_window_count(window_count, modifiers)
+        window_count.saturating_sub(self.main_window_count(window_count, modifiers))
     }
 }
 
@@ -123,6 +126,7 @@ impl LayoutEnum {
         match self {
             LayoutEnum::Monocle => Box::new(Monocle),
             LayoutEnum::MainAndVertStack => Box::new(MainAndVertStack),
+            LayoutEnum::CenterMain => Box::new(CenterMain),
         }
     }
 }
@@ -131,7 +135,11 @@ impl LayoutEnum {
 mod tests {
     use crate::{LayoutEnum, LayoutModifiers};
 
-    const ALL_LAYOUTS: &[LayoutEnum] = &[LayoutEnum::Monocle, LayoutEnum::MainAndVertStack];
+    const ALL_LAYOUTS: &[LayoutEnum] = &[
+        LayoutEnum::Monocle,
+        LayoutEnum::MainAndVertStack,
+        LayoutEnum::CenterMain,
+    ];
 
     #[test]
     fn returned_tiles_must_never_exceed_window_count() {
