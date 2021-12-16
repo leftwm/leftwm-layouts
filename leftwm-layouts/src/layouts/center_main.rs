@@ -71,7 +71,7 @@ impl Layout for CenterMain {
                     &mut stack_tile
                         .split(stack_window_count, &crate::geometry::SplitAxis::Horizontal),
                 );
-            },
+            }
             (1.., 1) => {
                 // only one stack window means only one "stack" on the right
                 let main_tile = main_tile.unwrap();
