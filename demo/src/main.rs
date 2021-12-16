@@ -111,6 +111,7 @@ enum LayoutOption {
     Monocle,
     MainAndVertStack,
     CenterMain,
+    Fibonacci,
 }
 
 impl From<LayoutOption> for LayoutEnum {
@@ -119,6 +120,7 @@ impl From<LayoutOption> for LayoutEnum {
             LayoutOption::Monocle => Self::Monocle,
             LayoutOption::MainAndVertStack => Self::MainAndVertStack,
             LayoutOption::CenterMain => Self::CenterMain,
+            LayoutOption::Fibonacci => Self::Fibonacci,
         }
     }
 }
@@ -158,6 +160,7 @@ fn controls() -> impl Widget<DemoState> {
         ("Monocle", LayoutOption::Monocle),
         ("MainAndVertStack", LayoutOption::MainAndVertStack),
         ("CenterMain", LayoutOption::CenterMain),
+        ("Fibonacci", LayoutOption::Fibonacci),
     ])
     .lens(DemoState::layout);
 

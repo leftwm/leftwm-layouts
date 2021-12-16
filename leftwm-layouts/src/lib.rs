@@ -1,6 +1,7 @@
 use std::str::FromStr;
 
 use layouts::center_main::CenterMain;
+use layouts::fibonacci::Fibonacci;
 use layouts::main_and_vert_stack::MainAndVertStack;
 
 use crate::geometry::Tile;
@@ -14,6 +15,7 @@ pub enum LayoutEnum {
     Monocle,
     MainAndVertStack,
     CenterMain,
+    Fibonacci,
 }
 
 pub struct LayoutParseError;
@@ -25,6 +27,7 @@ impl FromStr for LayoutEnum {
             "Monocle" => Ok(LayoutEnum::Monocle),
             "MainAndVertStack" => Ok(LayoutEnum::MainAndVertStack),
             "CenterMain" => Ok(LayoutEnum::CenterMain),
+            "Fibonacci" => Ok(LayoutEnum::Fibonacci),
             _ => Err(LayoutParseError),
         }
     }
@@ -127,6 +130,7 @@ impl LayoutEnum {
             LayoutEnum::Monocle => Box::new(Monocle),
             LayoutEnum::MainAndVertStack => Box::new(MainAndVertStack),
             LayoutEnum::CenterMain => Box::new(CenterMain),
+            LayoutEnum::Fibonacci => Box::new(Fibonacci),
         }
     }
 }
@@ -139,6 +143,7 @@ mod tests {
         LayoutEnum::Monocle,
         LayoutEnum::MainAndVertStack,
         LayoutEnum::CenterMain,
+        LayoutEnum::Fibonacci,
     ];
 
     #[test]

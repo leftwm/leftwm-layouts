@@ -57,7 +57,7 @@ impl Layout for CenterMain {
         };
 
         if let Some(tile) = main_tile {
-            tiles.append(&mut tile.split(main_window_count, crate::geometry::SplitAxis::Vertical));
+            tiles.append(&mut tile.split(main_window_count, &crate::geometry::SplitAxis::Vertical));
         }
 
         match (main_window_count, stack_window_count) {
@@ -69,7 +69,7 @@ impl Layout for CenterMain {
                 };
                 tiles.append(
                     &mut stack_tile
-                        .split(stack_window_count, crate::geometry::SplitAxis::Horizontal),
+                        .split(stack_window_count, &crate::geometry::SplitAxis::Horizontal),
                 );
             }
             (1.., 2..) => {
@@ -87,11 +87,11 @@ impl Layout for CenterMain {
                 let window_distribution = Util::remainderless_division(stack_window_count, 2);
                 tiles.append(&mut right_stack.split(
                     window_distribution[0],
-                    crate::geometry::SplitAxis::Horizontal,
+                    &crate::geometry::SplitAxis::Horizontal,
                 ));
                 tiles.append(&mut left_stack.split(
                     window_distribution[1],
-                    crate::geometry::SplitAxis::Horizontal,
+                    &crate::geometry::SplitAxis::Horizontal,
                 ));
             }
             (_, _) => {}

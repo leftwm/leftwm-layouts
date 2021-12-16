@@ -38,7 +38,7 @@ impl Tile {
         (x, y)
     }
 
-    pub fn split(&self, amount: usize, axis: SplitAxis) -> Vec<Tile> {
+    pub fn split(&self, amount: usize, axis: &SplitAxis) -> Vec<Tile> {
         match axis {
             SplitAxis::Vertical => {
                 let mut from_left = self.x;
@@ -74,7 +74,7 @@ impl Tile {
             }
             SplitAxis::Both => {
                 let cols = (amount as f64).sqrt().ceil() as usize;
-                let col_tiles = self.split(cols, SplitAxis::Vertical);
+                let col_tiles = self.split(cols, &SplitAxis::Vertical);
                 // the minimum amount of rows per column
                 let min_rows = (amount as f64 / cols as f64).floor() as usize;
                 // the amount of columns in which there are only the minimum amount of rows
@@ -89,7 +89,7 @@ impl Tile {
                         } else {
                             min_rows + 1
                         };
-                        col_tile.split(rows, SplitAxis::Horizontal)
+                        col_tile.split(rows, &SplitAxis::Horizontal)
                     })
                     .collect()
             }
