@@ -18,3 +18,6 @@ test:
 	cd $(ROOT_DIR) && cargo test --all-targets --all-features
 	cd $(ROOT_DIR) && cargo fmt -- --check
 	cd $(ROOT_DIR) && cargo clippy --release
+
+dev:
+	cd $(ROOT_DIR) && cargo run --package demo
