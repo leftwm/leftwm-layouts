@@ -61,7 +61,7 @@ impl Layout for CenterMain {
         }
 
         match (main_window_count, stack_window_count) {
-            (_, 1) => {
+            (0, 1..) => {
                 let stack_tile = Tile {
                     x: modifiers.container_size.x + main_tile.map_or(0, |t| t.w),
                     w: modifiers.container_size.w - main_tile.map_or(0, |t| t.w),
@@ -71,6 +71,15 @@ impl Layout for CenterMain {
                     &mut stack_tile
                         .split(stack_window_count, &crate::geometry::SplitAxis::Horizontal),
                 );
+            },
+            (1.., 1) => {
+                // only one stack window means only one "stack" on the right
+                let main_tile = main_tile.unwrap();
+                tiles.push(Tile {
+                    x: main_tile.x + main_tile.w,
+                    w: column_widths[1],
+                    ..modifiers.container_size
+                });
             }
             (1.., 2..) => {
                 let master_tile = main_tile.unwrap();
