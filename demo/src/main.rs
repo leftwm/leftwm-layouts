@@ -4,8 +4,8 @@ use druid::{
     AppLauncher, Color, Data, Lens, LocalizedString, Point, Rect, RenderContext, Widget, WidgetExt,
     WindowDesc,
 };
-use leftwm_layouts::geometry::Tile;
-use leftwm_layouts::{Flipped, LayoutEnum, LayoutModifiers};
+use leftwm_layouts::geometry::Flipped;
+use leftwm_layouts::{LayoutEnum, LayoutModifiers};
 
 const PRIMARY: Color = Color::rgb8(0x08, 0x0f, 0x0f);
 //const ACCENT: Color = Color::rgb8(0x65, 0x64, 0xdb);
@@ -210,11 +210,11 @@ fn layout_preview() -> impl Widget<DemoState> {
     Painter::new(|ctx, data: &DemoState, _| {
         let parent_size = ctx.size();
         let mut modifiers = LayoutModifiers::from(data);
-        modifiers.container_size = Tile {
+        modifiers.container_size = leftwm_layouts::geometry::Rect {
             x: 0,
             y: 0,
-            w: parent_size.width as i32,
-            h: parent_size.height as i32,
+            w: parent_size.width as u32,
+            h: parent_size.height as u32,
         };
 
         let layout: LayoutEnum = data.layout.into();
@@ -228,8 +228,8 @@ fn layout_preview() -> impl Widget<DemoState> {
             let rect = Rect::new(
                 o.x.into(),
                 o.y.into(),
-                (o.x + o.w).into(),
-                (o.y + o.h).into(),
+                (o.x + o.w as i32).into(),
+                (o.y + o.h as i32).into(),
             );
             if master_count > 0 {
                 ctx.fill(rect, &ACCENT);

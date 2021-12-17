@@ -1,10 +1,10 @@
-use crate::{geometry::Tile, Layout, LayoutModifiers};
+use crate::{geometry::Rect, Layout, LayoutModifiers};
 
 #[derive(Debug)]
 pub struct Monocle;
 
 impl Layout for Monocle {
-    fn apply(&self, window_count: usize, modifiers: &LayoutModifiers) -> Vec<Tile> {
+    fn apply(&self, window_count: usize, modifiers: &LayoutModifiers) -> Vec<Rect> {
         if window_count < 1 {
             return vec![];
         }

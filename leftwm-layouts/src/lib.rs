@@ -1,14 +1,17 @@
 use std::str::FromStr;
 
+use geometry::{Flipped, Rect};
 use layouts::center_main::CenterMain;
 use layouts::fibonacci::Fibonacci;
 use layouts::main_and_vert_stack::MainAndVertStack;
 
-use crate::geometry::Tile;
 use crate::layouts::monocle::Monocle;
 
 pub mod geometry;
 pub mod layouts;
+mod util;
+
+pub use util::Util;
 
 #[derive(PartialEq)]
 pub enum LayoutEnum {
@@ -33,13 +36,14 @@ impl FromStr for LayoutEnum {
     }
 }
 
+// todo: might be better to use generics?
+
 pub trait Layout {
-    // QUESTION: instead of returning Options, this could just return the "Some" values
-    // because a layout will probably never leave out a window in the middle?
-    // it may return a list smaller than the window_count (monocle, main_and_deck, ...)
-    // but in this case the returned list should be applied to the first windows in order
-    // and the reset should be hidden
-    fn apply(&self, window_count: usize, modifiers: &LayoutModifiers) -> Vec<Tile>;
+    /// Get a list of calculated tiles where the windows must be placed.
+    /// The list may be shorter than the provided `window_count` bit it will not be longer.
+    /// A shorter list indicates that the provided amount of windows (`window_count`) exceeds
+    /// the amount of windows that can possibly be displayed for the layout (eg. Monocle, MainAndDeck).
+    fn apply(&self, window_count: usize, modifiers: &LayoutModifiers) -> Vec<Rect>;
 
     // QUESTION: might be helpful if the layout_manager can find out if the layout even supports
     // multiple_master_windows, some might not (monocle?, main_and_deck?)
@@ -61,59 +65,17 @@ pub trait Layout {
 }
 
 pub struct LayoutModifiers {
-    pub container_size: Tile,
+    pub container_size: Rect,
     pub master_width_percentage: f32,
     pub master_window_count: usize,
     pub max_column_width: Option<u32>,
     pub flipped: Flipped,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub enum Flipped {
-    None,
-    Horizontal,
-    Vertical,
-    Both,
-}
-
-impl Flipped {
-    pub fn is_flipped_horizontal(&self) -> bool {
-        matches!(self, Self::Horizontal | Self::Both)
-    }
-
-    pub fn is_flipped_vertical(&self) -> bool {
-        matches!(self, Self::Vertical | Self::Both)
-    }
-
-    pub fn toggle_horizontal(&self) -> Flipped {
-        match self {
-            Self::None => Self::Horizontal,
-            Self::Horizontal => Self::None,
-            Self::Vertical => Self::Both,
-            Self::Both => Self::Vertical,
-        }
-    }
-
-    pub fn toggle_vertical(&self) -> Flipped {
-        match self {
-            Self::None => Self::Vertical,
-            Self::Horizontal => Self::Both,
-            Self::Vertical => Self::None,
-            Self::Both => Self::Horizontal,
-        }
-    }
-}
-
-impl Default for Flipped {
-    fn default() -> Self {
-        Flipped::None
-    }
-}
-
 impl Default for LayoutModifiers {
     fn default() -> Self {
         Self {
-            container_size: Tile::default(),
+            container_size: Rect::default(),
             master_width_percentage: 60.0,
             master_window_count: 1,
             max_column_width: None,
@@ -178,7 +140,7 @@ mod tests {
                 let filled_area = layout
                     .apply(window_count, &modifiers)
                     .into_iter()
-                    .fold(0i32, |a, b| a + b.surface_area());
+                    .fold(0u32, |a, b| a + b.surface_area());
                 assert_eq!(container_area, filled_area);
             }
         }
