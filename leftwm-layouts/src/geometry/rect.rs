@@ -1,5 +1,5 @@
-/// The `Rect` represents a rectangle which has a position (`x`, `y`)
-/// as well as dimensions (`width`, `height`).
+/// A `Rect` represents a rectangle with a position (`x`,`y`)
+/// and dimensions (`w`: width, `h`: height).
 #[derive(Debug, Clone, Copy)]
 pub struct Rect {
     pub x: i32,
@@ -17,7 +17,10 @@ impl Rect {
         Self { x, y, w, h }
     }
 
-    /// Get the center point of the rectangle
+    /// Get the coordinate at the center of the `Rect`.
+    /// 
+    /// The center coordinate is rounded to the nearest integer
+    /// and might not be at the exact center position.
     pub fn center(&self) -> (i32, i32) {
         let x = self.x + (self.w / 2) as i32;
         let y = self.y + (self.h / 2) as i32;

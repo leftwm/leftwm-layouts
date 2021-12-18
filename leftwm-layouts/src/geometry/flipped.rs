@@ -1,3 +1,42 @@
+/// Represents the four states an object can be in,
+/// if it can be flipped horizontally and vertically.
+/// 
+/// ## Examples
+/// ### None
+/// ```txt
+/// +--------+
+/// |A      B|
+/// |        |
+/// |C      D|
+/// +--------+
+/// ```
+/// 
+/// ### Horizontal
+/// ```txt
+/// +--------+
+/// |C      D|
+/// |        |
+/// |A      B|
+/// +--------+
+/// ```
+/// 
+/// ### Vertical
+/// ```txt
+/// +--------+
+/// |B      A|
+/// |        |
+/// |D      C|
+/// +--------+
+/// ```
+/// 
+/// ### Both
+/// ```txt
+/// +--------+
+/// |D      C|
+/// |        |
+/// |B      A|
+/// +--------+
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Flipped {
     None,

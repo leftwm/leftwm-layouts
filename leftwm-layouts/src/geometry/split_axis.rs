@@ -1,9 +1,12 @@
 /// The `SplitAxis` describes different ways something can be split.
+/// - `Horizontal` Splits in horizontal cuts
+/// - `Vertical` Splits in vertical cuts
+/// - `Both` Splits in a grid pattern
 #[derive(PartialEq)]
 pub enum SplitAxis {
     Horizontal,
     Vertical,
-    Both, // splits in a grid
+    Both,
 }
 
 impl SplitAxis {
