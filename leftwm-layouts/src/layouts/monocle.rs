@@ -14,8 +14,7 @@ impl Layout for Monocle {
 
 #[cfg(test)]
 mod tests {
-    use crate::Monocle;
-    use crate::{Layout, LayoutModifiers};
+    use crate::{layouts::Monocle, Layout, LayoutModifiers};
 
     #[test]
     fn monocle_returns_only_one_rect() {

@@ -1,11 +1,10 @@
 use std::str::FromStr;
 
 use geometry::{Flipped, Rect};
-use layouts::center_main::CenterMain;
-use layouts::fibonacci::Fibonacci;
-use layouts::main_and_vert_stack::MainAndVertStack;
-
-use crate::layouts::monocle::Monocle;
+use layouts::CenterMain;
+use layouts::Fibonacci;
+use layouts::MainAndVertStack;
+use layouts::Monocle;
 
 pub mod geometry;
 pub mod layouts;

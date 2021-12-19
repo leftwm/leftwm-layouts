@@ -1,4 +1,9 @@
-pub mod center_main;
-pub mod fibonacci;
-pub mod main_and_vert_stack;
-pub mod monocle;
+mod center_main;
+mod fibonacci;
+mod main_and_vert_stack;
+mod monocle;
+
+pub use center_main::CenterMain;
+pub use fibonacci::Fibonacci;
+pub use main_and_vert_stack::MainAndVertStack;
+pub use monocle::Monocle;
