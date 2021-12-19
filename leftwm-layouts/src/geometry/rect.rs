@@ -18,7 +18,7 @@ impl Rect {
     }
 
     /// Get the coordinate at the center of the `Rect`.
-    /// 
+    ///
     /// The center coordinate is rounded to the nearest integer
     /// and might not be at the exact center position.
     pub fn center(&self) -> (i32, i32) {

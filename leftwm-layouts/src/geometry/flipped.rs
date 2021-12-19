@@ -1,6 +1,6 @@
 /// Represents the four states an object can be in,
 /// if it can be flipped horizontally and vertically.
-/// 
+///
 /// ## Examples
 /// ### None
 /// ```txt
@@ -10,7 +10,7 @@
 /// |C      D|
 /// +--------+
 /// ```
-/// 
+///
 /// ### Horizontal
 /// ```txt
 /// +--------+
@@ -19,7 +19,7 @@
 /// |A      B|
 /// +--------+
 /// ```
-/// 
+///
 /// ### Vertical
 /// ```txt
 /// +--------+
@@ -28,7 +28,7 @@
 /// |D      C|
 /// +--------+
 /// ```
-/// 
+///
 /// ### Both
 /// ```txt
 /// +--------+

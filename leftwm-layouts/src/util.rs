@@ -4,9 +4,9 @@ use crate::geometry::{Flipped, Rect, SplitAxis};
 
 pub struct Util;
 impl Util {
-    /// Divide the provided `a` by `b` and return the 
+    /// Divide the provided `a` by `b` and return the
     /// result of the integer division as well as the remainder.
-    /// 
+    ///
     /// ## Example
     /// ```rust
     /// let result = Util::divrem(11, 3);
@@ -18,10 +18,10 @@ impl Util {
         (division, remainder)
     }
 
-    /// Divide the provided `a` by `b` and prevent 
-    /// remainders by distributing the remainder count 
+    /// Divide the provided `a` by `b` and prevent
+    /// remainders by distributing the remainder count
     /// evenly across the results.
-    /// 
+    ///
     /// ## Example
     /// ```rust
     /// let result = Util::remainderless_division(11, 3);
@@ -61,26 +61,26 @@ impl Util {
     }
 
     /// Splits the provided rectangle (`Rect`) into smaller rectangles.
-    /// 
+    ///
     /// ## Remainders
     /// After a rectangle is cut, the resulting smaller rectangles might slightly differ in size.
     /// If a rectangle can not be split into even sizes that fill the whole original rectangle,
     /// some of the resulting rectangles might be slightly bigger to account for the remaining space.
-    /// 
+    ///
     /// ie. When horizontally splitting a rectangle of 100px height into 3 pieces,
     /// the resulting rectangle will be of the heights: 34px, 33px, and 33px.
     /// The first rectangle being slightly taller to account for the remaining space that must be filled out.
-    /// 
-    /// The rectangles will differ by 1px at maximum. The remaining space of the division is 
+    ///
+    /// The rectangles will differ by 1px at maximum. The remaining space of the division is
     /// distributed evenly and by order accross the resulting rectangles, until no remaining space is left.
-    /// 
+    ///
     /// ## Axis
     /// There are three possible ways to split the provided `Rect`.
     /// Splitting a `Rect` into three smaller rectangles would look as follows.
-    /// 
+    ///
     /// ### Vertical
     /// Rectangle is split by `vertical` cuts.
-    /// 
+    ///
     /// ```
     /// +--------+      +--+--+--+
     /// |        |      |  |  |  |
@@ -90,10 +90,10 @@ impl Util {
     /// |        |      |  |  |  |
     /// +--------+      +--+--+--+
     /// ```
-    /// 
+    ///
     /// ### Horizontal
     /// Rectangle is split by `horizontal` cuts.
-    /// 
+    ///
     /// ```
     /// +--------+      +--------+
     /// |        |      |        |
@@ -103,9 +103,9 @@ impl Util {
     /// |        |      |        |
     /// +--------+      +--------+
     /// ```
-    /// 
+    ///
     /// ### Both
-    /// Rectangle is split in a "Grid" pattern while still accounting for 
+    /// Rectangle is split in a "Grid" pattern while still accounting for
     /// all of the available space, result in some rectangles being larger.
     /// ```
     /// +-------+      +---+---+
