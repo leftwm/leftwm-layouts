@@ -42,6 +42,7 @@ impl Layout for CenterMain {
                 0 => Some(modifiers.container_size),
                 1 => Some(Rect {
                     w: column_widths[0],
+                    x: column_widths[1] as i32,
                     ..modifiers.container_size
                 }),
                 _ => {
@@ -78,10 +79,9 @@ impl Layout for CenterMain {
                 ));
             }
             (1.., 1) => {
-                // only one stack window means only one "stack" on the right
-                let main_tile = main_tile.unwrap();
+                // only one stack window means only one "stack" on the left
                 tiles.push(Rect {
-                    x: main_tile.x + main_tile.w as i32,
+                    x: 0,
                     w: column_widths[1],
                     ..modifiers.container_size
                 });
@@ -100,12 +100,12 @@ impl Layout for CenterMain {
                 };
                 let window_distribution = Util::remainderless_division(stack_window_count, 2);
                 tiles.append(&mut Util::split(
-                    &right_stack,
+                    &left_stack,
                     window_distribution[0],
                     &SplitAxis::Horizontal,
                 ));
                 tiles.append(&mut Util::split(
-                    &left_stack,
+                    &right_stack,
                     window_distribution[1],
                     &SplitAxis::Horizontal,
                 ));
