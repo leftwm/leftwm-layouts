@@ -1,11 +1,14 @@
-use crate::{geometry::Tile, Layout, LayoutModifiers};
+use crate::{
+    geometry::{Rect, SplitAxis},
+    Layout, LayoutModifiers, Util,
+};
 
 #[derive(Debug)]
 pub struct MainAndVertStack;
 
 impl Layout for MainAndVertStack {
-    fn apply(&self, window_count: usize, modifiers: &LayoutModifiers) -> Vec<Tile> {
-        let tiles: &mut Vec<Tile> = &mut Vec::new();
+    fn apply(&self, window_count: usize, modifiers: &LayoutModifiers) -> Vec<Rect> {
+        let tiles: &mut Vec<Rect> = &mut Vec::new();
         if window_count == 0 {
             return tiles.to_vec();
         }
@@ -16,9 +19,9 @@ impl Layout for MainAndVertStack {
         let master_tile = if modifiers.master_window_count > 0 {
             match stack_window_count {
                 0 => Some(modifiers.container_size),
-                _ => Some(Tile {
+                _ => Some(Rect {
                     w: (modifiers.container_size.w as f32 / 100.0
-                        * modifiers.master_width_percentage) as i32,
+                        * modifiers.master_width_percentage) as u32,
                     ..modifiers.container_size
                 }),
             }
@@ -27,21 +30,27 @@ impl Layout for MainAndVertStack {
         };
 
         if let Some(tile) = master_tile {
-            tiles.append(&mut tile.split(main_window_count, &crate::geometry::SplitAxis::Vertical));
+            tiles.append(&mut Util::split(
+                &tile,
+                main_window_count,
+                &SplitAxis::Vertical,
+            ));
         }
 
         if stack_window_count > 0 {
-            let stack_tile = Tile {
-                x: modifiers.container_size.x + master_tile.map_or(0, |t| t.w),
+            let stack_tile = Rect {
+                x: modifiers.container_size.x + master_tile.map_or(0, |t| t.w) as i32,
                 w: modifiers.container_size.w - master_tile.map_or(0, |t| t.w),
                 ..modifiers.container_size
             };
-            tiles.append(
-                &mut stack_tile.split(stack_window_count, &crate::geometry::SplitAxis::Horizontal),
-            );
+            tiles.append(&mut Util::split(
+                &stack_tile,
+                stack_window_count,
+                &SplitAxis::Horizontal,
+            ));
         }
 
-        crate::geometry::Util::flip(modifiers.container_size, tiles, &modifiers.flipped);
+        Util::flip(modifiers.container_size, tiles, &modifiers.flipped);
         tiles.to_vec()
     }
 }

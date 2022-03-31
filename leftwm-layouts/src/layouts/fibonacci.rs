@@ -1,14 +1,14 @@
 use crate::{
-    geometry::{SplitAxis, Tile},
-    Layout, LayoutModifiers,
+    geometry::{Rect, SplitAxis},
+    Layout, LayoutModifiers, Util,
 };
 
 #[derive(Debug)]
 pub struct Fibonacci;
 
 impl Layout for Fibonacci {
-    fn apply(&self, window_count: usize, modifiers: &LayoutModifiers) -> Vec<Tile> {
-        let tiles: &mut Vec<Tile> = &mut Vec::new();
+    fn apply(&self, window_count: usize, modifiers: &LayoutModifiers) -> Vec<Rect> {
+        let tiles: &mut Vec<Rect> = &mut Vec::new();
         if window_count == 0 {
             return tiles.to_vec();
         }
@@ -19,9 +19,9 @@ impl Layout for Fibonacci {
         let master_tile = if modifiers.master_window_count > 0 {
             match stack_window_count {
                 0 => Some(modifiers.container_size),
-                _ => Some(Tile {
+                _ => Some(Rect {
                     w: (modifiers.container_size.w as f32 / 100.0
-                        * modifiers.master_width_percentage) as i32,
+                        * modifiers.master_width_percentage) as u32,
                     ..modifiers.container_size
                 }),
             }
@@ -30,12 +30,16 @@ impl Layout for Fibonacci {
         };
 
         if let Some(tile) = master_tile {
-            tiles.append(&mut tile.split(main_window_count, &crate::geometry::SplitAxis::Vertical));
+            tiles.append(&mut Util::split(
+                &tile,
+                main_window_count,
+                &SplitAxis::Vertical,
+            ));
         }
 
         if stack_window_count > 0 {
-            let mut stack_tile = Tile {
-                x: modifiers.container_size.x + master_tile.map_or(0, |t| t.w),
+            let mut stack_tile = Rect {
+                x: modifiers.container_size.x + master_tile.map_or(0, |t| t.w) as i32,
                 w: modifiers.container_size.w - master_tile.map_or(0, |t| t.w),
                 ..modifiers.container_size
             };
@@ -48,7 +52,7 @@ impl Layout for Fibonacci {
                     SplitAxis::Vertical
                 };
                 if has_next {
-                    let splitted_tiles = stack_tile.split(2, &last_axis);
+                    let splitted_tiles = Util::split(&stack_tile, 2, &last_axis);
                     tiles.push(splitted_tiles[0]);
                     stack_tile = splitted_tiles[1];
                 } else {
@@ -57,7 +61,7 @@ impl Layout for Fibonacci {
             }
         }
 
-        crate::geometry::Util::flip(modifiers.container_size, tiles, &modifiers.flipped);
+        Util::flip(modifiers.container_size, tiles, &modifiers.flipped);
         tiles.to_vec()
     }
 }
