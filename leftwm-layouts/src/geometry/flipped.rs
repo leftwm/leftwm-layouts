@@ -31,7 +31,7 @@
 ///     +---------+
 ///          |
 ///          ^
-///      flipped on 
+///      flipped on
 ///     verical axis
 /// ```
 ///
