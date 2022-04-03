@@ -1,6 +1,6 @@
 use std::ops::Rem;
 
-use crate::geometry::{Flipped, Rect, SplitAxis};
+use crate::geometry::{Flipped, Rect, SplitAxis, Rotation};
 
 pub struct Util;
 impl Util {
@@ -58,6 +58,13 @@ impl Util {
                 rect.y = bottom_container_edge - bottom_window_edge;
             }
         });
+    }
+
+    pub fn rotate(container: Rect, rects: &mut Vec<Rect>, rotation: Rotation) {
+        if rotation.squeezes(container) {
+            // todo: update dimensions of rects
+        }
+        // todo: update coordinates of rects
     }
 
     /// Splits the provided rectangle (`Rect`) into smaller rectangles.
