@@ -13,36 +13,20 @@ pub enum Rotation {
 impl Rotation {
     /// Returns whether the aspect ratio for the provided container
     /// Rect changes with the given rotation, "squeezing" the contents.
-    pub fn squeezes(&self, container: &Rect) -> bool {
+    pub fn aspect_ratio_changes(&self, container: &Rect) -> bool {
         // if the container is not a square, and the rotation is
         // 90° or 270°, then the aspect ratio changes
         container.h != container.w && matches!(self, Self::West | Self::East)
     }
 
+    /// Returns the (x, y) coordinate of the point which will be
+    /// the Rect's anchor when it is rotated.
     pub fn anchor(&self, rect: &Rect) -> (u32, u32) {
         match self {
-            Self::North => (rect.x as u32, rect.y as u32),
-            Self::East => (rect.x as u32, rect.y as u32 + rect.h),
-            Self::South => (rect.x as u32 + rect.w, rect.y as u32 + rect.h),
-            Self::West => (rect.x as u32 + rect.w, rect.y as u32),
-        }
-    }
-
-    pub fn x_rel(&self, container: &Rect, rect: &Rect) -> f32 {
-        match self {
-            Rotation::North => container.w as f32 / rect.x as f32,
-            Rotation::East => (container.h as f32 / rect.y as f32),
-            Rotation::South => todo!(),
-            Rotation::West => todo!(),
-        }
-    }
-
-    pub fn y_rel(&self, container: &Rect, rect: &Rect) -> f32 {
-        match self {
-            Rotation::North => container.h as f32 / rect.y as f32,
-            Rotation::East => todo!(),
-            Rotation::South => todo!(),
-            Rotation::West => todo!(),
+            Self::North => (rect.x as u32, rect.y as u32), // top-left
+            Self::East => (rect.x as u32, rect.y as u32 + rect.h), // bottom-left
+            Self::South => (rect.x as u32 + rect.w, rect.y as u32 + rect.h), // bottom-right
+            Self::West => (rect.x as u32 + rect.w, rect.y as u32), // top-right
         }
     }
 }

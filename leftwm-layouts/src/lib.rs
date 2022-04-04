@@ -71,40 +71,49 @@ pub fn apply(
     options: &LayoutOptions,
     modifiers: &LayoutModifiers,
 ) -> Vec<Rect> {
-    let aspect_ratio_changes = options.rotation.squeezes(&options.container_size);
+    let aspect_ratio_changes = options
+        .rotation
+        .aspect_ratio_changes(&options.container_size);
+
+    // if the aspect-ratio changes with the provided rotation,
+    // create a new rect with a swapped aspect-ratio.
+    // This makes it easier to rotate the layout later.
     let container = if aspect_ratio_changes {
         Rect {
             h: options.container_size.w,
             w: options.container_size.h,
-            x: options.container_size.x,
-            y: options.container_size.y,
+            ..options.container_size
         }
     } else {
         options.container_size
     };
+
+    // calculate the layout
     let mut rects = layout.get().apply(window_count, container, modifiers);
+
+    // rotate the layout (if necessary)
     rects
         .iter_mut()
         .for_each(|rect| Util::translate_rotation(container, rect, &options.rotation));
-    /*match options.rotation {
-        Rotation::East => {
-            Util::flip(options.container_size, &mut rects, &Flipped::Horizontal);
-        },
-        Rotation::South => {
-            Util::flip(options.container_size, &mut rects, &Flipped::Vertical);
-        },
-        _ => {}
-    }*/
+
+    // flip the layout (if necessary)
     Util::flip(options.container_size, &mut rects, &options.flipped);
+
     rects
 }
 
+/// LayoutOptions influence the final result of the layout.
+/// They are not passed down to the Layout calculations, but
+/// rather applied after the calculations have been done.
 pub struct LayoutOptions {
     pub container_size: Rect,
     pub flipped: Flipped,
     pub rotation: Rotation,
 }
 
+/// LayoutModifiers are passed down to the layouts.
+/// They SHOULD influence the calculations of the various layouts,
+/// although not all modifiers might make sense on all layouts.
 pub struct LayoutModifiers {
     pub master_width_percentage: f32,
     pub master_window_count: usize,
@@ -175,11 +184,6 @@ mod tests {
     //    todo!()
     //}
 
-    // QUESTION: is that a fair assumption?
-    // -> follow-up: only works if remaining space is accounted for instead
-    //               of rounding off
-    //               eg. 3-column layout on 100px width results in 3x 33px leaving a 1px remainder
-    //              this remainder should be attributed to one of the columns to fill up the entire width
     #[test]
     fn container_must_always_be_filled() {
         let modifiers: LayoutModifiers = LayoutModifiers::default();
