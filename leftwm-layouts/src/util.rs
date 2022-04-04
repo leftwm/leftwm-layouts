@@ -1,6 +1,6 @@
 use std::ops::Rem;
 
-use crate::geometry::{Flipped, Rect, SplitAxis, Rotation};
+use crate::geometry::{Flipped, Rect, Rotation, SplitAxis};
 
 pub struct Util;
 impl Util {
@@ -60,11 +60,36 @@ impl Util {
         });
     }
 
-    pub fn rotate(container: Rect, rects: &mut Vec<Rect>, rotation: Rotation) {
-        if rotation.squeezes(container) {
-            // todo: update dimensions of rects
+    pub fn translate_rotation(container: Rect, rect: &mut Rect, rotation: &Rotation) {
+        match &rotation {
+            Rotation::North => {}
+            Rotation::East => {
+                let next_anchor = rotation.anchor(rect);
+                let new_x = container.h - next_anchor.1;
+                let new_y = next_anchor.0;
+                rect.x = new_x as i32;
+                rect.y = new_y as i32;
+                std::mem::swap(&mut rect.w, &mut rect.h);
+            }
+            Rotation::South => {
+                let next_anchor = rotation.anchor(rect);
+                let new_x = container.w - next_anchor.0;
+                let new_y = container.h - next_anchor.1;
+                rect.x = new_x as i32;
+                rect.y = new_y as i32;
+                /*let tmp_w = rect.w;
+                rect.w = rect.h;
+                rect.h = tmp_w;*/
+            }
+            Rotation::West => {
+                let next_anchor = rotation.anchor(rect);
+                let new_x = next_anchor.1;
+                let new_y = container.w - next_anchor.0;
+                rect.x = new_x as i32;
+                rect.y = new_y as i32;
+                std::mem::swap(&mut rect.w, &mut rect.h)
+            }
         }
-        // todo: update coordinates of rects
     }
 
     /// Splits the provided rectangle (`Rect`) into smaller rectangles.
