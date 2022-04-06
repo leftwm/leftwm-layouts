@@ -1,9 +1,9 @@
 [package]
 name = "leftwm-layouts"
-version = "0.0.1"
+version = "0.0.2"
 edition = "2021"
 
-license-file = "LICENSE"
+license = "BSD-3-Clause"
 description = "A library providing pre-defined but modifiable window layouts for window managers"
 homepage = "https://leftwm.org/"
 repository = "https://github.com/leftwm/leftwm-layouts"
