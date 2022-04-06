@@ -71,6 +71,7 @@ pub fn apply(
     options: &LayoutOptions,
     modifiers: &LayoutModifiers,
 ) -> Vec<Rect> {
+
     let aspect_ratio_changes = options
         .rotation
         .aspect_ratio_changes(&options.container_size);
