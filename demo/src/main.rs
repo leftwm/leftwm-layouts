@@ -4,8 +4,8 @@ use druid::{
     AppLauncher, Color, Data, Lens, LocalizedString, Point, Rect, RenderContext, Widget, WidgetExt,
     WindowDesc,
 };
-use leftwm_layouts::geometry::Flipped;
-use leftwm_layouts::{LayoutEnum, LayoutModifiers};
+use leftwm_layouts::geometry::{Flipped, Rotation};
+use leftwm_layouts::{LayoutEnum, LayoutModifiers, LayoutOptions};
 
 const PRIMARY: Color = Color::rgb8(0x08, 0x0f, 0x0f);
 //const ACCENT: Color = Color::rgb8(0x65, 0x64, 0xdb);
@@ -25,6 +25,9 @@ struct DemoState {
 
     #[data(same_fn = "PartialEq::eq")]
     flipped: Flipped,
+
+    #[data(same_fn = "PartialEq::eq")]
+    rotation: Rotation,
 }
 
 impl Default for DemoState {
@@ -36,6 +39,7 @@ impl Default for DemoState {
             master_window_count: 1,
             max_column_width: None,
             flipped: Flipped::default(),
+            rotation: Rotation::default(),
         }
     }
 }
@@ -92,6 +96,15 @@ impl DemoState {
     fn toggle_flipped_vertical(&mut self) {
         self.flipped = Flipped::toggle_vertical(&self.flipped)
     }
+
+    fn rotate(&mut self) {
+        self.rotation = match self.rotation {
+            Rotation::North => Rotation::East,
+            Rotation::East => Rotation::South,
+            Rotation::South => Rotation::West,
+            Rotation::West => Rotation::North,
+        }
+    }
 }
 
 impl From<&DemoState> for LayoutModifiers {
@@ -100,7 +113,17 @@ impl From<&DemoState> for LayoutModifiers {
             master_width_percentage: value.master_width_percentage,
             master_window_count: value.master_window_count,
             max_column_width: value.max_column_width,
+
+            ..Default::default()
+        }
+    }
+}
+
+impl From<&DemoState> for LayoutOptions {
+    fn from(value: &DemoState) -> Self {
+        LayoutOptions {
             flipped: value.flipped,
+            rotation: value.rotation,
             ..Default::default()
         }
     }
@@ -192,6 +215,9 @@ fn controls() -> impl Widget<DemoState> {
     })
     .on_click(move |_ctx, data: &mut DemoState, _env| data.toggle_flipped_vertical());
 
+    let rotation = button(|data: &DemoState, _env: &_| format!("Rotation: {:?}", data.rotation))
+        .on_click(move |_ctx, data: &mut DemoState, _env| data.rotate());
+
     let flex = Flex::column()
         .with_flex_child(selector, 1.0)
         .with_flex_child(inc_master, 1.0)
@@ -201,7 +227,8 @@ fn controls() -> impl Widget<DemoState> {
         .with_flex_child(add_window, 1.0)
         .with_flex_child(remove_window, 1.0)
         .with_flex_child(flip_h, 1.0)
-        .with_flex_child(flip_v, 1.0);
+        .with_flex_child(flip_v, 1.0)
+        .with_flex_child(rotation, 1.0);
 
     flex.fix_width(240.0).background(PRIMARY)
 }
@@ -209,8 +236,9 @@ fn controls() -> impl Widget<DemoState> {
 fn layout_preview() -> impl Widget<DemoState> {
     Painter::new(|ctx, data: &DemoState, _| {
         let parent_size = ctx.size();
-        let mut modifiers = LayoutModifiers::from(data);
-        modifiers.container_size = leftwm_layouts::geometry::Rect {
+        let modifiers = LayoutModifiers::from(data);
+        let mut options = LayoutOptions::from(data);
+        options.container_size = leftwm_layouts::geometry::Rect {
             x: 0,
             y: 0,
             w: parent_size.width as u32,
@@ -218,8 +246,7 @@ fn layout_preview() -> impl Widget<DemoState> {
         };
 
         let layout: LayoutEnum = data.layout.into();
-
-        let calcs = layout.get().apply(data.window_count, &modifiers);
+        let calcs = leftwm_layouts::apply(&layout, data.window_count, &options, &modifiers);
         let mut master_count = layout
             .get()
             .main_window_count(data.window_count, &modifiers);

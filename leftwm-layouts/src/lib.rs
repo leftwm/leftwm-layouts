@@ -1,5 +1,6 @@
 use std::str::FromStr;
 
+use geometry::Rotation;
 use geometry::{Flipped, Rect};
 use layouts::CenterMain;
 use layouts::Fibonacci;
@@ -7,7 +8,7 @@ use layouts::MainAndVertStack;
 use layouts::Monocle;
 
 pub mod geometry;
-pub mod layouts;
+mod layouts;
 mod util;
 
 pub use util::Util;
@@ -42,7 +43,8 @@ pub trait Layout {
     /// The list may be shorter than the provided `window_count` bit it will not be longer.
     /// A shorter list indicates that the provided amount of windows (`window_count`) exceeds
     /// the amount of windows that can possibly be displayed for the layout (eg. Monocle, MainAndDeck).
-    fn apply(&self, window_count: usize, modifiers: &LayoutModifiers) -> Vec<Rect>;
+    fn apply(&self, window_count: usize, container: Rect, modifiers: &LayoutModifiers)
+        -> Vec<Rect>;
 
     // QUESTION: might be helpful if the layout_manager can find out if the layout even supports
     // multiple_master_windows, some might not (monocle?, main_and_deck?)
@@ -63,22 +65,77 @@ pub trait Layout {
     }
 }
 
-pub struct LayoutModifiers {
+pub fn apply(
+    layout: &LayoutEnum,
+    window_count: usize,
+    options: &LayoutOptions,
+    modifiers: &LayoutModifiers,
+) -> Vec<Rect> {
+    let aspect_ratio_changes = options
+        .rotation
+        .aspect_ratio_changes(&options.container_size);
+
+    // if the aspect-ratio changes with the provided rotation,
+    // create a new rect with a swapped aspect-ratio.
+    // This makes it easier to rotate the layout later.
+    let container = if aspect_ratio_changes {
+        Rect {
+            h: options.container_size.w,
+            w: options.container_size.h,
+            ..options.container_size
+        }
+    } else {
+        options.container_size
+    };
+
+    // calculate the layout
+    let mut rects = layout.get().apply(window_count, container, modifiers);
+
+    // rotate the layout (if necessary)
+    rects
+        .iter_mut()
+        .for_each(|rect| Util::translate_rotation(container, rect, &options.rotation));
+
+    // flip the layout (if necessary)
+    Util::flip(options.container_size, &mut rects, &options.flipped);
+
+    rects
+}
+
+/// LayoutOptions influence the final result of the layout.
+/// They are not passed down to the Layout calculations, but
+/// rather applied after the calculations have been done.
+pub struct LayoutOptions {
     pub container_size: Rect,
+    pub flipped: Flipped,
+    pub rotation: Rotation,
+}
+
+/// LayoutModifiers are passed down to the layouts.
+/// They SHOULD influence the calculations of the various layouts,
+/// although not all modifiers might make sense on all layouts.
+pub struct LayoutModifiers {
     pub master_width_percentage: f32,
     pub master_window_count: usize,
     pub max_column_width: Option<u32>,
-    pub flipped: Flipped,
 }
 
 impl Default for LayoutModifiers {
     fn default() -> Self {
         Self {
-            container_size: Rect::default(),
             master_width_percentage: 60.0,
             master_window_count: 1,
             max_column_width: None,
-            flipped: Flipped::default(),
+        }
+    }
+}
+
+impl Default for LayoutOptions {
+    fn default() -> Self {
+        Self {
+            container_size: Rect::default(),
+            flipped: Flipped::None,
+            rotation: Rotation::North,
         }
     }
 }
@@ -98,7 +155,7 @@ impl LayoutEnum {
 
 #[cfg(test)]
 mod tests {
-    use crate::{LayoutEnum, LayoutModifiers};
+    use crate::{apply, LayoutEnum, LayoutModifiers, LayoutOptions};
 
     const ALL_LAYOUTS: &[LayoutEnum] = &[
         LayoutEnum::Monocle,
@@ -110,10 +167,13 @@ mod tests {
     #[test]
     fn returned_tiles_must_never_exceed_window_count() {
         let modifiers: LayoutModifiers = LayoutModifiers::default();
+        let options: LayoutOptions = LayoutOptions::default();
         for window_count in 0..25 {
             for layout in ALL_LAYOUTS {
                 let layout = layout.get();
-                let len = layout.apply(window_count, &modifiers).len();
+                let len = layout
+                    .apply(window_count, options.container_size, &modifiers)
+                    .len();
                 assert!(len <= window_count);
             }
         }
@@ -124,20 +184,14 @@ mod tests {
     //    todo!()
     //}
 
-    // QUESTION: is that a fair assumption?
-    // -> follow-up: only works if remaining space is accounted for instead
-    //               of rounding off
-    //               eg. 3-column layout on 100px width results in 3x 33px leaving a 1px remainder
-    //              this remainder should be attributed to one of the columns to fill up the entire width
     #[test]
     fn container_must_always_be_filled() {
         let modifiers: LayoutModifiers = LayoutModifiers::default();
-        let container_area = modifiers.container_size.surface_area();
+        let options: LayoutOptions = LayoutOptions::default();
+        let container_area = options.container_size.surface_area();
         for window_count in 1..10 {
             for layout in ALL_LAYOUTS {
-                let layout = layout.get();
-                let filled_area = layout
-                    .apply(window_count, &modifiers)
+                let filled_area = apply(layout, window_count, &options, &modifiers)
                     .into_iter()
                     .fold(0u32, |a, b| a + b.surface_area());
                 assert_eq!(container_area, filled_area);
@@ -148,8 +202,9 @@ mod tests {
     #[test]
     fn test_monocle_layout() {
         let modifiers: LayoutModifiers = LayoutModifiers::default();
+        let options: LayoutOptions = LayoutOptions::default();
         let monocle = LayoutEnum::Monocle.get();
-        let monocle_positions = monocle.apply(1, &modifiers);
+        let monocle_positions = monocle.apply(1, options.container_size, &modifiers);
         assert_eq!(monocle_positions.len(), 1);
     }
 }

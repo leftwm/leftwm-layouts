@@ -1,16 +1,12 @@
 name: CI
-
 on:
   push:
     tags:
       - '*'
-  #workflow_dispatch:
-
 env:
   CARGO_TERM_COLOR: always
   RUSTFLAGS: -Dwarnings
   RUSTDOCFLAGS: -Dwarnings
-
 jobs:
   publish:
     name: Publish
@@ -34,4 +30,3 @@ jobs:
         run: cargo publish
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
-

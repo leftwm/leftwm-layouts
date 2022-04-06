@@ -1,6 +1,6 @@
 use std::ops::Rem;
 
-use crate::geometry::{Flipped, Rect, SplitAxis};
+use crate::geometry::{Flipped, Rect, Rotation, SplitAxis};
 
 pub struct Util;
 impl Util {
@@ -58,6 +58,35 @@ impl Util {
                 rect.y = bottom_container_edge - bottom_window_edge;
             }
         });
+    }
+
+    pub fn translate_rotation(container: Rect, rect: &mut Rect, rotation: &Rotation) {
+        match &rotation {
+            Rotation::North => {}
+            Rotation::East => {
+                let next_anchor = rotation.anchor(rect);
+                let new_x = container.h - next_anchor.1;
+                let new_y = next_anchor.0;
+                rect.x = new_x as i32;
+                rect.y = new_y as i32;
+                std::mem::swap(&mut rect.w, &mut rect.h);
+            }
+            Rotation::South => {
+                let next_anchor = rotation.anchor(rect);
+                let new_x = container.w - next_anchor.0;
+                let new_y = container.h - next_anchor.1;
+                rect.x = new_x as i32;
+                rect.y = new_y as i32;
+            }
+            Rotation::West => {
+                let next_anchor = rotation.anchor(rect);
+                let new_x = next_anchor.1;
+                let new_y = container.w - next_anchor.0;
+                rect.x = new_x as i32;
+                rect.y = new_y as i32;
+                std::mem::swap(&mut rect.w, &mut rect.h)
+            }
+        }
     }
 
     /// Splits the provided rectangle (`Rect`) into smaller rectangles.

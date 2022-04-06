@@ -7,7 +7,12 @@ use crate::{
 pub struct Fibonacci;
 
 impl Layout for Fibonacci {
-    fn apply(&self, window_count: usize, modifiers: &LayoutModifiers) -> Vec<Rect> {
+    fn apply(
+        &self,
+        window_count: usize,
+        container: Rect,
+        modifiers: &LayoutModifiers,
+    ) -> Vec<Rect> {
         let tiles: &mut Vec<Rect> = &mut Vec::new();
         if window_count == 0 {
             return tiles.to_vec();
@@ -18,11 +23,10 @@ impl Layout for Fibonacci {
 
         let master_tile = if modifiers.master_window_count > 0 {
             match stack_window_count {
-                0 => Some(modifiers.container_size),
+                0 => Some(container),
                 _ => Some(Rect {
-                    w: (modifiers.container_size.w as f32 / 100.0
-                        * modifiers.master_width_percentage) as u32,
-                    ..modifiers.container_size
+                    w: (container.w as f32 / 100.0 * modifiers.master_width_percentage) as u32,
+                    ..container
                 }),
             }
         } else {
@@ -39,9 +43,9 @@ impl Layout for Fibonacci {
 
         if stack_window_count > 0 {
             let mut stack_tile = Rect {
-                x: modifiers.container_size.x + master_tile.map_or(0, |t| t.w) as i32,
-                w: modifiers.container_size.w - master_tile.map_or(0, |t| t.w),
-                ..modifiers.container_size
+                x: container.x + master_tile.map_or(0, |t| t.w) as i32,
+                w: container.w - master_tile.map_or(0, |t| t.w),
+                ..container
             };
             let mut last_axis = SplitAxis::Vertical;
             for i in 0..stack_window_count {
@@ -60,8 +64,6 @@ impl Layout for Fibonacci {
                 }
             }
         }
-
-        Util::flip(modifiers.container_size, tiles, &modifiers.flipped);
         tiles.to_vec()
     }
 }

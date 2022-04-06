@@ -58,7 +58,12 @@ use crate::{
 pub struct CenterMain;
 
 impl Layout for CenterMain {
-    fn apply(&self, window_count: usize, modifiers: &LayoutModifiers) -> Vec<Rect> {
+    fn apply(
+        &self,
+        window_count: usize,
+        container: Rect,
+        modifiers: &LayoutModifiers,
+    ) -> Vec<Rect> {
         let tiles: &mut Vec<Rect> = &mut Vec::new();
         if window_count == 0 {
             return tiles.to_vec();
@@ -69,19 +74,19 @@ impl Layout for CenterMain {
 
         // the column widths [main/single-stack, stack1, stack2]
         let column_widths: Vec<u32> = match (main_window_count, stack_window_count) {
-            (1.., 0) | (0, 1..) => vec![modifiers.container_size.w], // single column
+            (1.., 0) | (0, 1..) => vec![container.w], // single column
             (1.., 1) => {
                 // two column
-                let main_width = (modifiers.container_size.w as f32 / 100.0
-                    * modifiers.master_width_percentage) as u32;
-                let stack1_width = modifiers.container_size.w - main_width;
+                let main_width =
+                    (container.w as f32 / 100.0 * modifiers.master_width_percentage) as u32;
+                let stack1_width = container.w - main_width;
                 vec![main_width, stack1_width]
             }
             (1.., 2..) => {
                 // three column
-                let main_width = (modifiers.container_size.w as f32 / 100.0
-                    * modifiers.master_width_percentage) as u32;
-                let remaining_space = (modifiers.container_size.w - main_width) as usize;
+                let main_width =
+                    (container.w as f32 / 100.0 * modifiers.master_width_percentage) as u32;
+                let remaining_space = (container.w - main_width) as usize;
                 let stack_widths = Util::remainderless_division(remaining_space, 2);
                 vec![main_width, stack_widths[0] as u32, stack_widths[1] as u32]
             }
@@ -90,17 +95,17 @@ impl Layout for CenterMain {
 
         let main_tile = if modifiers.master_window_count > 0 {
             match stack_window_count {
-                0 => Some(modifiers.container_size),
+                0 => Some(container),
                 1 => Some(Rect {
                     w: column_widths[0],
                     x: column_widths[1] as i32,
-                    ..modifiers.container_size
+                    ..container
                 }),
                 _ => {
                     Some(Rect {
                         w: column_widths[0],
                         x: column_widths[2] as i32, // right of stack2
-                        ..modifiers.container_size
+                        ..container
                     })
                 }
             }
@@ -119,9 +124,9 @@ impl Layout for CenterMain {
         match (main_window_count, stack_window_count) {
             (0, 1..) => {
                 let stack_tile = Rect {
-                    x: modifiers.container_size.x + main_tile.map_or(0, |t| t.w) as i32,
-                    w: modifiers.container_size.w - main_tile.map_or(0, |t| t.w),
-                    ..modifiers.container_size
+                    x: container.x + main_tile.map_or(0, |t| t.w) as i32,
+                    w: container.w - main_tile.map_or(0, |t| t.w),
+                    ..container
                 };
                 tiles.append(&mut Util::split(
                     &stack_tile,
@@ -134,20 +139,20 @@ impl Layout for CenterMain {
                 tiles.push(Rect {
                     x: 0,
                     w: column_widths[1],
-                    ..modifiers.container_size
+                    ..container
                 });
             }
             (1.., 2..) => {
                 let master_tile = main_tile.unwrap();
                 let left_stack = Rect {
-                    x: modifiers.container_size.x,
+                    x: container.x,
                     w: column_widths[2],
-                    ..modifiers.container_size
+                    ..container
                 };
                 let right_stack = Rect {
                     x: master_tile.x + master_tile.w as i32,
                     w: column_widths[1],
-                    ..modifiers.container_size
+                    ..container
                 };
                 let window_distribution = Util::remainderless_division(stack_window_count, 2);
                 tiles.append(&mut Util::split(
@@ -163,8 +168,6 @@ impl Layout for CenterMain {
             }
             (_, _) => {}
         }
-
-        Util::flip(modifiers.container_size, tiles, &modifiers.flipped);
         tiles.to_vec()
     }
 }
