@@ -77,9 +77,6 @@ impl Util {
                 let new_y = container.h - next_anchor.1;
                 rect.x = new_x as i32;
                 rect.y = new_y as i32;
-                /*let tmp_w = rect.w;
-                rect.w = rect.h;
-                rect.h = tmp_w;*/
             }
             Rotation::West => {
                 let next_anchor = rotation.anchor(rect);
