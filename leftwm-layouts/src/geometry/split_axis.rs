@@ -6,15 +6,23 @@
 pub enum SplitAxis {
     Horizontal,
     Vertical,
-    Both,
+    Grid,
+    Fibonacci,
+    Fakebonacci,
 }
 
 impl SplitAxis {
-    pub fn split_horizontally(&self) -> bool {
+    /*pub fn split_horizontally(&self) -> bool {
         self == &Self::Horizontal || self == &Self::Both
     }
 
     pub fn split_vertically(&self) -> bool {
         self == &Self::Vertical || self == &Self::Both
+    }*/
+}
+
+impl Default for SplitAxis {
+    fn default() -> Self {
+        Self::Vertical
     }
 }

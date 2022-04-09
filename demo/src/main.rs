@@ -22,6 +22,7 @@ struct DemoState {
     master_width_percentage: f32,
     master_window_count: usize,
     max_column_width: Option<u32>,
+    reserve_space: bool,
 
     #[data(same_fn = "PartialEq::eq")]
     flipped: Flipped,
@@ -40,6 +41,7 @@ impl Default for DemoState {
             max_column_width: None,
             flipped: Flipped::default(),
             rotation: Rotation::default(),
+            reserve_space: false,
         }
     }
 }
@@ -97,6 +99,10 @@ impl DemoState {
         self.flipped = Flipped::toggle_vertical(&self.flipped)
     }
 
+    fn toggle_reserve_space(&mut self) {
+        self.reserve_space = !self.reserve_space
+    }
+
     fn rotate(&mut self) {
         self.rotation = match self.rotation {
             Rotation::North => Rotation::East,
@@ -113,7 +119,7 @@ impl From<&DemoState> for LayoutModifiers {
             master_width_percentage: value.master_width_percentage,
             master_window_count: value.master_window_count,
             max_column_width: value.max_column_width,
-
+            reserve_space: value.reserve_space,
             ..Default::default()
         }
     }
@@ -218,6 +224,9 @@ fn controls() -> impl Widget<DemoState> {
     let rotation = button(|data: &DemoState, _env: &_| format!("Rotation: {:?}", data.rotation))
         .on_click(move |_ctx, data: &mut DemoState, _env| data.rotate());
 
+    let reserve_space = button(|data: &DemoState, _env: &_| format!("Reserve Space: {:?}", data.reserve_space))
+    .on_click(move |_ctx, data: &mut DemoState, _env| data.toggle_reserve_space());
+
     let flex = Flex::column()
         .with_flex_child(selector, 1.0)
         .with_flex_child(inc_master, 1.0)
@@ -228,7 +237,8 @@ fn controls() -> impl Widget<DemoState> {
         .with_flex_child(remove_window, 1.0)
         .with_flex_child(flip_h, 1.0)
         .with_flex_child(flip_v, 1.0)
-        .with_flex_child(rotation, 1.0);
+        .with_flex_child(rotation, 1.0)
+        .with_flex_child(reserve_space, 1.0);
 
     flex.fix_width(240.0).background(PRIMARY)
 }

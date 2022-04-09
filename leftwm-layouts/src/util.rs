@@ -133,7 +133,7 @@ impl Util {
     /// +--------+      +--------+
     /// ```
     ///
-    /// ### Both
+    /// ### Grid
     /// Rectangle is split in a "Grid" pattern while still accounting for
     /// all of the available space, result in some rectangles being larger.
     /// ```
@@ -143,6 +143,33 @@ impl Util {
     /// |       |  =>  |   +---+
     /// |       |      |   |   |
     /// |       |      |   |   |
+    /// +-------+      +---+---+
+    /// ```
+    /// 
+    /// ### Fibonacci
+    /// Rectangle is split in a "Fibonacci" pattern.
+    /// ```
+    /// +-------+      +---+---+
+    /// |       |      |   |   |
+    /// |       |      |   |   |
+    /// |       |  =>  |   +-+-+
+    /// |       |      |   |_| |
+    /// |       |      |   | | |
+    /// +-------+      +---+---+
+    /// ```
+    /// 
+    /// ### Fakebonacci
+    /// Rectangle is split in a "Fibonacci"-like pattern.
+    /// But instead of spiraling into the middle, it spirals into the bottom right.
+    /// This has jokingly been named "Fakebonacci", when the LeftWM devs learned that
+    /// the existing Fibonacci implementation spirals into the corner instead of into the middle.
+    /// ```
+    /// +-------+      +---+---+
+    /// |       |      |   |   |
+    /// |       |      |   |   |
+    /// |       |  =>  |   +-+-+
+    /// |       |      |   | |_|
+    /// |       |      |   | |||
     /// +-------+      +---+---+
     /// ```
     pub fn split(rect: &Rect, amount: usize, axis: &SplitAxis) -> Vec<Rect> {
@@ -169,7 +196,7 @@ impl Util {
                     })
                     .collect()
             }
-            SplitAxis::Both => {
+            SplitAxis::Grid => {
                 let cols = (amount as f64).sqrt().ceil() as usize;
                 let col_tiles = Util::split(rect, cols, &SplitAxis::Vertical);
                 // the minimum amount of rows per column
@@ -189,6 +216,57 @@ impl Util {
                         Util::split(col_tile, rows, &SplitAxis::Horizontal)
                     })
                     .collect()
+            }
+            SplitAxis::Fibonacci => {
+                let tiles: &mut Vec<Rect> = &mut Vec::new();
+                let mut remaining_tile = *rect;
+                let mut direction = Rotation::East;
+                for i in 0..amount {
+                    let has_next = i < amount - 1;
+                    direction = direction.clockwise();
+                    if has_next {
+                        let split_axis = match direction {
+                            Rotation::North | Rotation::South => SplitAxis::Horizontal,
+                            Rotation::East | Rotation::West => SplitAxis::Vertical,
+                        };
+                        let backwards = match direction {
+                            Rotation::East | Rotation::South => false,
+                            Rotation::West | Rotation::North => true,
+                        };
+                        let splitted_tiles = Util::split(&remaining_tile, 2, &split_axis);
+                        if backwards {
+                            tiles.push(splitted_tiles[1]);
+                            remaining_tile = splitted_tiles[0];
+                        } else {
+                            tiles.push(splitted_tiles[0]);
+                            remaining_tile = splitted_tiles[1];
+                        }
+                    } else {
+                        tiles.push(remaining_tile);
+                    }
+                }
+                tiles.to_vec()
+            }
+            SplitAxis::Fakebonacci => {
+                let tiles: &mut Vec<Rect> = &mut Vec::new();
+                let mut remaining_tile = *rect;
+                let mut last_axis = SplitAxis::Vertical;
+                for i in 0..amount {
+                    let has_next = i < amount - 1;
+                    last_axis = if last_axis == SplitAxis::Vertical {
+                        SplitAxis::Horizontal
+                    } else {
+                        SplitAxis::Vertical
+                    };
+                    if has_next {
+                        let splitted_tiles = Util::split(&rect, 2, &last_axis);
+                        tiles.push(splitted_tiles[0]);
+                        remaining_tile = splitted_tiles[1];
+                    } else {
+                        tiles.push(remaining_tile);
+                    }
+                }
+                tiles.to_vec()
             }
         }
     }

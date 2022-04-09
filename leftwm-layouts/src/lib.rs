@@ -71,7 +71,6 @@ pub fn apply(
     options: &LayoutOptions,
     modifiers: &LayoutModifiers,
 ) -> Vec<Rect> {
-
     let aspect_ratio_changes = options
         .rotation
         .aspect_ratio_changes(&options.container_size);
@@ -119,6 +118,7 @@ pub struct LayoutModifiers {
     pub master_width_percentage: f32,
     pub master_window_count: usize,
     pub max_column_width: Option<u32>,
+    pub reserve_space: bool,
 }
 
 impl Default for LayoutModifiers {
@@ -127,6 +127,7 @@ impl Default for LayoutModifiers {
             master_width_percentage: 60.0,
             master_window_count: 1,
             max_column_width: None,
+            reserve_space: false,
         }
     }
 }

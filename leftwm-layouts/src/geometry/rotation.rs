@@ -29,6 +29,15 @@ impl Rotation {
             Self::West => (rect.x as u32 + rect.w, rect.y as u32), // top-right
         }
     }
+
+    pub fn clockwise(&self) -> Self {
+        match self {
+            Rotation::North => Rotation::East,
+            Rotation::East => Rotation::South,
+            Rotation::South => Rotation::West,
+            Rotation::West => Rotation::North,
+        }
+    }
 }
 
 impl Default for Rotation {
