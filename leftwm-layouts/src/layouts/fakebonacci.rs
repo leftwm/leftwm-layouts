@@ -6,9 +6,9 @@ use crate::{
 use crate::layouts::columns;
 
 #[derive(Debug)]
-pub struct Fibonacci;
+pub struct Fakebonacci;
 
-impl Layout for Fibonacci {
+impl Layout for Fakebonacci {
     fn apply(
         &self,
         window_count: usize,
@@ -19,7 +19,7 @@ impl Layout for Fibonacci {
             window_count,
             container,
             &LayoutModifiers {
-                first_stack_split: SplitAxis::Fibonacci,
+                first_stack_split: SplitAxis::Fakebonacci,
                 ..*modifiers
             },
         )

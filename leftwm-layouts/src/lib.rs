@@ -1,11 +1,11 @@
 use std::str::FromStr;
 
-use geometry::Rotation;
 use geometry::{Flipped, Rect};
-use layouts::CenterMain;
+use geometry::{Rotation, SplitAxis};
 use layouts::Fibonacci;
 use layouts::MainAndVertStack;
 use layouts::Monocle;
+use layouts::{CenterMain, EvenHorizontal, Fakebonacci, Grid, MainAndHorizontalStack};
 
 pub mod geometry;
 mod layouts;
@@ -17,8 +17,12 @@ pub use util::Util;
 pub enum LayoutEnum {
     Monocle,
     MainAndVertStack,
+    MainAndHorizontalStack,
+    Grid,
+    EvenHorizontal,
     CenterMain,
     Fibonacci,
+    Fakebonacci,
 }
 
 pub struct LayoutParseError;
@@ -52,10 +56,10 @@ pub trait Layout {
 
     // helper method
     fn main_window_count(&self, window_count: usize, modifiers: &LayoutModifiers) -> usize {
-        if window_count < modifiers.master_window_count {
+        if window_count < modifiers.main_window_count {
             window_count
         } else {
-            modifiers.master_window_count as usize
+            modifiers.main_window_count as usize
         }
     }
 
@@ -109,25 +113,109 @@ pub struct LayoutOptions {
     pub container_size: Rect,
     pub flipped: Flipped,
     pub rotation: Rotation,
+    pub max_column_width: Option<u32>,
 }
 
 /// LayoutModifiers are passed down to the layouts.
 /// They SHOULD influence the calculations of the various layouts,
 /// although not all modifiers might make sense on all layouts.
+#[derive(Clone, Copy)]
 pub struct LayoutModifiers {
-    pub master_width_percentage: f32,
-    pub master_window_count: usize,
-    pub max_column_width: Option<u32>,
-    pub reserve_space: bool,
+    /// Determines the amount of windows to show in the
+    /// `main` column of the layout. If the layout has no `main`
+    /// column, this modifier will be ignored.
+    pub main_window_count: usize,
+
+    /// The percentage of the available space which the
+    /// `main` column should occupy. If the layout has no `main` column,
+    /// or no window in the `main` column, this modifier will be ignored.
+    pub main_size_percentage: f32,
+
+    /// The way to split windows in the main_column when there
+    /// are more than one window.
+    pub main_split: SplitAxis,
+
+    /// The way to split windows in the first stack_column when
+    /// there are more than one window. The first stack column
+    /// refers to the only stack column in the `main_stack` column layout.
+    /// In the `stack_main_stack` layout, it refers to the stack on the left.
+    pub first_stack_split: SplitAxis,
+
+    /// The way to split windows in the second stack_column when
+    /// there are more than one window. This modifier only applies in the
+    /// `stack_main_stack` column layout and will be ignored in layouts that have just one stack.
+    pub second_stack_split: SplitAxis,
+
+    /// Determines whether the space of a column should be reserved
+    /// when there is no window inside the column. A value of true
+    /// will "reserve" the column space and make other column(s) avoid
+    /// it entirely.
+    ///
+    /// ## Demonstration
+    /// When there is only one main window and
+    /// no stack windows, the modifier has the following effects.
+    ///
+    /// When set to `false`
+    /// ```txt
+    /// +---------------+
+    /// |               |
+    /// |      MAIN     |
+    /// |               |
+    /// +---------------+
+    /// ```
+    ///
+    /// When set to `true`
+    /// ```txt
+    /// +--------+------+
+    /// |        |      |
+    /// |  MAIN  |      |
+    /// |        |      |
+    /// +--------+------+
+    ///              ^
+    ///    reserved empty space
+    /// ```
+    pub reserve_empty_space: bool,
+
+    /// When set to `true` stack windows are distributed evenly between stacks,
+    /// when set to `false` the first stack gets a single window, and
+    /// the rest of the windows go to the second stack.
+    /// This modifier only applies to the `stack_main_stack` column layout.
+    ///
+    /// ## Demonstration
+    /// When set to `true`
+    /// ```txt
+    /// +-----+-------+-----+
+    /// |  2  |       |  4  |
+    /// |     |       |     |
+    /// |-----|   1   |-----|
+    /// |  3  |       |  5  |
+    /// |     |       |     |
+    /// +-----+-------+-----+
+    /// ```
+    ///
+    /// When set to `false`
+    /// ```txt
+    /// +-----+-------+-----+
+    /// |     |       |  3  |
+    /// |     |       |-----|
+    /// |  2  |   1   |  4  |
+    /// |     |       |-----|
+    /// |     |       |  5  |
+    /// +-----+-------+-----+
+    /// ```
+    pub balance_stacks: bool,
 }
 
 impl Default for LayoutModifiers {
     fn default() -> Self {
         Self {
-            master_width_percentage: 60.0,
-            master_window_count: 1,
-            max_column_width: None,
-            reserve_space: false,
+            main_window_count: 1,
+            main_size_percentage: 60.0,
+            main_split: SplitAxis::Vertical,
+            first_stack_split: SplitAxis::Horizontal,
+            second_stack_split: SplitAxis::Horizontal,
+            balance_stacks: true,
+            reserve_empty_space: false,
         }
     }
 }
@@ -138,6 +226,7 @@ impl Default for LayoutOptions {
             container_size: Rect::default(),
             flipped: Flipped::None,
             rotation: Rotation::North,
+            max_column_width: None,
         }
     }
 }
@@ -151,6 +240,10 @@ impl LayoutEnum {
             LayoutEnum::MainAndVertStack => Box::new(MainAndVertStack),
             LayoutEnum::CenterMain => Box::new(CenterMain),
             LayoutEnum::Fibonacci => Box::new(Fibonacci),
+            LayoutEnum::MainAndHorizontalStack => Box::new(MainAndHorizontalStack),
+            LayoutEnum::Grid => Box::new(Grid),
+            LayoutEnum::EvenHorizontal => Box::new(EvenHorizontal),
+            LayoutEnum::Fakebonacci => Box::new(Fakebonacci),
         }
     }
 }

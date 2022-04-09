@@ -1,6 +1,6 @@
 /// A `Rect` represents a rectangle with a position (`x`,`y`)
 /// and dimensions (`w`: width, `h`: height).
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Rect {
     pub x: i32,
     pub y: i32,

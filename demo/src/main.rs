@@ -10,8 +10,8 @@ use leftwm_layouts::{LayoutEnum, LayoutModifiers, LayoutOptions};
 const PRIMARY: Color = Color::rgb8(0x08, 0x0f, 0x0f);
 //const ACCENT: Color = Color::rgb8(0x65, 0x64, 0xdb);
 //const ACCENT_DARK: Color = Color::rgb8(0x2d, 0x2b, 0xb6);
-const ACCENT: Color = Color::rgb8(0xff, 0xd6, 0x22);
-const ACCENT_SHADE: Color = Color::rgb8(0xff, 0xe9, 0x85);
+//const ACCENT: Color = Color::rgb8(0xff, 0xd6, 0x22);
+const ACCENT: Color = Color::rgb8(0xff, 0xff, 0xff);
 
 const WINDOW_TITLE: LocalizedString<DemoState> = LocalizedString::new("Hello World!");
 
@@ -116,10 +116,10 @@ impl DemoState {
 impl From<&DemoState> for LayoutModifiers {
     fn from(value: &DemoState) -> Self {
         LayoutModifiers {
-            master_width_percentage: value.master_width_percentage,
-            master_window_count: value.master_window_count,
-            max_column_width: value.max_column_width,
-            reserve_space: value.reserve_space,
+            main_size_percentage: value.master_width_percentage,
+            main_window_count: value.master_window_count,
+            //max_column_width: value.max_column_width,
+            reserve_empty_space: value.reserve_space,
             ..Default::default()
         }
     }
@@ -139,8 +139,12 @@ impl From<&DemoState> for LayoutOptions {
 enum LayoutOption {
     Monocle,
     MainAndVertStack,
+    MainAndHorizontalStack,
     CenterMain,
+    Grid,
+    EvenHorizontal,
     Fibonacci,
+    Fakebonacci,
 }
 
 impl From<LayoutOption> for LayoutEnum {
@@ -150,6 +154,10 @@ impl From<LayoutOption> for LayoutEnum {
             LayoutOption::MainAndVertStack => Self::MainAndVertStack,
             LayoutOption::CenterMain => Self::CenterMain,
             LayoutOption::Fibonacci => Self::Fibonacci,
+            LayoutOption::MainAndHorizontalStack => Self::MainAndHorizontalStack,
+            LayoutOption::Grid => Self::Grid,
+            LayoutOption::EvenHorizontal => Self::EvenHorizontal,
+            LayoutOption::Fakebonacci => Self::Fakebonacci,
         }
     }
 }
@@ -179,17 +187,25 @@ fn main() {
 }
 
 fn build_root_widget() -> impl Widget<DemoState> {
-    Flex::row()
-        .with_child(controls())
-        .with_flex_child(Container::new(layout_preview()).background(Color::RED), 2.0)
+    Flex::row().with_child(controls()).with_flex_child(
+        Container::new(layout_preview()).background(Color::BLACK),
+        2.0,
+    )
 }
 
 fn controls() -> impl Widget<DemoState> {
     let selector = RadioGroup::new(vec![
         ("Monocle", LayoutOption::Monocle),
         ("MainAndVertStack", LayoutOption::MainAndVertStack),
+        (
+            "MainAndHorizontalStack",
+            LayoutOption::MainAndHorizontalStack,
+        ),
+        ("Grid", LayoutOption::Grid),
+        ("EvenHorizontal", LayoutOption::EvenHorizontal),
         ("CenterMain", LayoutOption::CenterMain),
         ("Fibonacci", LayoutOption::Fibonacci),
+        ("Fakebonacci", LayoutOption::Fakebonacci),
     ])
     .lens(DemoState::layout);
 
@@ -224,11 +240,12 @@ fn controls() -> impl Widget<DemoState> {
     let rotation = button(|data: &DemoState, _env: &_| format!("Rotation: {:?}", data.rotation))
         .on_click(move |_ctx, data: &mut DemoState, _env| data.rotate());
 
-    let reserve_space = button(|data: &DemoState, _env: &_| format!("Reserve Space: {:?}", data.reserve_space))
-    .on_click(move |_ctx, data: &mut DemoState, _env| data.toggle_reserve_space());
+    let reserve_space =
+        button(|data: &DemoState, _env: &_| format!("Reserve Space: {:?}", data.reserve_space))
+            .on_click(move |_ctx, data: &mut DemoState, _env| data.toggle_reserve_space());
 
     let flex = Flex::column()
-        .with_flex_child(selector, 1.0)
+        .with_child(selector)
         .with_flex_child(inc_master, 1.0)
         .with_flex_child(dec_master, 1.0)
         .with_flex_child(inc_master_count, 1.0)
@@ -257,31 +274,31 @@ fn layout_preview() -> impl Widget<DemoState> {
 
         let layout: LayoutEnum = data.layout.into();
         let calcs = leftwm_layouts::apply(&layout, data.window_count, &options, &modifiers);
-        let mut master_count = layout
-            .get()
-            .main_window_count(data.window_count, &modifiers);
-        // println!("{:?}", calcs);
+        let step = 1.0 / data.window_count as f64;
+        let mut alpha = 1.0;
         calcs.into_iter().enumerate().for_each(|(i, o)| {
+            let bg_color = Color::WHITE.with_alpha(alpha);
+            let text_color = if alpha > 0.5 {
+                Color::BLACK
+            } else {
+                Color::WHITE
+            };
+            alpha = alpha - step;
+
             let rect = Rect::new(
                 o.x.into(),
                 o.y.into(),
                 (o.x + o.w as i32).into(),
                 (o.y + o.h as i32).into(),
             );
-            if master_count > 0 {
-                ctx.fill(rect, &ACCENT);
-                master_count -= 1;
-            } else {
-                ctx.fill(rect, &ACCENT_SHADE);
-            }
+            ctx.fill(rect, &bg_color);
             ctx.stroke(rect.inset(-0.5), &Color::WHITE, 1.0);
-
             let text = ctx.text();
             let font = text.font_family("monospace").unwrap();
 
             let text_layout = text
                 .new_text_layout(format!("{}", i + 1))
-                .text_color(Color::BLACK)
+                .text_color(text_color)
                 .font(font, 22.0)
                 .build()
                 .unwrap();

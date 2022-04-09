@@ -6,20 +6,20 @@ use crate::{
 use crate::layouts::columns;
 
 #[derive(Debug)]
-pub struct Fibonacci;
+pub struct EvenHorizontal;
 
-impl Layout for Fibonacci {
+impl Layout for EvenHorizontal {
     fn apply(
         &self,
         window_count: usize,
         container: Rect,
         modifiers: &LayoutModifiers,
     ) -> Vec<Rect> {
-        columns::main_stack(
+        columns::stack(
             window_count,
             container,
             &LayoutModifiers {
-                first_stack_split: SplitAxis::Fibonacci,
+                first_stack_split: SplitAxis::Vertical,
                 ..*modifiers
             },
         )

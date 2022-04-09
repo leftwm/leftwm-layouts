@@ -1,14 +1,12 @@
-use crate::{
-    geometry::{Rect, SplitAxis},
-    Layout, LayoutModifiers,
-};
+use crate::geometry::SplitAxis;
+use crate::{geometry::Rect, Layout, LayoutModifiers};
 
 use crate::layouts::columns;
 
 #[derive(Debug)]
-pub struct Fibonacci;
+pub struct MainAndHorizontalStack;
 
-impl Layout for Fibonacci {
+impl Layout for MainAndHorizontalStack {
     fn apply(
         &self,
         window_count: usize,
@@ -19,7 +17,7 @@ impl Layout for Fibonacci {
             window_count,
             container,
             &LayoutModifiers {
-                first_stack_split: SplitAxis::Fibonacci,
+                first_stack_split: SplitAxis::Vertical,
                 ..*modifiers
             },
         )

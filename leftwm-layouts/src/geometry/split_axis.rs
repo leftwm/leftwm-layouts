@@ -2,7 +2,7 @@
 /// - `Horizontal` Splits in horizontal cuts
 /// - `Vertical` Splits in vertical cuts
 /// - `Both` Splits in a grid pattern
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone, Copy)]
 pub enum SplitAxis {
     Horizontal,
     Vertical,

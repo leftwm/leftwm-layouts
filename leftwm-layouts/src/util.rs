@@ -145,7 +145,7 @@ impl Util {
     /// |       |      |   |   |
     /// +-------+      +---+---+
     /// ```
-    /// 
+    ///
     /// ### Fibonacci
     /// Rectangle is split in a "Fibonacci" pattern.
     /// ```
@@ -157,7 +157,7 @@ impl Util {
     /// |       |      |   | | |
     /// +-------+      +---+---+
     /// ```
-    /// 
+    ///
     /// ### Fakebonacci
     /// Rectangle is split in a "Fibonacci"-like pattern.
     /// But instead of spiraling into the middle, it spirals into the bottom right.
@@ -173,6 +173,9 @@ impl Util {
     /// +-------+      +---+---+
     /// ```
     pub fn split(rect: &Rect, amount: usize, axis: &SplitAxis) -> Vec<Rect> {
+        if amount == 0 {
+            return vec![];
+        }
         match axis {
             SplitAxis::Vertical => {
                 let mut from_left = rect.x;
@@ -259,7 +262,7 @@ impl Util {
                         SplitAxis::Vertical
                     };
                     if has_next {
-                        let splitted_tiles = Util::split(&rect, 2, &last_axis);
+                        let splitted_tiles = Util::split(&remaining_tile, 2, &last_axis);
                         tiles.push(splitted_tiles[0]);
                         remaining_tile = splitted_tiles[1];
                     } else {
@@ -274,7 +277,10 @@ impl Util {
 
 #[cfg(test)]
 mod tests {
-    use crate::Util;
+    use crate::{
+        geometry::{Rect, SplitAxis},
+        Util,
+    };
 
     #[test]
     fn divrem_100_by_3_gives_33_1() {
@@ -304,5 +310,332 @@ mod tests {
 
         let result = Util::remainderless_division(29, 8);
         assert_eq!(vec![4, 4, 4, 4, 4, 3, 3, 3], result);
+    }
+
+    const CONTAINER: Rect = Rect {
+        x: 0,
+        y: 0,
+        w: 400,
+        h: 200,
+    };
+
+    #[test]
+    fn split_by_zero() {
+        let rects = Util::split(&CONTAINER, 0, &SplitAxis::Vertical);
+        assert_eq!(rects.len(), 0);
+    }
+
+    #[test]
+    fn split_single_window() {
+        let rects = Util::split(&CONTAINER, 1, &SplitAxis::Vertical);
+        assert_eq!(rects.len(), 1);
+        assert!(rects[0].eq(&CONTAINER));
+    }
+
+    #[test]
+    fn split_vertical_two_windows() {
+        let rects = Util::split(&CONTAINER, 2, &SplitAxis::Vertical);
+        assert_eq!(rects.len(), 2);
+        let expected_first = Rect {
+            x: 0,
+            y: 0,
+            w: 200,
+            h: 200,
+        };
+        let expected_second = Rect {
+            x: 200,
+            y: 0,
+            w: 200,
+            h: 200,
+        };
+        assert!(rects[0].eq(&expected_first));
+        assert!(rects[1].eq(&expected_second));
+    }
+
+    #[test]
+    fn split_vertical_three_windows() {
+        let rects = Util::split(&CONTAINER, 3, &SplitAxis::Vertical);
+        assert_eq!(rects.len(), 3);
+        // first window must be larger because of the remainderless division
+        let expected_first = Rect {
+            x: 0,
+            y: 0,
+            w: 134,
+            h: 200,
+        };
+        let expected_second = Rect {
+            x: 134,
+            y: 0,
+            w: 133,
+            h: 200,
+        };
+        let expected_third = Rect {
+            x: 267,
+            y: 0,
+            w: 133,
+            h: 200,
+        };
+        assert!(rects[0].eq(&expected_first));
+        assert!(rects[1].eq(&expected_second));
+        assert!(rects[2].eq(&expected_third));
+    }
+
+    #[test]
+    fn split_horizontal_two_windows() {
+        let rects = Util::split(&CONTAINER, 2, &SplitAxis::Horizontal);
+        assert_eq!(rects.len(), 2);
+        let expected_first = Rect {
+            x: 0,
+            y: 0,
+            w: 400,
+            h: 100,
+        };
+        let expected_second = Rect {
+            x: 0,
+            y: 100,
+            w: 400,
+            h: 100,
+        };
+        assert!(rects[0].eq(&expected_first));
+        assert!(rects[1].eq(&expected_second));
+    }
+
+    #[test]
+    fn split_horizontal_three_windows() {
+        let rects = Util::split(&CONTAINER, 3, &SplitAxis::Horizontal);
+        assert_eq!(rects.len(), 3);
+        // first two windows must be taller because of remainderless division
+        let expected_first = Rect {
+            x: 0,
+            y: 0,
+            w: 400,
+            h: 67,
+        };
+        let expected_second = Rect {
+            x: 0,
+            y: 67,
+            w: 400,
+            h: 67,
+        };
+        let expected_third = Rect {
+            x: 0,
+            y: 134,
+            w: 400,
+            h: 66,
+        };
+        assert!(rects[0].eq(&expected_first));
+        assert!(rects[1].eq(&expected_second));
+        assert!(rects[2].eq(&expected_third));
+    }
+
+    #[test]
+    fn split_grid_three_windows() {
+        let rects = Util::split(&CONTAINER, 3, &SplitAxis::Grid);
+        assert_eq!(rects.len(), 3);
+        let expected_first = Rect {
+            x: 0,
+            y: 0,
+            w: 200,
+            h: 200,
+        };
+        let expected_second = Rect {
+            x: 200,
+            y: 0,
+            w: 200,
+            h: 100,
+        };
+        let expected_third = Rect {
+            x: 200,
+            y: 100,
+            w: 200,
+            h: 100,
+        };
+        assert!(rects[0].eq(&expected_first));
+        assert!(rects[1].eq(&expected_second));
+        assert!(rects[2].eq(&expected_third));
+    }
+
+    #[test]
+    fn split_grid_four_windows() {
+        let rects = Util::split(&CONTAINER, 4, &SplitAxis::Grid);
+        assert_eq!(rects.len(), 4);
+        let expected_first = Rect {
+            x: 0,
+            y: 0,
+            w: 200,
+            h: 100,
+        };
+        let expected_second = Rect {
+            x: 0,
+            y: 100,
+            w: 200,
+            h: 100,
+        };
+        let expected_third = Rect {
+            x: 200,
+            y: 0,
+            w: 200,
+            h: 100,
+        };
+        let expected_fourth = Rect {
+            x: 200,
+            y: 100,
+            w: 200,
+            h: 100,
+        };
+        assert!(rects[0].eq(&expected_first));
+        assert!(rects[1].eq(&expected_second));
+        assert!(rects[2].eq(&expected_third));
+        assert!(rects[3].eq(&expected_fourth));
+    }
+
+    #[test]
+    fn split_fibonacci_four_windows() {
+        let rects = Util::split(&CONTAINER, 4, &SplitAxis::Fibonacci);
+        assert_eq!(rects.len(), 4);
+        let expected_first = Rect {
+            x: 0,
+            y: 0,
+            w: 400,
+            h: 100,
+        };
+        let expected_second = Rect {
+            x: 200,
+            y: 100,
+            w: 200,
+            h: 100,
+        };
+        let expected_third = Rect {
+            x: 0,
+            y: 150,
+            w: 200,
+            h: 50,
+        };
+        let expected_fourth = Rect {
+            x: 0,
+            y: 100,
+            w: 200,
+            h: 50,
+        };
+        assert!(rects[0].eq(&expected_first));
+        assert!(rects[1].eq(&expected_second));
+        assert!(rects[2].eq(&expected_third));
+        assert!(rects[3].eq(&expected_fourth));
+    }
+
+    #[test]
+    fn split_fibonacci_five_windows() {
+        let rects = Util::split(&CONTAINER, 5, &SplitAxis::Fibonacci);
+        assert_eq!(rects.len(), 5);
+        let expected_first = Rect {
+            x: 0,
+            y: 0,
+            w: 400,
+            h: 100,
+        };
+        let expected_second = Rect {
+            x: 200,
+            y: 100,
+            w: 200,
+            h: 100,
+        };
+        let expected_third = Rect {
+            x: 0,
+            y: 150,
+            w: 200,
+            h: 50,
+        };
+        let expected_fourth = Rect {
+            x: 0,
+            y: 100,
+            w: 100,
+            h: 50,
+        };
+        let expected_fifth = Rect {
+            x: 100,
+            y: 100,
+            w: 100,
+            h: 50,
+        };
+        assert!(rects[0].eq(&expected_first));
+        assert!(rects[1].eq(&expected_second));
+        assert!(rects[2].eq(&expected_third));
+        assert!(rects[3].eq(&expected_fourth));
+        assert!(rects[4].eq(&expected_fifth));
+    }
+
+    #[test]
+    fn split_fakebonacci_four_windows() {
+        let rects = Util::split(&CONTAINER, 4, &SplitAxis::Fakebonacci);
+        assert_eq!(rects.len(), 4);
+        let expected_first = Rect {
+            x: 0,
+            y: 0,
+            w: 400,
+            h: 100,
+        };
+        let expected_second = Rect {
+            x: 0,
+            y: 100,
+            w: 200,
+            h: 100,
+        };
+        let expected_third = Rect {
+            x: 200,
+            y: 100,
+            w: 200,
+            h: 50,
+        };
+        let expected_fourth = Rect {
+            x: 200,
+            y: 150,
+            w: 200,
+            h: 50,
+        };
+        assert!(rects[0].eq(&expected_first));
+        assert!(rects[1].eq(&expected_second));
+        assert!(rects[2].eq(&expected_third));
+        assert!(rects[3].eq(&expected_fourth));
+    }
+
+    #[test]
+    fn split_fakebonacci_five_windows() {
+        let rects = Util::split(&CONTAINER, 5, &SplitAxis::Fakebonacci);
+        assert_eq!(rects.len(), 5);
+        let expected_first = Rect {
+            x: 0,
+            y: 0,
+            w: 400,
+            h: 100,
+        };
+        let expected_second = Rect {
+            x: 0,
+            y: 100,
+            w: 200,
+            h: 100,
+        };
+        let expected_third = Rect {
+            x: 200,
+            y: 100,
+            w: 200,
+            h: 50,
+        };
+        let expected_fourth = Rect {
+            x: 200,
+            y: 150,
+            w: 100,
+            h: 50,
+        };
+        let expected_fifth = Rect {
+            x: 300,
+            y: 150,
+            w: 100,
+            h: 50,
+        };
+        assert!(rects[0].eq(&expected_first));
+        assert!(rects[1].eq(&expected_second));
+        assert!(rects[2].eq(&expected_third));
+        assert!(rects[3].eq(&expected_fourth));
+        assert!(rects[4].eq(&expected_fifth));
     }
 }
