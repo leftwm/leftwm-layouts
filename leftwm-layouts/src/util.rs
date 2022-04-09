@@ -43,7 +43,7 @@ impl Util {
     }
 
     /// Flip the given list of Rects according to the provided flipped parameter
-    pub fn flip(container: Rect, rects: &mut Vec<Rect>, flipped: &Flipped) {
+    pub fn flip(container: Rect, rects: &mut [Rect], flipped: &Flipped) {
         rects.iter_mut().for_each(|rect| {
             if flipped.is_flipped_horizontal() {
                 // from left edge as far away as right side is from right edge before being flipped

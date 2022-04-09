@@ -8,10 +8,6 @@ use leftwm_layouts::geometry::{Flipped, Rotation};
 use leftwm_layouts::{LayoutEnum, LayoutModifiers, LayoutOptions};
 
 const PRIMARY: Color = Color::rgb8(0x08, 0x0f, 0x0f);
-//const ACCENT: Color = Color::rgb8(0x65, 0x64, 0xdb);
-//const ACCENT_DARK: Color = Color::rgb8(0x2d, 0x2b, 0xb6);
-//const ACCENT: Color = Color::rgb8(0xff, 0xd6, 0x22);
-const ACCENT: Color = Color::rgb8(0xff, 0xff, 0xff);
 
 const WINDOW_TITLE: LocalizedString<DemoState> = LocalizedString::new("Hello World!");
 
