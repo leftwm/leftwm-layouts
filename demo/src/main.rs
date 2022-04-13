@@ -4,7 +4,7 @@ use druid::{
     AppLauncher, Color, Data, Lens, LocalizedString, Point, Rect, RenderContext, Widget, WidgetExt,
     WindowDesc,
 };
-use leftwm_layouts::geometry::{Flipped, Rotation};
+use leftwm_layouts::geometry::{Flipped, Rotation, ReserveColumnSpace};
 use leftwm_layouts::{LayoutEnum, LayoutModifiers, LayoutOptions};
 
 const PRIMARY: Color = Color::rgb8(0x08, 0x0f, 0x0f);
@@ -19,6 +19,9 @@ struct DemoState {
     master_window_count: usize,
     max_column_width: Option<u32>,
     reserve_space: bool,
+
+    #[data(same_fn = "PartialEq::eq")]
+    reserve_column_space: ReserveOption,
 
     #[data(same_fn = "PartialEq::eq")]
     flipped: Flipped,
@@ -38,6 +41,7 @@ impl Default for DemoState {
             flipped: Flipped::default(),
             rotation: Rotation::default(),
             reserve_space: false,
+            reserve_column_space: ReserveOption::None
         }
     }
 }
@@ -116,6 +120,7 @@ impl From<&DemoState> for LayoutModifiers {
             main_window_count: value.master_window_count,
             //max_column_width: value.max_column_width,
             reserve_empty_space: value.reserve_space,
+            reserve_column_space: value.reserve_column_space.into(),
             ..Default::default()
         }
     }
@@ -141,6 +146,23 @@ enum LayoutOption {
     EvenHorizontal,
     Fibonacci,
     Fakebonacci,
+}
+
+#[derive(Debug, Clone, Copy, Data, PartialEq)]
+enum ReserveOption {
+    None,
+    Reserve,
+    ReserveAndCenter
+}
+
+impl From<ReserveOption> for ReserveColumnSpace {
+    fn from(option: ReserveOption) -> Self {
+        match option {
+            ReserveOption::None => ReserveColumnSpace::None,
+            ReserveOption::Reserve => ReserveColumnSpace::Reserve,
+            ReserveOption::ReserveAndCenter => ReserveColumnSpace::ReserveAndCenter,
+        }
+    }
 }
 
 impl From<LayoutOption> for LayoutEnum {
@@ -240,6 +262,13 @@ fn controls() -> impl Widget<DemoState> {
         button(|data: &DemoState, _env: &_| format!("Reserve Space: {:?}", data.reserve_space))
             .on_click(move |_ctx, data: &mut DemoState, _env| data.toggle_reserve_space());
 
+    let reserve_column_space = RadioGroup::new(vec![
+                ("None", ReserveOption::None),
+                ("Reserve", ReserveOption::Reserve),
+                ("ReserveAndCenter", ReserveOption::ReserveAndCenter),
+            ])
+            .lens(DemoState::reserve_column_space);
+
     let flex = Flex::column()
         .with_child(selector)
         .with_flex_child(inc_master, 1.0)
@@ -251,7 +280,8 @@ fn controls() -> impl Widget<DemoState> {
         .with_flex_child(flip_h, 1.0)
         .with_flex_child(flip_v, 1.0)
         .with_flex_child(rotation, 1.0)
-        .with_flex_child(reserve_space, 1.0);
+        .with_flex_child(reserve_space, 1.0)
+        .with_flex_child(reserve_column_space, 1.0);
 
     flex.fix_width(240.0).background(PRIMARY)
 }

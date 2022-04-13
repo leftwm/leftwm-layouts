@@ -1,6 +1,9 @@
 use std::cmp;
 
-use crate::{geometry::Rect, LayoutModifiers, Util};
+use crate::{
+    geometry::{self, Rect},
+    LayoutModifiers,
+};
 
 /// The `stack_main_stack` column layout consists of three columns,
 /// two stacks on the outer edges, and a main column in the center.
@@ -8,7 +11,7 @@ use crate::{geometry::Rect, LayoutModifiers, Util};
 /// The stack on the left is considered the "first" stack, and
 /// the stack on the right is the "second" stack.
 ///
-/// ```
+/// ```txt
 /// +------+------------+------+
 /// |      |            |      |
 /// |STACK1|    MAIN    |STACK2|
@@ -28,7 +31,7 @@ pub fn stack_main_stack(
     let main_window_count = cmp::min(modifiers.main_window_count, window_count);
     let stack_window_count = window_count.saturating_sub(main_window_count);
     let (left_window_count, right_window_cound) = if modifiers.balance_stacks {
-        let counts = Util::remainderless_division(stack_window_count, 2);
+        let counts = geometry::remainderless_division(stack_window_count, 2);
         (counts[0], counts[1])
     } else {
         (1, stack_window_count - 1)
@@ -43,7 +46,7 @@ pub fn stack_main_stack(
     );
 
     if let Some(tile) = main_column {
-        tiles.append(&mut Util::split(
+        tiles.append(&mut geometry::split(
             &tile,
             main_window_count,
             &modifiers.main_split,
@@ -51,7 +54,7 @@ pub fn stack_main_stack(
     }
 
     if let Some(tile) = left_column {
-        tiles.append(&mut Util::split(
+        tiles.append(&mut geometry::split(
             &tile,
             left_window_count,
             &modifiers.first_stack_split,
@@ -60,7 +63,7 @@ pub fn stack_main_stack(
 
     if let Some(tile) = right_column {
         // don't worry if there are no stack windows, splitting by zero returns an empty vec :)
-        tiles.append(&mut Util::split(
+        tiles.append(&mut geometry::split(
             &tile,
             right_window_cound,
             &modifiers.second_stack_split,
@@ -94,7 +97,7 @@ fn stack_main_stack_columns(
         }),
         (true, true, true) => {
             let stack_widths =
-                Util::remainderless_division(container.w as usize - main_width as usize, 2);
+                geometry::remainderless_division(container.w as usize - main_width as usize, 2);
             Some(Rect {
                 x: stack_widths[0] as i32,
                 w: main_width,
@@ -117,7 +120,7 @@ fn stack_main_stack_columns(
             (Some(left), None)
         }
         (true, true) => {
-            let stack_widths = Util::remainderless_division(rest_width as usize, 2);
+            let stack_widths = geometry::remainderless_division(rest_width as usize, 2);
             let left = Rect {
                 w: stack_widths[0] as u32,
                 ..container

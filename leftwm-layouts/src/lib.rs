@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use geometry::{Flipped, Rect};
+use geometry::{Flipped, Rect, ReserveColumnSpace};
 use geometry::{Rotation, SplitAxis};
 use layouts::Fibonacci;
 use layouts::MainAndVertStack;
@@ -9,9 +9,6 @@ use layouts::{CenterMain, EvenHorizontal, Fakebonacci, Grid, MainAndHorizontalSt
 
 pub mod geometry;
 mod layouts;
-mod util;
-
-pub use util::Util;
 
 #[derive(PartialEq)]
 pub enum LayoutEnum {
@@ -33,7 +30,7 @@ impl FromStr for LayoutEnum {
         match name {
             "Monocle" => Ok(LayoutEnum::Monocle),
             "MainAndVertStack" => Ok(LayoutEnum::MainAndVertStack),
-            "CenterMain" => Ok(LayoutEnum::CenterMain),
+            "CenterMain" | "CenterMainBalanced" => Ok(LayoutEnum::CenterMain),
             "Fibonacci" => Ok(LayoutEnum::Fibonacci),
             _ => Err(LayoutParseError),
         }
@@ -98,10 +95,10 @@ pub fn apply(
     // rotate the layout (if necessary)
     rects
         .iter_mut()
-        .for_each(|rect| Util::translate_rotation(container, rect, &options.rotation));
+        .for_each(|rect| geometry::translate_rotation(container, rect, &options.rotation));
 
     // flip the layout (if necessary)
-    Util::flip(options.container_size, &mut rects, &options.flipped);
+    geometry::flip(options.container_size, &mut rects, &options.flipped);
 
     rects
 }
@@ -176,6 +173,9 @@ pub struct LayoutModifiers {
     /// ```
     pub reserve_empty_space: bool,
 
+    // todo
+    pub reserve_column_space: ReserveColumnSpace,
+
     /// When set to `true` stack windows are distributed evenly between stacks,
     /// when set to `false` the first stack gets a single window, and
     /// the rest of the windows go to the second stack.
@@ -216,6 +216,7 @@ impl Default for LayoutModifiers {
             second_stack_split: SplitAxis::Horizontal,
             balance_stacks: true,
             reserve_empty_space: false,
+            reserve_column_space: ReserveColumnSpace::None
         }
     }
 }
