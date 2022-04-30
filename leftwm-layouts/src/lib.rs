@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use geometry::{Flipped, Rect};
+use geometry::{Flipped, Rect, ReserveColumnSpace, Size};
 use geometry::{Rotation, SplitAxis};
 use layouts::Fibonacci;
 use layouts::MainAndVertStack;
@@ -9,9 +9,6 @@ use layouts::{CenterMain, EvenHorizontal, Fakebonacci, Grid, MainAndHorizontalSt
 
 pub mod geometry;
 mod layouts;
-mod util;
-
-pub use util::Util;
 
 #[derive(PartialEq)]
 pub enum LayoutEnum {
@@ -33,7 +30,7 @@ impl FromStr for LayoutEnum {
         match name {
             "Monocle" => Ok(LayoutEnum::Monocle),
             "MainAndVertStack" => Ok(LayoutEnum::MainAndVertStack),
-            "CenterMain" => Ok(LayoutEnum::CenterMain),
+            "CenterMain" | "CenterMainBalanced" => Ok(LayoutEnum::CenterMain),
             "Fibonacci" => Ok(LayoutEnum::Fibonacci),
             _ => Err(LayoutParseError),
         }
@@ -98,10 +95,10 @@ pub fn apply(
     // rotate the layout (if necessary)
     rects
         .iter_mut()
-        .for_each(|rect| Util::translate_rotation(container, rect, &options.rotation));
+        .for_each(|rect| geometry::translate_rotation(container, rect, &options.rotation));
 
     // flip the layout (if necessary)
-    Util::flip(options.container_size, &mut rects, &options.flipped);
+    geometry::flip(options.container_size, &mut rects, &options.flipped);
 
     rects
 }
@@ -117,8 +114,8 @@ pub struct LayoutOptions {
 }
 
 /// LayoutModifiers are passed down to the layouts.
-/// They SHOULD influence the calculations of the various layouts,
-/// although not all modifiers might make sense on all layouts.
+/// They SHOULD influence the calculations of the various layouts.
+/// Some modifiers may be ignored on certain layouts where thery don't make sense.
 #[derive(Clone, Copy)]
 pub struct LayoutModifiers {
     /// Determines the amount of windows to show in the
@@ -129,7 +126,7 @@ pub struct LayoutModifiers {
     /// The percentage of the available space which the
     /// `main` column should occupy. If the layout has no `main` column,
     /// or no window in the `main` column, this modifier will be ignored.
-    pub main_size_percentage: f32,
+    pub main_size: Size,
 
     /// The way to split windows in the main_column when there
     /// are more than one window.
@@ -146,35 +143,8 @@ pub struct LayoutModifiers {
     /// `stack_main_stack` column layout and will be ignored in layouts that have just one stack.
     pub second_stack_split: SplitAxis,
 
-    /// Determines whether the space of a column should be reserved
-    /// when there is no window inside the column. A value of true
-    /// will "reserve" the column space and make other column(s) avoid
-    /// it entirely.
-    ///
-    /// ## Demonstration
-    /// When there is only one main window and
-    /// no stack windows, the modifier has the following effects.
-    ///
-    /// When set to `false`
-    /// ```txt
-    /// +---------------+
-    /// |               |
-    /// |      MAIN     |
-    /// |               |
-    /// +---------------+
-    /// ```
-    ///
-    /// When set to `true`
-    /// ```txt
-    /// +--------+------+
-    /// |        |      |
-    /// |  MAIN  |      |
-    /// |        |      |
-    /// +--------+------+
-    ///              ^
-    ///    reserved empty space
-    /// ```
-    pub reserve_empty_space: bool,
+    /// The way to handle empty column space where there is no window.
+    pub reserve_column_space: ReserveColumnSpace,
 
     /// When set to `true` stack windows are distributed evenly between stacks,
     /// when set to `false` the first stack gets a single window, and
@@ -210,12 +180,12 @@ impl Default for LayoutModifiers {
     fn default() -> Self {
         Self {
             main_window_count: 1,
-            main_size_percentage: 60.0,
+            main_size: Size::Percentage(60.0),
             main_split: SplitAxis::Vertical,
             first_stack_split: SplitAxis::Horizontal,
             second_stack_split: SplitAxis::Horizontal,
             balance_stacks: true,
-            reserve_empty_space: false,
+            reserve_column_space: ReserveColumnSpace::None,
         }
     }
 }
