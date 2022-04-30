@@ -1,8 +1,8 @@
 /// Determines whether the space of a column should be reserved
-/// when there is no window inside the column. A value of 'Reserve' or 
-/// 'ReserveAndCenter' will "reserve" the column space and make other 
+/// when there is no window inside the column. A value of 'Reserve' or
+/// 'ReserveAndCenter' will "reserve" the column space and make other
 /// column(s) avoid it entirely.
-/// 
+///
 /// ## Demonstration
 /// When there is only one main window and
 /// no stack windows, the modifier has the following effects.
@@ -26,7 +26,7 @@
 ///             ^
 ///    reserved empty space
 /// ```
-/// 
+///
 /// When set to `ReserveAndCenter`
 /// ```txt
 /// +--+--------+--+
