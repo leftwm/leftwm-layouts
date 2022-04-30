@@ -114,8 +114,8 @@ pub struct LayoutOptions {
 }
 
 /// LayoutModifiers are passed down to the layouts.
-/// They SHOULD influence the calculations of the various layouts,
-/// although not all modifiers might make sense on all layouts.
+/// They SHOULD influence the calculations of the various layouts.
+/// Some modifiers may be ignored on certain layouts where thery don't make sense.
 #[derive(Clone, Copy)]
 pub struct LayoutModifiers {
     /// Determines the amount of windows to show in the
@@ -143,37 +143,7 @@ pub struct LayoutModifiers {
     /// `stack_main_stack` column layout and will be ignored in layouts that have just one stack.
     pub second_stack_split: SplitAxis,
 
-    /// Determines whether the space of a column should be reserved
-    /// when there is no window inside the column. A value of true
-    /// will "reserve" the column space and make other column(s) avoid
-    /// it entirely.
-    ///
-    /// ## Demonstration
-    /// When there is only one main window and
-    /// no stack windows, the modifier has the following effects.
-    ///
-    /// When set to `false`
-    /// ```txt
-    /// +---------------+
-    /// |               |
-    /// |      MAIN     |
-    /// |               |
-    /// +---------------+
-    /// ```
-    ///
-    /// When set to `true`
-    /// ```txt
-    /// +--------+------+
-    /// |        |      |
-    /// |  MAIN  |      |
-    /// |        |      |
-    /// +--------+------+
-    ///              ^
-    ///    reserved empty space
-    /// ```
-    pub reserve_empty_space: bool,
-
-    // todo
+    /// The way to handle empty column space where there is no window.
     pub reserve_column_space: ReserveColumnSpace,
 
     /// When set to `true` stack windows are distributed evenly between stacks,
@@ -215,7 +185,6 @@ impl Default for LayoutModifiers {
             first_stack_split: SplitAxis::Horizontal,
             second_stack_split: SplitAxis::Horizontal,
             balance_stacks: true,
-            reserve_empty_space: false,
             reserve_column_space: ReserveColumnSpace::None,
         }
     }

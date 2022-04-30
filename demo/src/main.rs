@@ -118,8 +118,6 @@ impl From<&DemoState> for LayoutModifiers {
         LayoutModifiers {
             main_size: Size::Percentage(value.master_width_percentage),
             main_window_count: value.master_window_count,
-            //max_column_width: value.max_column_width,
-            reserve_empty_space: value.reserve_space,
             reserve_column_space: value.reserve_column_space.into(),
             ..Default::default()
         }
