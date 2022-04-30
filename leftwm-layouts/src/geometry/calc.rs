@@ -6,7 +6,7 @@ use std::ops::Rem;
 ///
 /// ## Example
 /// ```rust
-/// let result = Util::divrem(11, 3);
+/// let result = leftwm_layouts::geometry::divrem(11, 3);
 /// assert_eq!((3, 2), result);
 /// ```
 pub fn divrem(a: usize, b: usize) -> (usize, usize) {
@@ -21,7 +21,7 @@ pub fn divrem(a: usize, b: usize) -> (usize, usize) {
 ///
 /// ## Example
 /// ```rust
-/// let result = Util::remainderless_division(11, 3);
+/// let result = leftwm_layouts::geometry::remainderless_division(11, 3);
 /// assert_eq!(vec![4,4,3], result);
 /// ```
 pub fn remainderless_division(a: usize, b: usize) -> Vec<usize> {

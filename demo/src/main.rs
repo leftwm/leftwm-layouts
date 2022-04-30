@@ -4,7 +4,7 @@ use druid::{
     AppLauncher, Color, Data, Lens, LocalizedString, Point, Rect, RenderContext, Widget, WidgetExt,
     WindowDesc,
 };
-use leftwm_layouts::geometry::{Flipped, Rotation, ReserveColumnSpace};
+use leftwm_layouts::geometry::{Flipped, ReserveColumnSpace, Rotation, Size};
 use leftwm_layouts::{LayoutEnum, LayoutModifiers, LayoutOptions};
 
 const PRIMARY: Color = Color::rgb8(0x08, 0x0f, 0x0f);
@@ -41,7 +41,7 @@ impl Default for DemoState {
             flipped: Flipped::default(),
             rotation: Rotation::default(),
             reserve_space: false,
-            reserve_column_space: ReserveOption::None
+            reserve_column_space: ReserveOption::None,
         }
     }
 }
@@ -116,7 +116,7 @@ impl DemoState {
 impl From<&DemoState> for LayoutModifiers {
     fn from(value: &DemoState) -> Self {
         LayoutModifiers {
-            main_size_percentage: value.master_width_percentage,
+            main_size: Size::Percentage(value.master_width_percentage),
             main_window_count: value.master_window_count,
             //max_column_width: value.max_column_width,
             reserve_empty_space: value.reserve_space,
@@ -152,7 +152,7 @@ enum LayoutOption {
 enum ReserveOption {
     None,
     Reserve,
-    ReserveAndCenter
+    ReserveAndCenter,
 }
 
 impl From<ReserveOption> for ReserveColumnSpace {
@@ -263,11 +263,11 @@ fn controls() -> impl Widget<DemoState> {
             .on_click(move |_ctx, data: &mut DemoState, _env| data.toggle_reserve_space());
 
     let reserve_column_space = RadioGroup::new(vec![
-                ("None", ReserveOption::None),
-                ("Reserve", ReserveOption::Reserve),
-                ("ReserveAndCenter", ReserveOption::ReserveAndCenter),
-            ])
-            .lens(DemoState::reserve_column_space);
+        ("None", ReserveOption::None),
+        ("Reserve", ReserveOption::Reserve),
+        ("ReserveAndCenter", ReserveOption::ReserveAndCenter),
+    ])
+    .lens(DemoState::reserve_column_space);
 
     let flex = Flex::column()
         .with_child(selector)

@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use geometry::{Flipped, Rect, ReserveColumnSpace};
+use geometry::{Flipped, Rect, ReserveColumnSpace, Size};
 use geometry::{Rotation, SplitAxis};
 use layouts::Fibonacci;
 use layouts::MainAndVertStack;
@@ -126,7 +126,7 @@ pub struct LayoutModifiers {
     /// The percentage of the available space which the
     /// `main` column should occupy. If the layout has no `main` column,
     /// or no window in the `main` column, this modifier will be ignored.
-    pub main_size_percentage: f32,
+    pub main_size: Size,
 
     /// The way to split windows in the main_column when there
     /// are more than one window.
@@ -210,13 +210,13 @@ impl Default for LayoutModifiers {
     fn default() -> Self {
         Self {
             main_window_count: 1,
-            main_size_percentage: 60.0,
+            main_size: Size::Percentage(60.0),
             main_split: SplitAxis::Vertical,
             first_stack_split: SplitAxis::Horizontal,
             second_stack_split: SplitAxis::Horizontal,
             balance_stacks: true,
             reserve_empty_space: false,
-            reserve_column_space: ReserveColumnSpace::None
+            reserve_column_space: ReserveColumnSpace::None,
         }
     }
 }
