@@ -15,8 +15,8 @@ const WINDOW_TITLE: LocalizedString<DemoState> = LocalizedString::new("Hello Wor
 struct DemoState {
     layout: LayoutOption,
     window_count: usize,
-    master_width_percentage: f32,
-    master_window_count: usize,
+    main_width_percentage: f32,
+    main_window_count: usize,
     max_column_width: Option<u32>,
     reserve_space: bool,
 
@@ -35,8 +35,8 @@ impl Default for DemoState {
         Self {
             layout: LayoutOption::MainAndVertStack,
             window_count: 5,
-            master_width_percentage: 60.0,
-            master_window_count: 1,
+            main_width_percentage: 60.0,
+            main_window_count: 1,
             max_column_width: None,
             flipped: Flipped::default(),
             rotation: Rotation::default(),
@@ -60,35 +60,35 @@ impl DemoState {
         self.window_count = new_count;
     }
 
-    fn increase_master_width(&mut self) {
-        let new_width = self.master_width_percentage + 5.0;
+    fn increase_main_width(&mut self) {
+        let new_width = self.main_width_percentage + 5.0;
         if new_width > 100.0 {
-            self.master_width_percentage = 100.0;
+            self.main_width_percentage = 100.0;
         } else {
-            self.master_width_percentage = new_width;
+            self.main_width_percentage = new_width;
         }
     }
 
-    fn decrease_master_width(&mut self) {
-        let new_width = self.master_width_percentage - 5.0;
+    fn decrease_main_width(&mut self) {
+        let new_width = self.main_width_percentage - 5.0;
         if new_width < 0.0 {
-            self.master_width_percentage = 0.0;
+            self.main_width_percentage = 0.0;
         } else {
-            self.master_width_percentage = new_width;
+            self.main_width_percentage = new_width;
         }
     }
 
-    fn increase_master_count(&mut self) {
-        self.master_window_count += 1;
+    fn increase_main_count(&mut self) {
+        self.main_window_count += 1;
     }
 
-    fn decrease_master_count(&mut self) {
-        let new_count = if self.master_window_count > 0 {
-            self.master_window_count - 1
+    fn decrease_main_count(&mut self) {
+        let new_count = if self.main_window_count > 0 {
+            self.main_window_count - 1
         } else {
             0
         };
-        self.master_window_count = new_count;
+        self.main_window_count = new_count;
     }
 
     fn toggle_flipped_horizontal(&mut self) {
@@ -116,8 +116,8 @@ impl DemoState {
 impl From<&DemoState> for LayoutModifiers {
     fn from(value: &DemoState) -> Self {
         LayoutModifiers {
-            main_size: Size::Percentage(value.master_width_percentage),
-            main_window_count: value.master_window_count,
+            main_size: Size::Percentage(value.main_width_percentage),
+            main_window_count: value.main_window_count,
             reserve_column_space: value.reserve_column_space.into(),
             ..Default::default()
         }
@@ -225,11 +225,11 @@ fn controls() -> impl Widget<DemoState> {
     ])
     .lens(DemoState::layout);
 
-    let inc_master = button("IncreaseMainWidth")
-        .on_click(move |_ctx, data: &mut DemoState, _env| data.increase_master_width());
+    let inc_main = button("IncreaseMainWidth")
+        .on_click(move |_ctx, data: &mut DemoState, _env| data.increase_main_width());
 
-    let dec_master = button("DecreaseMainWidth")
-        .on_click(move |_ctx, data: &mut DemoState, _env| data.decrease_master_width());
+    let dec_main = button("DecreaseMainWidth")
+        .on_click(move |_ctx, data: &mut DemoState, _env| data.decrease_main_width());
 
     let add_window =
         button("AddWindow").on_click(move |_ctx, data: &mut DemoState, _env| data.add_window());
@@ -237,11 +237,11 @@ fn controls() -> impl Widget<DemoState> {
     let remove_window = button("RemoveWindow")
         .on_click(move |_ctx, data: &mut DemoState, _env| data.remove_window());
 
-    let inc_master_count = button("IncreaseMasterCount")
-        .on_click(move |_ctx, data: &mut DemoState, _env| data.increase_master_count());
+    let inc_main_count = button("IncreaseMainCount")
+        .on_click(move |_ctx, data: &mut DemoState, _env| data.increase_main_count());
 
-    let dec_master_count = button("DecreaseMasterCount")
-        .on_click(move |_ctx, data: &mut DemoState, _env| data.decrease_master_count());
+    let dec_main_count = button("DecreaseMainCount")
+        .on_click(move |_ctx, data: &mut DemoState, _env| data.decrease_main_count());
 
     let flip_h = button(|data: &DemoState, _env: &_| {
         format!("FlipHorziontal: {}", data.flipped.is_flipped_horizontal())
@@ -269,10 +269,10 @@ fn controls() -> impl Widget<DemoState> {
 
     let flex = Flex::column()
         .with_child(selector)
-        .with_flex_child(inc_master, 1.0)
-        .with_flex_child(dec_master, 1.0)
-        .with_flex_child(inc_master_count, 1.0)
-        .with_flex_child(dec_master_count, 1.0)
+        .with_flex_child(inc_main, 1.0)
+        .with_flex_child(dec_main, 1.0)
+        .with_flex_child(inc_main_count, 1.0)
+        .with_flex_child(dec_main_count, 1.0)
         .with_flex_child(add_window, 1.0)
         .with_flex_child(remove_window, 1.0)
         .with_flex_child(flip_h, 1.0)

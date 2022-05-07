@@ -48,8 +48,8 @@ pub trait Layout {
         -> Vec<Rect>;
 
     // QUESTION: might be helpful if the layout_manager can find out if the layout even supports
-    // multiple_master_windows, some might not (monocle?, main_and_deck?)
-    //fn supports_multiple_master_windows() -> bool;
+    // multiple_main_windows, some might not (monocle?, main_and_deck?)
+    //fn supports_multiple_main_windows() -> bool;
 
     // helper method
     fn main_window_count(&self, window_count: usize, modifiers: &LayoutModifiers) -> usize {
