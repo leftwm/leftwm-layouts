@@ -110,7 +110,6 @@ pub struct LayoutOptions {
     pub container_size: Rect,
     pub flipped: Flipped,
     pub rotation: Rotation,
-    pub max_column_width: Option<u32>,
 }
 
 /// LayoutModifiers are passed down to the layouts.
@@ -196,7 +195,6 @@ impl Default for LayoutOptions {
             container_size: Rect::default(),
             flipped: Flipped::None,
             rotation: Rotation::North,
-            max_column_width: None,
         }
     }
 }
