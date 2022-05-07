@@ -143,7 +143,7 @@ enum LayoutOption {
     Grid,
     EvenHorizontal,
     Fibonacci,
-    Fakebonacci,
+    Dwindle,
 }
 
 #[derive(Debug, Clone, Copy, Data, PartialEq)]
@@ -173,7 +173,7 @@ impl From<LayoutOption> for LayoutEnum {
             LayoutOption::MainAndHorizontalStack => Self::MainAndHorizontalStack,
             LayoutOption::Grid => Self::Grid,
             LayoutOption::EvenHorizontal => Self::EvenHorizontal,
-            LayoutOption::Fakebonacci => Self::Fakebonacci,
+            LayoutOption::Dwindle => Self::Dwindle,
         }
     }
 }
@@ -221,7 +221,7 @@ fn controls() -> impl Widget<DemoState> {
         ("EvenHorizontal", LayoutOption::EvenHorizontal),
         ("CenterMain", LayoutOption::CenterMain),
         ("Fibonacci", LayoutOption::Fibonacci),
-        ("Fakebonacci", LayoutOption::Fakebonacci),
+        ("Dwindle", LayoutOption::Dwindle),
     ])
     .lens(DemoState::layout);
 

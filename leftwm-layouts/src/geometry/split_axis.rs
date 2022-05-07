@@ -58,12 +58,9 @@
 /// +-------+      +---+---+
 /// ```
 ///
-/// ### Fakebonacci
+/// ### Dwindle
 /// Rectangle is split in a "Fibonacci"-like pattern.
 /// But instead of spiraling into the middle, it spirals into the bottom right.
-///
-/// *This has jokingly been named "Fakebonacci", when the LeftWM devs learned that
-/// their then-current Fibonacci implementation spirals into the corner instead of into the middle.*
 /// ```txt
 /// +-------+      +---+---+
 /// |       |      |   |   |
@@ -79,7 +76,7 @@ pub enum SplitAxis {
     Vertical,
     Grid,
     Fibonacci,
-    Fakebonacci,
+    Dwindle,
 }
 
 impl Default for SplitAxis {

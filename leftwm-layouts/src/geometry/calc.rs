@@ -177,7 +177,7 @@ pub fn split(rect: &Rect, amount: usize, axis: &SplitAxis) -> Vec<Rect> {
             }
             tiles.to_vec()
         }
-        SplitAxis::Fakebonacci => {
+        SplitAxis::Dwindle => {
             let tiles: &mut Vec<Rect> = &mut Vec::new();
             let mut remaining_tile = *rect;
             let mut last_axis = SplitAxis::Vertical;
@@ -491,8 +491,8 @@ mod tests {
     }
 
     #[test]
-    fn split_fakebonacci_four_windows() {
-        let rects = split(&CONTAINER, 4, &SplitAxis::Fakebonacci);
+    fn split_dwindle_four_windows() {
+        let rects = split(&CONTAINER, 4, &SplitAxis::Dwindle);
         assert_eq!(rects.len(), 4);
         let expected_first = Rect {
             x: 0,
@@ -525,8 +525,8 @@ mod tests {
     }
 
     #[test]
-    fn split_fakebonacci_five_windows() {
-        let rects = split(&CONTAINER, 5, &SplitAxis::Fakebonacci);
+    fn split_dwindle_five_windows() {
+        let rects = split(&CONTAINER, 5, &SplitAxis::Dwindle);
         assert_eq!(rects.len(), 5);
         let expected_first = Rect {
             x: 0,

@@ -5,7 +5,7 @@ use geometry::{Rotation, SplitAxis};
 use layouts::Fibonacci;
 use layouts::MainAndVertStack;
 use layouts::Monocle;
-use layouts::{CenterMain, EvenHorizontal, Fakebonacci, Grid, MainAndHorizontalStack};
+use layouts::{CenterMain, Dwindle, EvenHorizontal, Grid, MainAndHorizontalStack};
 
 pub mod geometry;
 mod layouts;
@@ -19,7 +19,7 @@ pub enum LayoutEnum {
     EvenHorizontal,
     CenterMain,
     Fibonacci,
-    Fakebonacci,
+    Dwindle,
 }
 
 pub struct LayoutParseError;
@@ -213,7 +213,7 @@ impl LayoutEnum {
             LayoutEnum::MainAndHorizontalStack => Box::new(MainAndHorizontalStack),
             LayoutEnum::Grid => Box::new(Grid),
             LayoutEnum::EvenHorizontal => Box::new(EvenHorizontal),
-            LayoutEnum::Fakebonacci => Box::new(Fakebonacci),
+            LayoutEnum::Dwindle => Box::new(Dwindle),
         }
     }
 }

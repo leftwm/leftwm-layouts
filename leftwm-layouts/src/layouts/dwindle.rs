@@ -6,9 +6,9 @@ use crate::{
 use crate::layouts::columns;
 
 #[derive(Debug)]
-pub struct Fakebonacci;
+pub struct Dwindle;
 
-impl Layout for Fakebonacci {
+impl Layout for Dwindle {
     fn apply(
         &self,
         window_count: usize,
@@ -19,7 +19,7 @@ impl Layout for Fakebonacci {
             window_count,
             container,
             &LayoutModifiers {
-                first_stack_split: SplitAxis::Fakebonacci,
+                first_stack_split: SplitAxis::Dwindle,
                 ..*modifiers
             },
         )
