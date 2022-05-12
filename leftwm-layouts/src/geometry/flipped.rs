@@ -1,3 +1,5 @@
+use serde::{Deserialize, Serialize};
+
 /// Represents the four states an object can be in,
 /// if it can be flipped horizontally and vertically.
 ///
@@ -49,7 +51,7 @@
 ///      flipped on
 ///      both axis
 /// ```
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum Flipped {
     None,
     Horizontal,

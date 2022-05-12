@@ -81,7 +81,7 @@ mod tests {
             3,
             CONTAINER,
             1,
-            Size::Percentage(65.0),
+            Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::None,
         );
         assert_eq!(
@@ -110,7 +110,7 @@ mod tests {
             3,
             CONTAINER,
             1,
-            Size::Percentage(65.0),
+            Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::Reserve,
         );
         assert_eq!(
@@ -139,7 +139,7 @@ mod tests {
             3,
             CONTAINER,
             1,
-            Size::Percentage(65.0),
+            Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::ReserveAndCenter,
         );
         assert_eq!(
@@ -168,7 +168,7 @@ mod tests {
             1,
             CONTAINER,
             1,
-            Size::Percentage(65.0),
+            Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::None,
         );
         assert_eq!(
@@ -189,7 +189,7 @@ mod tests {
             1,
             CONTAINER,
             0,
-            Size::Percentage(65.0),
+            Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::None,
         );
         assert_eq!(main, None);
@@ -210,7 +210,7 @@ mod tests {
             1,
             CONTAINER,
             0,
-            Size::Percentage(65.0),
+            Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::Reserve,
         );
         assert_eq!(main, None);
@@ -231,7 +231,7 @@ mod tests {
             1,
             CONTAINER,
             1,
-            Size::Percentage(65.0),
+            Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::Reserve,
         );
         assert_eq!(
@@ -252,7 +252,7 @@ mod tests {
             1,
             CONTAINER,
             0,
-            Size::Percentage(65.0),
+            Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::ReserveAndCenter,
         );
         assert_eq!(main, None);
@@ -273,7 +273,7 @@ mod tests {
             1,
             CONTAINER,
             1,
-            Size::Percentage(65.0),
+            Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::ReserveAndCenter,
         );
         assert_eq!(

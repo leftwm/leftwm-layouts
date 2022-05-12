@@ -198,6 +198,9 @@ pub fn split(rect: &Rect, amount: usize, axis: &SplitAxis) -> Vec<Rect> {
             }
             tiles.to_vec()
         }
+        &SplitAxis::None => {
+            vec![*rect]
+        }
     }
 }
 
@@ -564,4 +567,19 @@ mod tests {
         assert!(rects[3].eq(&expected_fourth));
         assert!(rects[4].eq(&expected_fifth));
     }
+
+    #[test]
+    fn split_none_two_windows() {
+        let rects = split(&CONTAINER, 2, &SplitAxis::None);
+        assert_eq!(rects.len(), 1);
+        assert!(rects[0].eq(&CONTAINER));
+    }
+
+    #[test]
+    fn split_none_five_windows() {
+        let rects = split(&CONTAINER, 2, &SplitAxis::None);
+        assert_eq!(rects.len(), 1);
+        assert!(rects[0].eq(&CONTAINER));
+    }
+
 }

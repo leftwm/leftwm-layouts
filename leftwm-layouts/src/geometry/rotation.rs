@@ -1,6 +1,8 @@
+use serde::{Deserialize, Serialize};
+
 use super::Rect;
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 /// Represents the four different possibilities of rotation.
 /// The hinted "degrees" of rotation imply clock-wise rotation.
 ///

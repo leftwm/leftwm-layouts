@@ -2,7 +2,7 @@ use std::cmp;
 
 use crate::{
     geometry::{self, Rect},
-    LayoutModifiers,
+    LayoutDefinition,
 };
 
 use super::three_column;
@@ -23,36 +23,36 @@ use super::three_column;
 pub fn stack_main_stack(
     window_count: usize,
     container: Rect,
-    modifiers: &LayoutModifiers,
+    definition: &LayoutDefinition,
 ) -> Vec<Rect> {
     let tiles: &mut Vec<Rect> = &mut Vec::new();
     if window_count == 0 {
         return tiles.to_vec();
     }
 
-    let main_window_count = cmp::min(modifiers.main_window_count, window_count);
+    let main_window_count = cmp::min(definition.main_window_count, window_count);
     let stack_window_count = window_count.saturating_sub(main_window_count);
-    let (left_window_count, right_window_cound) = if modifiers.balance_stacks {
+    let (left_window_count, right_window_count) = if definition.balance_stacks {
         let counts = geometry::remainderless_division(stack_window_count, 2);
         (counts[0], counts[1])
     } else {
-        (1, stack_window_count - 1)
+        (1, cmp::max(0, stack_window_count - 1))
     };
 
     let (left_column, main_column, right_column) = three_column(
         window_count,
         container,
         main_window_count,
-        modifiers.main_size,
-        modifiers.reserve_column_space,
-        modifiers.balance_stacks,
+        definition.main_size,
+        definition.reserve_column_space,
+        definition.balance_stacks,
     );
 
     if let Some(tile) = main_column {
         tiles.append(&mut geometry::split(
             &tile,
             main_window_count,
-            &modifiers.main_split,
+            &definition.main_split,
         ));
     }
 
@@ -60,7 +60,7 @@ pub fn stack_main_stack(
         tiles.append(&mut geometry::split(
             &tile,
             left_window_count,
-            &modifiers.first_stack_split,
+            &definition.stack_split,
         ));
     }
 
@@ -68,8 +68,8 @@ pub fn stack_main_stack(
         // don't worry if there are no stack windows, splitting by zero returns an empty vec :)
         tiles.append(&mut geometry::split(
             &tile,
-            right_window_cound,
-            &modifiers.second_stack_split,
+            right_window_count,
+            &definition.stack_split,
         ));
     }
     tiles.to_vec()

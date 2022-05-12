@@ -1,3 +1,5 @@
+use serde::{Deserialize, Serialize};
+
 /// The `SplitAxis` describes the different ways a `Rect` can be split.
 ///
 /// *Disclaimer: As it may be confusing - The terms vertical/horizontal are referring to the "splits"
@@ -70,17 +72,22 @@
 /// |       |      |   | |||
 /// +-------+      +---+---+
 /// ```
-#[derive(PartialEq, Clone, Copy)]
+/// 
+/// ### None
+/// Rectangle will not be split at all, resulting in simply returning
+/// the Rect as is.
+#[derive(PartialEq, Clone, Copy, Serialize, Deserialize, Debug)]
 pub enum SplitAxis {
     Horizontal,
     Vertical,
     Grid,
     Fibonacci,
     Dwindle,
+    None,    
 }
 
-impl Default for SplitAxis {
+/*impl Default for SplitAxis {
     fn default() -> Self {
         Self::Horizontal
     }
-}
+}*/

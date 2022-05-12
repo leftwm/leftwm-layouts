@@ -128,7 +128,7 @@ mod tests {
             3,
             CONTAINER,
             1,
-            Size::Percentage(65.0),
+            Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::None,
             false,
         );
@@ -167,7 +167,7 @@ mod tests {
             3,
             CONTAINER,
             1,
-            Size::Percentage(65.0),
+            Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::Reserve,
             false,
         );
@@ -206,7 +206,7 @@ mod tests {
             3,
             CONTAINER,
             1,
-            Size::Percentage(65.0),
+            Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::ReserveAndCenter,
             false,
         );
@@ -245,7 +245,7 @@ mod tests {
             2,
             CONTAINER,
             1,
-            Size::Percentage(65.0),
+            Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::None,
             false,
         );
@@ -276,7 +276,7 @@ mod tests {
             2,
             CONTAINER,
             1,
-            Size::Percentage(65.0),
+            Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::Reserve,
             false,
         );
@@ -307,7 +307,7 @@ mod tests {
             2,
             CONTAINER,
             1,
-            Size::Percentage(65.0),
+            Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::ReserveAndCenter,
             false,
         );
@@ -338,7 +338,7 @@ mod tests {
             1,
             CONTAINER,
             1,
-            Size::Percentage(65.0),
+            Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::None,
             false,
         );
@@ -361,7 +361,7 @@ mod tests {
             1,
             CONTAINER,
             1,
-            Size::Percentage(65.0),
+            Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::Reserve,
             false,
         );
@@ -384,7 +384,7 @@ mod tests {
             1,
             CONTAINER,
             1,
-            Size::Percentage(65.0),
+            Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::ReserveAndCenter,
             false,
         );
@@ -407,7 +407,7 @@ mod tests {
             2,
             CONTAINER,
             0,
-            Size::Percentage(65.0),
+            Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::None,
             false,
         );
@@ -438,7 +438,7 @@ mod tests {
             2,
             CONTAINER,
             0,
-            Size::Percentage(65.0),
+            Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::Reserve,
             false,
         );
@@ -469,7 +469,7 @@ mod tests {
             2,
             CONTAINER,
             0,
-            Size::Percentage(65.0),
+            Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::ReserveAndCenter,
             false,
         );
@@ -500,7 +500,7 @@ mod tests {
             1,
             CONTAINER,
             0,
-            Size::Percentage(65.0),
+            Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::None,
             false,
         );
@@ -523,7 +523,7 @@ mod tests {
             1,
             CONTAINER,
             0,
-            Size::Percentage(65.0),
+            Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::Reserve,
             false,
         );
@@ -546,7 +546,7 @@ mod tests {
             1,
             CONTAINER,
             0,
-            Size::Percentage(65.0),
+            Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::ReserveAndCenter,
             false,
         );
@@ -569,7 +569,7 @@ mod tests {
             0,
             CONTAINER,
             1,
-            Size::Percentage(65.0),
+            Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::None,
             false,
         );
