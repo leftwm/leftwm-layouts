@@ -2,64 +2,63 @@ use serde::{Deserialize, Serialize};
 
 /// Represents the four states an object can be in,
 /// if it can be flipped horizontally and vertically.
-///
-/// ## Examples
-/// ### None
-/// ```txt
-///     +---------+
-///     |A       B|
-///     |         |
-///     |C       D|
-///     +---------+
-/// ```
-///
-/// ### Horizontal
-/// ```txt
-///     +---------+
-///     |C       D|
-/// >- -|- - - - -|- -< flipped on horizontal axis
-///     |A       B|
-///     +---------+
-/// ```
-///
-/// ### Vertical
-/// ```txt
-///          v
-///          |    
-///     +---------+
-///     |B   |   A|
-///     |    |    |
-///     |D   |   C|
-///     +---------+
-///          |
-///          ^
-///      flipped on
-///     verical axis
-/// ```
-///
-/// ### Both
-/// ```txt
-///          v
-///          |
-///     +---------+
-///     |D   |   C|
-/// >- -|- - + - -|- -< flipped on both axis
-///     |B   |   A|
-///     +---------+
-///          |
-///          ^
-///      flipped on
-///      both axis
-/// ```
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum Flipped {
+    /// Nothing is flipped at all
+    ///
+    /// ```txt
+    ///     +---------+
+    ///     |A       B|
+    ///     |         |
+    ///     |C       D|
+    ///     +---------+
+    /// ```
     None,
+
+    /// Flipped on the horizontal axis
+    ///
+    /// ```txt
+    ///     +---------+
+    ///     |C       D|
+    /// >- -|- - - - -|- -<
+    ///     |A       B|
+    ///     +---------+
+    /// ```
     Horizontal,
+
+    /// Flipped on the vertical axis
+    ///
+    /// ```txt
+    ///          v
+    ///          |    
+    ///     +---------+
+    ///     |B   |   A|
+    ///     |    |    |
+    ///     |D   |   C|
+    ///     +---------+
+    ///          |
+    ///          ^
+    /// ```
     Vertical,
+
+    /// Flipped on horizontal and vertical axis
+    ///
+    /// ```txt
+    ///          v
+    ///          |
+    ///     +---------+
+    ///     |D   |   C|
+    /// >- -|- - + - -|- -<
+    ///     |B   |   A|
+    ///     +---------+
+    ///          |
+    ///          ^
+    /// ```
     Both,
 }
 
 impl Flipped {
+    /// Indicates whether the variant is flipped horizontally
     pub fn is_flipped_horizontal(&self) -> bool {
         matches!(self, Self::Horizontal | Self::Both)
     }

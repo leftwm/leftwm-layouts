@@ -2,48 +2,90 @@ use serde::{Deserialize, Serialize};
 
 use super::Rect;
 
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 /// Represents the four different possibilities of rotation.
-/// The hinted "degrees" of rotation imply clock-wise rotation.
-///
-/// ## Demonstration
-/// ```txt
-///    North          East           South           West
-/// +---------+    +---------+    +---------+    +---------+
-/// |    ^    |    |         |    |         |    |         |
-/// |         |    |        >|    |         |    |<        |
-/// |         |    |         |    |    v    |    |         |
-/// +---------+    +---------+    +---------+    +---------+
-///      0°            90°            180°           270°
-/// ```
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum Rotation {
+    /// A rotation of 0° (ie. no rotation).
+    /// This is the default value.
+    ///
+    /// ```txt
+    ///    North
+    /// +---------+
+    /// |    ^    |
+    /// |         |
+    /// |         |
+    /// +---------+
+    ///      0°
+    /// ```
     North,
+
+    /// A rotation of 90° clockwise.
+    ///
+    /// ```txt
+    ///    East
+    /// +---------+
+    /// |         |
+    /// |        >|
+    /// |         |
+    /// +---------+
+    ///     90°
+    /// ```
     East,
+
+    /// A rotation of 180°.
+    ///
+    /// ```txt
+    ///    South
+    /// +---------+
+    /// |         |
+    /// |         |
+    /// |    v    |
+    /// +---------+
+    ///     180°
+    /// ```
     South,
+
+    /// A rotation of 270° clockwise.
+    ///
+    /// ```txt
+    ///     West
+    /// +---------+
+    /// |         |
+    /// |<        |
+    /// |         |
+    /// +---------+
+    ///     270°
+    /// ```
     West,
 }
 
 impl Rotation {
-    /// Returns whether the aspect ratio for the provided container
-    /// Rect changes with the given rotation, "squeezing" the contents.
-    pub fn aspect_ratio_changes(&self, container: &Rect) -> bool {
-        // if the container is not a square, and the rotation is
+    /// Returns whether the aspect ratio of the provided
+    /// Rect changes with the given rotation.
+    pub fn aspect_ratio_changes(&self, rect: &Rect) -> bool {
+        // if the rect is not a square, and the rotation is
         // 90° or 270°, then the aspect ratio changes
-        container.h != container.w && matches!(self, Self::West | Self::East)
+        rect.h != rect.w && matches!(self, Self::West | Self::East)
     }
 
     /// Returns the (x, y) coordinate of the point which will be
-    /// the Rect's anchor when it is rotated.
-    pub fn anchor(&self, rect: &Rect) -> (u32, u32) {
+    /// the Rect's anchor after it is rotated.
+    ///
+    /// ## Explanation
+    /// The anchor point of a [`Rect`] is usually the top-left (x,y).
+    /// When a [`Rect`] is rotated inside a layout, then another corner
+    /// of the [`Rect`] will become the new anchor point after the rotation.
+    /// This method returns the current position of that corner.
+    pub fn next_anchor(&self, rect: &Rect) -> (i32, i32) {
         match self {
-            Self::North => (rect.x as u32, rect.y as u32), // top-left
-            Self::East => (rect.x as u32, rect.y as u32 + rect.h), // bottom-left
-            Self::South => (rect.x as u32 + rect.w, rect.y as u32 + rect.h), // bottom-right
-            Self::West => (rect.x as u32 + rect.w, rect.y as u32), // top-right
+            Self::North => (rect.x, rect.y),                // top-left
+            Self::East => (rect.x, rect.y + rect.h as i32), // bottom-left
+            Self::South => (rect.x + rect.w as i32, rect.y + rect.h as i32), // bottom-right
+            Self::West => (rect.x + rect.w as i32, rect.y), // top-right
         }
     }
 
-    /// Get the next rotation when rotating clockwise
+    /// Get the next rotation variant when rotating clockwise
     pub fn clockwise(&self) -> Self {
         match self {
             Rotation::North => Rotation::East,
@@ -108,28 +150,28 @@ mod tests {
     #[test]
     fn calc_anchor_north() {
         let rect = Rect::new(0, 0, 1920, 1080);
-        let anchor = Rotation::North.anchor(&rect);
+        let anchor = Rotation::North.next_anchor(&rect);
         assert_eq!(anchor, (0, 0));
     }
 
     #[test]
     fn calc_anchor_east() {
         let rect = Rect::new(0, 0, 1920, 1080);
-        let anchor = Rotation::East.anchor(&rect);
+        let anchor = Rotation::East.next_anchor(&rect);
         assert_eq!(anchor, (0, 1080));
     }
 
     #[test]
     fn calc_anchor_south() {
         let rect = Rect::new(0, 0, 1920, 1080);
-        let anchor = Rotation::South.anchor(&rect);
+        let anchor = Rotation::South.next_anchor(&rect);
         assert_eq!(anchor, (1920, 1080));
     }
 
     #[test]
     fn calc_anchor_west() {
         let rect = Rect::new(0, 0, 1920, 1080);
-        let anchor = Rotation::West.anchor(&rect);
+        let anchor = Rotation::West.next_anchor(&rect);
         assert_eq!(anchor, (1920, 0));
     }
 }

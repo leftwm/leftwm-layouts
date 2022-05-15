@@ -1,48 +1,52 @@
 use serde::{Deserialize, Serialize};
 
 /// Determines whether the space of a column should be reserved
-/// when there is no window inside the column. A value of 'Reserve' or
-/// 'ReserveAndCenter' will "reserve" the column space and make other
-/// column(s) avoid it entirely.
-///
-/// ## Demonstration
-/// When there is only one main window and
-/// no stack windows, the modifier has the following effects.
-///
-/// When set to `None` (default)
-/// ```txt
-/// +--------------+
-/// |              |
-/// |     MAIN     |
-/// |              |
-/// +--------------+
-/// ```
-///
-/// When set to `Reserve`
-/// ```txt
-/// +--------+-----+
-/// |        |     |
-/// |  MAIN  |     |
-/// |        |     |
-/// +--------+-----+
-///             ^
-///    reserved empty space
-/// ```
-///
-/// When set to `ReserveAndCenter`
-/// ```txt
-/// +--+--------+--+
-/// |  |        |  |
-/// |  |  MAIN  |  |
-/// |  |        |  |
-/// +--+--------+--+
-///  ^            ^
-/// reserved empty space
-/// ```
+/// when there is no window inside the column. A value of [`ReserveColumnSpace::Reserve`] or
+/// [`ReserveColumnSpace::ReserveAndCenter`] will reserve the column space and make other
+/// column(s) avoid it entirely. While a value of [`ReserveColumnSpace::None`]
+/// makes other columns overtake the empty column space.
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum ReserveColumnSpace {
+    /// No space will be reserved. Instead, the populated space
+    /// will take over the empty space. This is the default variant.
+    ///
+    /// ```txt
+    /// +--------------+
+    /// |              |
+    /// |     MAIN     |
+    /// |              |
+    /// +--------------+
+    /// ```
     None,
+
+    /// Empty space is reserved in-place
+    /// and won't be populated with other elements
+    ///
+    /// ```txt
+    /// +--------+-----+
+    /// |        |     |
+    /// |  MAIN  |     |
+    /// |        |     |
+    /// +--------+-----+
+    ///             ^
+    ///    reserved empty space
+    /// ```
     Reserve,
+
+    /// Empty space is reserved in terms of amount of space,
+    /// but not in terms of its position. Instead the populated
+    /// space will be centered, while the empty space is accounted
+    /// for on each side.
+    ///
+    /// ```txt
+    /// +--+--------+--+
+    /// |  |        |  |
+    /// |  |  MAIN  |  |
+    /// |  |        |  |
+    /// +--+--------+--+
+    ///  ^            ^
+    /// reserved empty space
+    /// ```
     ReserveAndCenter,
 }
 

@@ -61,26 +61,20 @@ pub fn translate_rotation(container: Rect, rect: &mut Rect, rotation: &Rotation)
     match &rotation {
         Rotation::North => {}
         Rotation::East => {
-            let next_anchor = rotation.anchor(rect);
-            let new_x = container.h - next_anchor.1;
-            let new_y = next_anchor.0;
-            rect.x = new_x as i32;
-            rect.y = new_y as i32;
+            let next_anchor = rotation.next_anchor(rect);
+            rect.x = container.h as i32 - next_anchor.1;
+            rect.y = next_anchor.0;
             std::mem::swap(&mut rect.w, &mut rect.h);
         }
         Rotation::South => {
-            let next_anchor = rotation.anchor(rect);
-            let new_x = container.w - next_anchor.0;
-            let new_y = container.h - next_anchor.1;
-            rect.x = new_x as i32;
-            rect.y = new_y as i32;
+            let next_anchor = rotation.next_anchor(rect);
+            rect.x = container.w as i32 - next_anchor.0;
+            rect.y = container.h as i32 - next_anchor.1;
         }
         Rotation::West => {
-            let next_anchor = rotation.anchor(rect);
-            let new_x = next_anchor.1;
-            let new_y = container.w - next_anchor.0;
-            rect.x = new_x as i32;
-            rect.y = new_y as i32;
+            let next_anchor = rotation.next_anchor(rect);
+            rect.x = next_anchor.1;
+            rect.y = container.w as i32 - next_anchor.0;
             std::mem::swap(&mut rect.w, &mut rect.h)
         }
     }
