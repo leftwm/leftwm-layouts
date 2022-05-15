@@ -120,27 +120,6 @@ impl LayoutDefinition {
     }
 }
 
-/*impl Default for LayoutDefinition {
-    fn default() -> Self {
-        Self {
-            column_type: ColumnType::MainAndStack,
-            flipped: Flipped::None,
-            rotation: Rotation::North,
-            main_window_count: 1,
-            main_size: Size::Ratio(0.5),
-            main_split: SplitAxis::Vertical,
-            first_stack_split: SplitAxis::Horizontal,
-            second_stack_split: SplitAxis::Horizontal,
-            reserve_column_space: ReserveColumnSpace::None,
-            balance_stacks: true,
-        }
-    }
-}*/
-
-/*fn default_column_type() -> ColumnType {
-    ColumnType::MainAndStack
-}*/
-
 fn default_layout_map() -> HashMap<String, LayoutDefinition> {
     HashMap::from([])
 }
@@ -165,21 +144,6 @@ pub fn default_layouts() -> Layouts {
     let default_layouts = include_str!("default.ron");
     let conf: Layouts = ron::from_str(default_layouts).unwrap();
     conf
-    /*Layouts {
-        layouts: HashMap::from([
-            ("Dwindle".to_string(), LayoutDefinition {
-                column_type: ColumnType::MainAndStack,
-                flipped: Flipped::None,
-                rotation: Rotation::North,
-                main_window_count: 1,
-                main_size: Size::Ratio(0.5),
-                main_split: SplitAxis::Vertical,
-                stack_split: SplitAxis::Dwindle,
-                reserve_column_space: ReserveColumnSpace::None,
-                balance_stacks: true
-            }),
-        ]),
-    }*/
 }
 
 #[cfg(test)]
