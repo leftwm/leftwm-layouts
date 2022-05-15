@@ -85,9 +85,3 @@ pub enum SplitAxis {
     Dwindle,
     None,
 }
-
-/*impl Default for SplitAxis {
-    fn default() -> Self {
-        Self::Horizontal
-    }
-}*/
