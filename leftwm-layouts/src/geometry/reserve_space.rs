@@ -1,3 +1,5 @@
+use serde::{Deserialize, Serialize};
+
 /// Determines whether the space of a column should be reserved
 /// when there is no window inside the column. A value of 'Reserve' or
 /// 'ReserveAndCenter' will "reserve" the column space and make other
@@ -37,7 +39,7 @@
 ///  ^            ^
 /// reserved empty space
 /// ```
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum ReserveColumnSpace {
     None,
     Reserve,

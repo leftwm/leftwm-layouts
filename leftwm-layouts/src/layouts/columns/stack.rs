@@ -1,6 +1,6 @@
 use crate::{
     geometry::{self, Rect},
-    LayoutModifiers,
+    LayoutDefinition,
 };
 
 /// The stack column layout is just one single column.
@@ -16,8 +16,8 @@ use crate::{
 /// +-----------+
 /// ```
 #[allow(dead_code)]
-pub fn stack(window_count: usize, container: Rect, modifiers: &LayoutModifiers) -> Vec<Rect> {
-    geometry::split(&container, window_count, &modifiers.first_stack_split)
+pub fn stack(window_count: usize, container: Rect, definition: &LayoutDefinition) -> Vec<Rect> {
+    geometry::split(&container, window_count, &definition.stack_split)
 }
 
 #[cfg(test)]

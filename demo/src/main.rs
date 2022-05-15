@@ -1,11 +1,11 @@
 use druid::piet::{Text, TextLayout, TextLayoutBuilder};
-use druid::widget::{Button, Container, Flex, LabelText, Painter, RadioGroup};
+use druid::widget::{Button, Container, Flex, Label, LabelText, Painter};
 use druid::{
-    AppLauncher, Color, Data, Lens, LocalizedString, Point, Rect, RenderContext, Widget, WidgetExt,
-    WindowDesc,
+    AppLauncher, Color, Data, Insets, Lens, LocalizedString, Point, Rect, RenderContext, Widget,
+    WidgetExt, WindowDesc,
 };
-use leftwm_layouts::geometry::{Flipped, ReserveColumnSpace, Rotation, Size};
-use leftwm_layouts::{LayoutEnum, LayoutModifiers, LayoutOptions};
+use leftwm_layouts::geometry::ReserveColumnSpace;
+use leftwm_layouts::Layouts;
 
 const PRIMARY: Color = Color::rgb8(0x08, 0x0f, 0x0f);
 
@@ -13,42 +13,42 @@ const WINDOW_TITLE: LocalizedString<DemoState> = LocalizedString::new("Hello Wor
 
 #[derive(Clone, Data, Lens)]
 struct DemoState {
-    layout: LayoutOption,
+    #[data(same_fn = "PartialEq::eq")]
+    layouts: Layouts,
+    current_layout: String,
     window_count: usize,
-    master_width_percentage: f32,
-    master_window_count: usize,
-    max_column_width: Option<u32>,
-    reserve_space: bool,
-
-    #[data(same_fn = "PartialEq::eq")]
-    reserve_column_space: ReserveOption,
-
-    #[data(same_fn = "PartialEq::eq")]
-    flipped: Flipped,
-
-    #[data(same_fn = "PartialEq::eq")]
-    rotation: Rotation,
 }
 
 impl Default for DemoState {
     fn default() -> Self {
+        let layouts = leftwm_layouts::default_layouts().to_owned();
+        let names = layouts.layout_names();
+        let name = names.get(0).unwrap();
         Self {
-            layout: LayoutOption::MainAndVertStack,
-            window_count: 5,
-            master_width_percentage: 60.0,
-            master_window_count: 1,
-            max_column_width: None,
-            flipped: Flipped::default(),
-            rotation: Rotation::default(),
-            reserve_space: false,
-            reserve_column_space: ReserveOption::None,
+            layouts,
+            current_layout: name.to_owned(),
+            window_count: 3,
         }
     }
 }
 
 impl DemoState {
+    fn current(&self) -> &leftwm_layouts::LayoutDefinition {
+        self.layouts
+            .layouts
+            .get(self.current_layout.as_str())
+            .unwrap()
+    }
+
+    fn current_mut(&mut self) -> &mut leftwm_layouts::LayoutDefinition {
+        self.layouts
+            .layouts
+            .get_mut(self.current_layout.as_str())
+            .unwrap()
+    }
+
     fn add_window(&mut self) {
-        self.window_count += 1;
+        self.window_count += 1
     }
 
     fn remove_window(&mut self) {
@@ -57,144 +57,59 @@ impl DemoState {
         } else {
             0
         };
-        self.window_count = new_count;
+        self.window_count = new_count
     }
 
-    fn increase_master_width(&mut self) {
-        let new_width = self.master_width_percentage + 5.0;
-        if new_width > 100.0 {
-            self.master_width_percentage = 100.0;
-        } else {
-            self.master_width_percentage = new_width;
-        }
+    fn increase_main_width(&mut self) {
+        self.current_mut().increase_main_size(9999)
     }
 
-    fn decrease_master_width(&mut self) {
-        let new_width = self.master_width_percentage - 5.0;
-        if new_width < 0.0 {
-            self.master_width_percentage = 0.0;
-        } else {
-            self.master_width_percentage = new_width;
-        }
+    fn decrease_main_width(&mut self) {
+        self.current_mut().decrease_main_size()
     }
 
-    fn increase_master_count(&mut self) {
-        self.master_window_count += 1;
+    fn increase_main_count(&mut self) {
+        self.current_mut().main_window_count += 1
     }
 
-    fn decrease_master_count(&mut self) {
-        let new_count = if self.master_window_count > 0 {
-            self.master_window_count - 1
-        } else {
-            0
-        };
-        self.master_window_count = new_count;
+    fn decrease_main_count(&mut self) {
+        self.current_mut().main_window_count =
+            self.current_mut().main_window_count.saturating_sub(1)
     }
 
     fn toggle_flipped_horizontal(&mut self) {
-        self.flipped = Flipped::toggle_horizontal(&self.flipped)
+        self.current_mut().flipped = self.current().flipped.toggle_horizontal()
     }
 
     fn toggle_flipped_vertical(&mut self) {
-        self.flipped = Flipped::toggle_vertical(&self.flipped)
+        self.current_mut().flipped = self.current().flipped.toggle_vertical()
     }
 
-    fn toggle_reserve_space(&mut self) {
-        self.reserve_space = !self.reserve_space
+    fn toggle_balance_stacks(&mut self) {
+        self.current_mut().balance_stacks = !self.current().balance_stacks
+    }
+
+    fn change_reserve_space(&mut self) {
+        self.current_mut().reserve_column_space = match self.current().reserve_column_space {
+            ReserveColumnSpace::None => ReserveColumnSpace::Reserve,
+            ReserveColumnSpace::Reserve => ReserveColumnSpace::ReserveAndCenter,
+            ReserveColumnSpace::ReserveAndCenter => ReserveColumnSpace::None,
+        };
     }
 
     fn rotate(&mut self) {
-        self.rotation = match self.rotation {
-            Rotation::North => Rotation::East,
-            Rotation::East => Rotation::South,
-            Rotation::South => Rotation::West,
-            Rotation::West => Rotation::North,
-        }
+        self.current_mut().rotation = self.current().rotation.clockwise();
     }
 }
-
-impl From<&DemoState> for LayoutModifiers {
-    fn from(value: &DemoState) -> Self {
-        LayoutModifiers {
-            main_size: Size::Percentage(value.master_width_percentage),
-            main_window_count: value.master_window_count,
-            reserve_column_space: value.reserve_column_space.into(),
-            ..Default::default()
-        }
-    }
-}
-
-impl From<&DemoState> for LayoutOptions {
-    fn from(value: &DemoState) -> Self {
-        LayoutOptions {
-            flipped: value.flipped,
-            rotation: value.rotation,
-            ..Default::default()
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, Data, PartialEq)]
-enum LayoutOption {
-    Monocle,
-    MainAndVertStack,
-    MainAndHorizontalStack,
-    CenterMain,
-    Grid,
-    EvenHorizontal,
-    Fibonacci,
-    Dwindle,
-}
-
-#[derive(Debug, Clone, Copy, Data, PartialEq)]
-enum ReserveOption {
-    None,
-    Reserve,
-    ReserveAndCenter,
-}
-
-impl From<ReserveOption> for ReserveColumnSpace {
-    fn from(option: ReserveOption) -> Self {
-        match option {
-            ReserveOption::None => ReserveColumnSpace::None,
-            ReserveOption::Reserve => ReserveColumnSpace::Reserve,
-            ReserveOption::ReserveAndCenter => ReserveColumnSpace::ReserveAndCenter,
-        }
-    }
-}
-
-impl From<LayoutOption> for LayoutEnum {
-    fn from(option: LayoutOption) -> Self {
-        match option {
-            LayoutOption::Monocle => Self::Monocle,
-            LayoutOption::MainAndVertStack => Self::MainAndVertStack,
-            LayoutOption::CenterMain => Self::CenterMain,
-            LayoutOption::Fibonacci => Self::Fibonacci,
-            LayoutOption::MainAndHorizontalStack => Self::MainAndHorizontalStack,
-            LayoutOption::Grid => Self::Grid,
-            LayoutOption::EvenHorizontal => Self::EvenHorizontal,
-            LayoutOption::Dwindle => Self::Dwindle,
-        }
-    }
-}
-
-//impl Into<LayoutEnum> for LayoutOption {
-//    fn into(self) -> LayoutEnum {
-//        match self {
-//            Self::Monocle => LayoutEnum::Monocle,
-//            Self::MainAndVertStack => LayoutEnum::MainAndVertStack,
-//        }
-//    }
-//}
 
 fn main() {
+    // create the initial app state
+    let initial_state = DemoState::default();
+
     // describe the main window
     let main_window = WindowDesc::new(build_root_widget)
         .title(WINDOW_TITLE)
         .window_size((1280.0, 720.0));
-
-    // create the initial app state
-    let initial_state = DemoState::default();
 
     // start the application
     AppLauncher::with_window(main_window)
@@ -210,26 +125,20 @@ fn build_root_widget() -> impl Widget<DemoState> {
 }
 
 fn controls() -> impl Widget<DemoState> {
-    let selector = RadioGroup::new(vec![
-        ("Monocle", LayoutOption::Monocle),
-        ("MainAndVertStack", LayoutOption::MainAndVertStack),
-        (
-            "MainAndHorizontalStack",
-            LayoutOption::MainAndHorizontalStack,
-        ),
-        ("Grid", LayoutOption::Grid),
-        ("EvenHorizontal", LayoutOption::EvenHorizontal),
-        ("CenterMain", LayoutOption::CenterMain),
-        ("Fibonacci", LayoutOption::Fibonacci),
-        ("Dwindle", LayoutOption::Dwindle),
-    ])
-    .lens(DemoState::layout);
+    let names = leftwm_layouts::default_layouts().layout_names();
 
-    let inc_master = button("IncreaseMainWidth")
-        .on_click(move |_ctx, data: &mut DemoState, _env| data.increase_master_width());
+    let mut col = Flex::column();
+    for key in names {
+        let button = button(key.to_owned())
+            .on_click(move |_ctx, data: &mut DemoState, _env| data.current_layout = key.to_owned());
+        col.add_child(button)
+    }
 
-    let dec_master = button("DecreaseMainWidth")
-        .on_click(move |_ctx, data: &mut DemoState, _env| data.decrease_master_width());
+    let inc_main = button("IncreaseMainWidth")
+        .on_click(move |_ctx, data: &mut DemoState, _env| data.increase_main_width());
+
+    let dec_main = button("DecreaseMainWidth")
+        .on_click(move |_ctx, data: &mut DemoState, _env| data.decrease_main_width());
 
     let add_window =
         button("AddWindow").on_click(move |_ctx, data: &mut DemoState, _env| data.add_window());
@@ -237,67 +146,78 @@ fn controls() -> impl Widget<DemoState> {
     let remove_window = button("RemoveWindow")
         .on_click(move |_ctx, data: &mut DemoState, _env| data.remove_window());
 
-    let inc_master_count = button("IncreaseMasterCount")
-        .on_click(move |_ctx, data: &mut DemoState, _env| data.increase_master_count());
+    let inc_main_count = button("IncreaseMainCount")
+        .on_click(move |_ctx, data: &mut DemoState, _env| data.increase_main_count());
 
-    let dec_master_count = button("DecreaseMasterCount")
-        .on_click(move |_ctx, data: &mut DemoState, _env| data.decrease_master_count());
+    let dec_main_count = button("DecreaseMainCount")
+        .on_click(move |_ctx, data: &mut DemoState, _env| data.decrease_main_count());
 
     let flip_h = button(|data: &DemoState, _env: &_| {
-        format!("FlipHorziontal: {}", data.flipped.is_flipped_horizontal())
+        format!(
+            "FlipHorziontal: {}",
+            data.current().flipped.is_flipped_horizontal()
+        )
     })
     .on_click(move |_ctx, data: &mut DemoState, _env| data.toggle_flipped_horizontal());
 
     let flip_v = button(|data: &DemoState, _env: &_| {
-        format!("FlipVertical: {}", data.flipped.is_flipped_vertical())
+        format!(
+            "FlipVertical: {}",
+            data.current().flipped.is_flipped_vertical()
+        )
     })
     .on_click(move |_ctx, data: &mut DemoState, _env| data.toggle_flipped_vertical());
 
-    let rotation = button(|data: &DemoState, _env: &_| format!("Rotation: {:?}", data.rotation))
-        .on_click(move |_ctx, data: &mut DemoState, _env| data.rotate());
+    let rotation =
+        button(|data: &DemoState, _env: &_| format!("Rotation: {:?}", data.current().rotation))
+            .on_click(move |_ctx, data: &mut DemoState, _env| data.rotate());
 
-    let reserve_space =
-        button(|data: &DemoState, _env: &_| format!("Reserve Space: {:?}", data.reserve_space))
-            .on_click(move |_ctx, data: &mut DemoState, _env| data.toggle_reserve_space());
+    let balance_stacks = button(|data: &DemoState, _env: &_| {
+        format!("BalanceStacks: {}", data.current().balance_stacks)
+    })
+    .on_click(move |_ctx, data: &mut DemoState, _env| data.toggle_balance_stacks());
 
-    let reserve_column_space = RadioGroup::new(vec![
-        ("None", ReserveOption::None),
-        ("Reserve", ReserveOption::Reserve),
-        ("ReserveAndCenter", ReserveOption::ReserveAndCenter),
-    ])
-    .lens(DemoState::reserve_column_space);
+    let reserve_space = button(|data: &DemoState, _env: &_| {
+        format!(
+            "ReserveColumnSpace: {:?}",
+            data.current().reserve_column_space
+        )
+    })
+    .on_click(move |_ctx, data: &mut DemoState, _env| data.change_reserve_space());
 
     let flex = Flex::column()
-        .with_child(selector)
-        .with_flex_child(inc_master, 1.0)
-        .with_flex_child(dec_master, 1.0)
-        .with_flex_child(inc_master_count, 1.0)
-        .with_flex_child(dec_master_count, 1.0)
-        .with_flex_child(add_window, 1.0)
-        .with_flex_child(remove_window, 1.0)
-        .with_flex_child(flip_h, 1.0)
-        .with_flex_child(flip_v, 1.0)
-        .with_flex_child(rotation, 1.0)
-        .with_flex_child(reserve_space, 1.0)
-        .with_flex_child(reserve_column_space, 1.0);
+        .with_child(label("Layouts"))
+        .with_child(col)
+        .with_child(label("Modifiers"))
+        .with_child(inc_main)
+        .with_child(dec_main)
+        .with_child(inc_main_count)
+        .with_child(dec_main_count)
+        .with_child(add_window)
+        .with_child(remove_window)
+        .with_child(flip_h)
+        .with_child(flip_v)
+        .with_child(rotation)
+        .with_child(balance_stacks)
+        .with_child(reserve_space);
 
-    flex.fix_width(240.0).background(PRIMARY)
+    flex.fix_width(260.0).expand_height().background(PRIMARY)
 }
 
 fn layout_preview() -> impl Widget<DemoState> {
     Painter::new(|ctx, data: &DemoState, _| {
         let parent_size = ctx.size();
-        let modifiers = LayoutModifiers::from(data);
-        let mut options = LayoutOptions::from(data);
-        options.container_size = leftwm_layouts::geometry::Rect {
+        let container = leftwm_layouts::geometry::Rect {
             x: 0,
             y: 0,
             w: parent_size.width as u32,
             h: parent_size.height as u32,
         };
 
-        let layout: LayoutEnum = data.layout.into();
-        let calcs = leftwm_layouts::apply(&layout, data.window_count, &options, &modifiers);
+        let layout = data.current().to_owned();
+
+        //let layout: LayoutEnum = data.layout.into();
+        let calcs = leftwm_layouts::apply(layout, data.window_count, container);
         let step = 1.0 / data.window_count as f64;
         let mut alpha = 1.0;
         calcs.into_iter().enumerate().for_each(|(i, o)| {
@@ -342,4 +262,10 @@ fn layout_preview() -> impl Widget<DemoState> {
 
 fn button(text: impl Into<LabelText<DemoState>>) -> impl Widget<DemoState> {
     Button::new(text).expand_width().padding(4.0)
+}
+
+fn label(text: impl Into<LabelText<DemoState>>) -> impl Widget<DemoState> {
+    Label::new(text)
+        .padding(Insets::new(0.0, 24.0, 0.0, 4.0))
+        .expand_width()
 }
