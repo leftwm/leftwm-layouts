@@ -21,7 +21,7 @@ struct DemoState {
 
 impl Default for DemoState {
     fn default() -> Self {
-        let layouts = leftwm_layouts::default_layouts().to_owned();
+        let layouts = Layouts::default();
         let names = layouts.layout_names();
         let name = names.get(0).unwrap();
         Self {
@@ -125,7 +125,7 @@ fn build_root_widget() -> impl Widget<DemoState> {
 }
 
 fn controls() -> impl Widget<DemoState> {
-    let names = leftwm_layouts::default_layouts().layout_names();
+    let names = Layouts::default().layout_names();
 
     let mut col = Flex::column();
     for key in names {

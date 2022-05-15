@@ -1,6 +1,5 @@
 use geometry::Rect;
 use layouts::columns::{main_stack, stack, stack_main_stack, ColumnType};
-pub use layouts::default_layouts;
 pub use layouts::LayoutDefinition;
 pub use layouts::Layouts;
 

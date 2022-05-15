@@ -18,6 +18,13 @@ impl Layouts {
     }
 }
 
+impl Default for Layouts {
+    fn default() -> Self {
+        let default_layouts = include_str!("default.ron");
+        ron::from_str(default_layouts).unwrap()
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub struct LayoutDefinition {
     /// The column type used in this layout.
@@ -140,17 +147,9 @@ fn default_balance_stacks() -> bool {
     true
 }
 
-pub fn default_layouts() -> Layouts {
-    let default_layouts = include_str!("default.ron");
-    let conf: Layouts = ron::from_str(default_layouts).unwrap();
-    conf
-}
-
 #[cfg(test)]
 mod tests {
     use crate::layouts::Layouts;
-
-    use super::default_layouts;
 
     #[test]
     fn serialization_test() {
@@ -161,7 +160,7 @@ mod tests {
     // todo
     #[test]
     fn multiple_layout_definitions() {
-        for l in default_layouts().layouts {
+        for l in Layouts::default().layouts {
             print!("{}: {:?}", l.0, l.1)
         }
     }
