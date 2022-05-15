@@ -1,4 +1,4 @@
-use std::{collections::HashMap, cmp};
+use std::{cmp, collections::HashMap};
 
 use serde::{Deserialize, Serialize};
 
@@ -8,6 +8,7 @@ use super::columns::ColumnType;
 
 #[derive(Serialize, Deserialize, PartialEq, Clone)]
 pub struct Layouts {
+    #[serde(default = "default_layout_map")]
     pub layouts: HashMap<String, LayoutDefinition>,
 }
 
@@ -96,9 +97,9 @@ pub struct LayoutDefinition {
 }
 
 impl LayoutDefinition {
-    pub fn increase_main_size(&mut self) {
+    pub fn increase_main_size(&mut self, upper_bound: i32) {
         self.main_size = match self.main_size {
-            Size::Pixel(x) => Size::Pixel(x + 50), // todo: upper limit to container size
+            Size::Pixel(x) => Size::Pixel(cmp::min(x + 50, upper_bound)),
             Size::Ratio(x) => Size::Ratio(f32::min(1.0, x + 0.05)),
         };
     }
@@ -108,6 +109,14 @@ impl LayoutDefinition {
             Size::Pixel(x) => Size::Pixel(cmp::max(0, x - 50)),
             Size::Ratio(x) => Size::Ratio(f32::max(0.0, x - 0.05)),
         };
+    }
+
+    pub fn increase_main_window_count(&mut self) {
+        self.main_window_count = self.main_window_count.saturating_add(1);
+    }
+
+    pub fn decrease_main_window_count(&mut self) {
+        self.main_window_count = self.main_window_count.saturating_sub(1);
     }
 }
 
@@ -132,6 +141,10 @@ impl LayoutDefinition {
     ColumnType::MainAndStack
 }*/
 
+fn default_layout_map() -> HashMap<String, LayoutDefinition> {
+    HashMap::from([])
+}
+
 fn default_main_split() -> SplitAxis {
     SplitAxis::Vertical
 }
@@ -154,16 +167,16 @@ pub fn default_layouts() -> Layouts {
     conf
     /*Layouts {
         layouts: HashMap::from([
-            ("Dwindle".to_string(), LayoutDefinition { 
-                column_type: ColumnType::MainAndStack, 
-                flipped: Flipped::None, 
-                rotation: Rotation::North, 
-                main_window_count: 1, 
-                main_size: Size::Ratio(0.5), 
-                main_split: SplitAxis::Vertical, 
-                stack_split: SplitAxis::Dwindle, 
-                reserve_column_space: ReserveColumnSpace::None, 
-                balance_stacks: true 
+            ("Dwindle".to_string(), LayoutDefinition {
+                column_type: ColumnType::MainAndStack,
+                flipped: Flipped::None,
+                rotation: Rotation::North,
+                main_window_count: 1,
+                main_size: Size::Ratio(0.5),
+                main_split: SplitAxis::Vertical,
+                stack_split: SplitAxis::Dwindle,
+                reserve_column_space: ReserveColumnSpace::None,
+                balance_stacks: true
             }),
         ]),
     }*/
@@ -171,22 +184,21 @@ pub fn default_layouts() -> Layouts {
 
 #[cfg(test)]
 mod tests {
-    use crate::layouts::{layout_definition::Layouts, LayoutDefinition};
+    use crate::layouts::Layouts;
 
     use super::default_layouts;
 
     #[test]
     fn serialization_test() {
-        let def: LayoutDefinition = ron::from_str("()").unwrap();
+        let def: Layouts = ron::from_str("()").unwrap();
         println!("RON: {}", ron::to_string(&def).unwrap());
     }
 
+    // todo
     #[test]
     fn multiple_layout_definitions() {
         for l in default_layouts().layouts {
             print!("{}: {:?}", l.0, l.1)
         }
-        /*let defs: HashMap<String, LayoutDefinition> = ron::from_str(conf).unwrap();
-        println!("RON: {}", ron::to_string(&defs).unwrap())*/
     }
 }

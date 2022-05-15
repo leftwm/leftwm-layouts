@@ -36,7 +36,7 @@ pub fn stack_main_stack(
         let counts = geometry::remainderless_division(stack_window_count, 2);
         (counts[0], counts[1])
     } else {
-        (1, cmp::max(0, stack_window_count - 1))
+        (1, cmp::max(0, stack_window_count.saturating_sub(1)))
     };
 
     let (left_column, main_column, right_column) = three_column(

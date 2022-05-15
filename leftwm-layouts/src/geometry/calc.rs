@@ -581,5 +581,4 @@ mod tests {
         assert_eq!(rects.len(), 1);
         assert!(rects[0].eq(&CONTAINER));
     }
-
 }

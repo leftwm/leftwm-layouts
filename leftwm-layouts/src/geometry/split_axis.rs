@@ -72,7 +72,7 @@ use serde::{Deserialize, Serialize};
 /// |       |      |   | |||
 /// +-------+      +---+---+
 /// ```
-/// 
+///
 /// ### None
 /// Rectangle will not be split at all, resulting in simply returning
 /// the Rect as is.
@@ -83,7 +83,7 @@ pub enum SplitAxis {
     Grid,
     Fibonacci,
     Dwindle,
-    None,    
+    None,
 }
 
 /*impl Default for SplitAxis {

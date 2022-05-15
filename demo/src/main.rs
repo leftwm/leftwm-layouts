@@ -1,13 +1,10 @@
-use std::cmp;
-use std::collections::HashMap;
-
 use druid::piet::{Text, TextLayout, TextLayoutBuilder};
-use druid::widget::{Button, Container, Flex, LabelText, List, Painter, RadioGroup};
+use druid::widget::{Button, Container, Flex, Label, LabelText, Painter};
 use druid::{
-    AppLauncher, Color, Data, Lens, LocalizedString, Point, Rect, RenderContext, Widget, WidgetExt,
-    WindowDesc,
+    AppLauncher, Color, Data, Insets, Lens, LocalizedString, Point, Rect, RenderContext, Widget,
+    WidgetExt, WindowDesc,
 };
-use leftwm_layouts::geometry::{Flipped, ReserveColumnSpace, Rotation, Size};
+use leftwm_layouts::geometry::ReserveColumnSpace;
 use leftwm_layouts::Layouts;
 
 const PRIMARY: Color = Color::rgb8(0x08, 0x0f, 0x0f);
@@ -64,7 +61,7 @@ impl DemoState {
     }
 
     fn increase_main_width(&mut self) {
-        self.current_mut().increase_main_size()
+        self.current_mut().increase_main_size(9999)
     }
 
     fn decrease_main_width(&mut self) {
@@ -81,36 +78,27 @@ impl DemoState {
     }
 
     fn toggle_flipped_horizontal(&mut self) {
-        self.current_mut().flipped = self.current_mut().flipped.toggle_horizontal()
+        self.current_mut().flipped = self.current().flipped.toggle_horizontal()
     }
 
     fn toggle_flipped_vertical(&mut self) {
-        self.current_mut().flipped = self.current_mut().flipped.toggle_vertical()
+        self.current_mut().flipped = self.current().flipped.toggle_vertical()
     }
 
-    /*fn toggle_reserve_space(&mut self) {
-        self.reserve_space = !self.reserve_space
-    }*/
+    fn toggle_balance_stacks(&mut self) {
+        self.current_mut().balance_stacks = !self.current().balance_stacks
+    }
+
+    fn change_reserve_space(&mut self) {
+        self.current_mut().reserve_column_space = match self.current().reserve_column_space {
+            ReserveColumnSpace::None => ReserveColumnSpace::Reserve,
+            ReserveColumnSpace::Reserve => ReserveColumnSpace::ReserveAndCenter,
+            ReserveColumnSpace::ReserveAndCenter => ReserveColumnSpace::None,
+        };
+    }
 
     fn rotate(&mut self) {
-        self.current_mut().rotation = self.current_mut().rotation.clockwise();
-    }
-}
-
-#[derive(Debug, Clone, Copy, Data, PartialEq)]
-enum ReserveOption {
-    None,
-    Reserve,
-    ReserveAndCenter,
-}
-
-impl From<ReserveOption> for ReserveColumnSpace {
-    fn from(option: ReserveOption) -> Self {
-        match option {
-            ReserveOption::None => ReserveColumnSpace::None,
-            ReserveOption::Reserve => ReserveColumnSpace::Reserve,
-            ReserveOption::ReserveAndCenter => ReserveColumnSpace::ReserveAndCenter,
-        }
+        self.current_mut().rotation = self.current().rotation.clockwise();
     }
 }
 
@@ -141,7 +129,7 @@ fn controls() -> impl Widget<DemoState> {
 
     let mut col = Flex::column();
     for key in names {
-        let button = Button::new(key.to_owned())
+        let button = button(key.to_owned())
             .on_click(move |_ctx, data: &mut DemoState, _env| data.current_layout = key.to_owned());
         col.add_child(button)
     }
@@ -184,66 +172,36 @@ fn controls() -> impl Widget<DemoState> {
         button(|data: &DemoState, _env: &_| format!("Rotation: {:?}", data.current().rotation))
             .on_click(move |_ctx, data: &mut DemoState, _env| data.rotate());
 
-    /*let reserve_space =
-    button(|data: &DemoState, _env: &_| format!("Reserve Space: {:?}", data.curr().reserve_column_space))
-        .on_click(move |_ctx, data: &mut DemoState, _env| data.toggle_reserve_space());*/
+    let balance_stacks = button(|data: &DemoState, _env: &_| {
+        format!("BalanceStacks: {}", data.current().balance_stacks)
+    })
+    .on_click(move |_ctx, data: &mut DemoState, _env| data.toggle_balance_stacks());
 
-    /*let reserve_column_space = RadioGroup::new(vec![
-        ("None", ReserveOption::None),
-        ("Reserve", ReserveOption::Reserve),
-        ("ReserveAndCenter", ReserveOption::ReserveAndCenter),
-    ]).on_click(move |_ctx, data: &mut DemoState, _env| {
-        data.current_mut().reserve_column_space = ReserveOption::None.into()
-    });*/
-
-    let reserve_none = button(|data: &DemoState, _env: &_| {
+    let reserve_space = button(|data: &DemoState, _env: &_| {
         format!(
             "ReserveColumnSpace: {:?}",
             data.current().reserve_column_space
         )
     })
-    .on_click(move |_ctx, data: &mut DemoState, _env| {
-        data.current_mut().reserve_column_space = ReserveColumnSpace::None
-    });
-
-    let reserve_yes = button(|data: &DemoState, _env: &_| {
-        format!(
-            "ReserveColumnSpace: {:?}",
-            data.current().reserve_column_space
-        )
-    })
-    .on_click(move |_ctx, data: &mut DemoState, _env| {
-        data.current_mut().reserve_column_space = ReserveColumnSpace::Reserve
-    });
-
-    let reserve_and_center = button(|data: &DemoState, _env: &_| {
-        format!(
-            "ReserveColumnSpace: {:?}",
-            data.current().reserve_column_space
-        )
-    })
-    .on_click(move |_ctx, data: &mut DemoState, _env| {
-        data.current_mut().reserve_column_space = ReserveColumnSpace::ReserveAndCenter
-    });
+    .on_click(move |_ctx, data: &mut DemoState, _env| data.change_reserve_space());
 
     let flex = Flex::column()
+        .with_child(label("Layouts"))
         .with_child(col)
-        .with_flex_child(inc_main, 1.0)
-        .with_flex_child(dec_main, 1.0)
-        .with_flex_child(inc_main_count, 1.0)
-        .with_flex_child(dec_main_count, 1.0)
-        .with_flex_child(add_window, 1.0)
-        .with_flex_child(remove_window, 1.0)
-        .with_flex_child(flip_h, 1.0)
-        .with_flex_child(flip_v, 1.0)
-        .with_flex_child(rotation, 1.0)
-        .with_flex_child(reserve_none, 1.0)
-        .with_flex_child(reserve_yes, 1.0)
-        .with_flex_child(reserve_and_center, 1.0);
-    //.with_flex_child(reserve_space, 1.0)
-    //.with_flex_child(reserve_column_space, 1.0);
+        .with_child(label("Modifiers"))
+        .with_child(inc_main)
+        .with_child(dec_main)
+        .with_child(inc_main_count)
+        .with_child(dec_main_count)
+        .with_child(add_window)
+        .with_child(remove_window)
+        .with_child(flip_h)
+        .with_child(flip_v)
+        .with_child(rotation)
+        .with_child(balance_stacks)
+        .with_child(reserve_space);
 
-    flex.fix_width(240.0).background(PRIMARY)
+    flex.fix_width(260.0).expand_height().background(PRIMARY)
 }
 
 fn layout_preview() -> impl Widget<DemoState> {
@@ -304,4 +262,10 @@ fn layout_preview() -> impl Widget<DemoState> {
 
 fn button(text: impl Into<LabelText<DemoState>>) -> impl Widget<DemoState> {
     Button::new(text).expand_width().padding(4.0)
+}
+
+fn label(text: impl Into<LabelText<DemoState>>) -> impl Widget<DemoState> {
+    Label::new(text)
+        .padding(Insets::new(0.0, 24.0, 0.0, 4.0))
+        .expand_width()
 }

@@ -1,7 +1,7 @@
 use geometry::Rect;
 use layouts::columns::{main_stack, stack, stack_main_stack, ColumnType};
-pub use layouts::LayoutDefinition;
 pub use layouts::default_layouts;
+pub use layouts::LayoutDefinition;
 pub use layouts::Layouts;
 
 pub mod geometry;
@@ -30,13 +30,13 @@ pub fn apply(definition: LayoutDefinition, window_count: usize, container: Rect)
         ColumnType::CenterMain => stack_main_stack(window_count, container, &definition),
     };
 
+    // flip the layout (if necessary)
+    geometry::flip(container, &mut rects, &definition.flipped);
+
     // rotate the layout (if necessary)
     rects
         .iter_mut()
         .for_each(|rect| geometry::translate_rotation(container, rect, &definition.rotation));
-
-    // flip the layout (if necessary)
-    geometry::flip(container, &mut rects, &definition.flipped);
 
     rects
 }
