@@ -2,9 +2,7 @@ use std::{cmp, collections::HashMap};
 
 use serde::{Deserialize, Serialize};
 
-use crate::geometry::{Flipped, ReserveColumnSpace, Rotation, Size, SplitAxis};
-
-use super::columns::ColumnType;
+use crate::geometry::{ColumnType, Flipped, ReserveColumnSpace, Rotation, Size, SplitAxis};
 
 #[derive(Serialize, Deserialize, PartialEq, Clone)]
 pub struct Layouts {

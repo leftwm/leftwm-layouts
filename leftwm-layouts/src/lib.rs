@@ -1,10 +1,11 @@
+use geometry::ColumnType;
 use geometry::Rect;
-use layouts::columns::{main_stack, stack, stack_main_stack, ColumnType};
+use layouts::columns::{main_stack, stack, stack_main_stack};
 pub use layouts::LayoutDefinition;
 pub use layouts::Layouts;
 
 pub mod geometry;
-mod layouts;
+pub mod layouts;
 
 pub fn apply(definition: LayoutDefinition, window_count: usize, container: Rect) -> Vec<Rect> {
     let aspect_ratio_changes = definition.rotation.aspect_ratio_changes(&container);
