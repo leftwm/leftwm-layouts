@@ -123,6 +123,20 @@ impl LayoutDefinition {
     pub fn decrease_main_window_count(&mut self) {
         self.main_window_count = self.main_window_count.saturating_sub(1);
     }
+
+    pub fn fallback() -> Self {
+        Self {
+            column_type: ColumnType::MainAndStack,
+            flipped: Flipped::None,
+            rotation: Rotation::North,
+            main_window_count: 1,
+            main_size: Size::Ratio(0.5),
+            main_split: SplitAxis::Vertical,
+            stack_split: SplitAxis::Horizontal,
+            reserve_column_space: ReserveColumnSpace::None,
+            balance_stacks: true,
+        }
+    }
 }
 
 fn default_layout_map() -> HashMap<String, LayoutDefinition> {
