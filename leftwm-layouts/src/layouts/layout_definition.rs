@@ -1,30 +1,63 @@
-use std::{cmp, collections::HashMap};
+use std::cmp;
 
 use serde::{Deserialize, Serialize};
 
 use crate::geometry::{ColumnType, Flipped, ReserveColumnSpace, Rotation, Size, SplitAxis};
 
-#[derive(Serialize, Deserialize, PartialEq, Clone)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Layouts {
-    #[serde(default = "default_layout_map")]
-    pub layouts: HashMap<String, LayoutDefinition>,
+    layouts: Vec<LayoutDefinition>,
 }
 
+impl Eq for Layouts {}
+
 impl Layouts {
-    pub fn layout_names(&self) -> Vec<String> {
-        self.layouts.keys().map(|x| x.to_owned()).collect()
+    pub fn get(&self, name: &str) -> Option<&LayoutDefinition> {
+        self.layouts.iter().find(|&l| l.name.as_str() == name)
+    }
+
+    pub fn get_mut<'a>(&'a mut self, name: &str) -> Option<&'a mut LayoutDefinition> {
+        self.layouts.iter_mut().find(|l| l.name.as_str() == name)
+    }
+
+    pub fn names(&self) -> Vec<String> {
+        self.layouts.iter().map(|x| x.name.to_owned()).collect()
+    }
+
+    fn append_or_overwrite(&mut self, layout: LayoutDefinition) {
+        match self.layouts.iter().position(|x| x.name == layout.name) {
+            None => self.layouts.insert(0, layout.to_owned()),
+            Some(i) => {
+                self.layouts[i] = layout;
+            }
+        }
+    }
+
+    pub fn load_with_defaults(config: &str) -> Self {
+        let mut reg: Layouts = Layouts::default();
+        let layouts: Vec<LayoutDefinition> = ron::from_str(config).unwrap();
+        for layout in layouts {
+            reg.append_or_overwrite(layout);
+        }
+        reg
     }
 }
 
 impl Default for Layouts {
     fn default() -> Self {
-        let default_layouts = include_str!("default.ron");
-        ron::from_str(default_layouts).unwrap()
+        let default_layouts = include_str!("layouts.ron");
+        let layouts: Vec<LayoutDefinition> = ron::from_str(default_layouts).unwrap();
+        Self { layouts }
     }
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
 pub struct LayoutDefinition {
+    /// The unique identifier for the layout,
+    /// there can be only one layout with the same name.
+    /// If a layout is defined multiple times, it may be overwritten.
+    pub name: String,
+
     /// The column type used in this layout.
     /// This usually isn't changed during runtime.
     /// See [`ColumnType`] for details.
@@ -126,6 +159,7 @@ impl LayoutDefinition {
 
     pub fn fallback() -> Self {
         Self {
+            name: String::from("MainAndStack"),
             column_type: ColumnType::MainAndStack,
             flipped: Flipped::None,
             rotation: Rotation::North,
@@ -137,10 +171,6 @@ impl LayoutDefinition {
             balance_stacks: true,
         }
     }
-}
-
-fn default_layout_map() -> HashMap<String, LayoutDefinition> {
-    HashMap::from([])
 }
 
 fn default_main_split() -> SplitAxis {
@@ -161,19 +191,52 @@ fn default_balance_stacks() -> bool {
 
 #[cfg(test)]
 mod tests {
-    use crate::layouts::Layouts;
+    use crate::Layouts;
 
-    #[test]
+    /*#[test]
     fn serialization_test() {
-        let def: Layouts = ron::from_str("()").unwrap();
+        let def: Vec<LayoutDefinition> = ron::from_str("[]").unwrap();
         println!("RON: {}", ron::to_string(&def).unwrap());
     }
 
-    // todo
     #[test]
-    fn multiple_layout_definitions() {
-        for l in Layouts::default().layouts {
-            print!("{}: {:?}", l.0, l.1)
-        }
+    fn load_default_test() {
+        let default_layouts = include_str!("layouts.ron");
+        let def: Vec<LayoutDefinition> = ron::from_str(default_layouts).unwrap();
+        println!("RON: {}", ron::to_string(&def).unwrap());
+    }*/
+
+    #[test]
+    fn load_default() {
+        let reg = Layouts::default();
+        let len = reg.layouts.len();
+        assert!(len > 0);
+        assert!(reg.get("MainAndVertStack").is_some());
+    }
+
+    #[test]
+    fn load_default_with_additional_layouts() {
+        let default = Layouts::default();
+        let len = default.layouts.len();
+
+        let config: &str = "[(name: \"SomeCustomLayout\", column_type: MainAndStack, stack_split: Horizontal, main_split: Horizontal)]";
+        let reg = Layouts::load_with_defaults(config);
+
+        // because of the custom layout, there is one more than in the defaults
+        assert_eq!(len + 1, reg.layouts.len());
+
+        assert!(reg.get("SomeCustomLayout").is_some());
+    }
+
+    #[test]
+    fn load_default_with_customizing_defaults() {
+        let default = Layouts::default();
+        let len = default.layouts.len();
+
+        let config: &str = "[(name: \"CenterMain\", column_type: MainAndStack, stack_split: Horizontal, main_split: Horizontal)]";
+        let reg = Layouts::load_with_defaults(config);
+
+        // because we are overwriting an existing default layout, the amount of layouts doesn't change
+        assert_eq!(len, reg.layouts.len());
     }
 }

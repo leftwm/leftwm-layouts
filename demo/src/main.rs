@@ -22,7 +22,7 @@ struct DemoState {
 impl Default for DemoState {
     fn default() -> Self {
         let layouts = Layouts::default();
-        let names = layouts.layout_names();
+        let names = layouts.names();
         let name = names.get(0).unwrap();
         Self {
             layouts,
@@ -34,17 +34,11 @@ impl Default for DemoState {
 
 impl DemoState {
     fn current(&self) -> &leftwm_layouts::LayoutDefinition {
-        self.layouts
-            .layouts
-            .get(self.current_layout.as_str())
-            .unwrap()
+        self.layouts.get(self.current_layout.as_str()).unwrap()
     }
 
     fn current_mut(&mut self) -> &mut leftwm_layouts::LayoutDefinition {
-        self.layouts
-            .layouts
-            .get_mut(self.current_layout.as_str())
-            .unwrap()
+        self.layouts.get_mut(self.current_layout.as_str()).unwrap()
     }
 
     fn add_window(&mut self) {
@@ -125,7 +119,7 @@ fn build_root_widget() -> impl Widget<DemoState> {
 }
 
 fn controls() -> impl Widget<DemoState> {
-    let names = Layouts::default().layout_names();
+    let names = Layouts::default().names();
 
     let mut col = Flex::column();
     for key in names {
