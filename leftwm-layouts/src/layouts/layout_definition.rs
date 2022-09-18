@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::geometry::{ColumnType, Flipped, ReserveColumnSpace, Rotation, Size, SplitAxis};
 
+type LayoutName = String;
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Layouts {
     layouts: Vec<LayoutDefinition>,
@@ -24,6 +26,18 @@ impl Layouts {
         self.layouts.iter().map(|x| x.name.to_owned()).collect()
     }
 
+    pub fn len(&self) -> usize {
+        self.layouts.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.layouts.is_empty()
+    }
+
+    pub fn get_index(&self, name: &str) -> Option<usize> {
+        self.layouts.iter().position(|l| l.name.as_str() == name)
+    }
+
     fn append_or_overwrite(&mut self, layout: LayoutDefinition) {
         match self.layouts.iter().position(|x| x.name == layout.name) {
             None => self.layouts.insert(0, layout.to_owned()),
@@ -33,13 +47,18 @@ impl Layouts {
         }
     }
 
-    pub fn load_with_defaults(config: &str) -> Self {
-        let mut reg: Layouts = Layouts::default();
-        let layouts: Vec<LayoutDefinition> = ron::from_str(config).unwrap();
-        for layout in layouts {
-            reg.append_or_overwrite(layout);
+    pub fn from_config_with_defaults(config: &str) -> Self {
+        let mut layouts: Layouts = Layouts::default();
+        let custom_layouts: Vec<LayoutDefinition> = ron::from_str(config).unwrap();
+        for custom_layout in custom_layouts {
+            layouts.append_or_overwrite(custom_layout);
         }
-        reg
+        layouts
+    }
+
+    pub fn from_config(config: &str) -> Self {
+        let layouts: Vec<LayoutDefinition> = ron::from_str(config).unwrap();
+        Self { layouts }
     }
 }
 
@@ -56,7 +75,7 @@ pub struct LayoutDefinition {
     /// The unique identifier for the layout,
     /// there can be only one layout with the same name.
     /// If a layout is defined multiple times, it may be overwritten.
-    pub name: String,
+    pub name: LayoutName,
 
     /// The column type used in this layout.
     /// This usually isn't changed during runtime.
@@ -220,7 +239,7 @@ mod tests {
         let len = default.layouts.len();
 
         let config: &str = "[(name: \"SomeCustomLayout\", column_type: MainAndStack, stack_split: Horizontal, main_split: Horizontal)]";
-        let reg = Layouts::load_with_defaults(config);
+        let reg = Layouts::from_config_with_defaults(config);
 
         // because of the custom layout, there is one more than in the defaults
         assert_eq!(len + 1, reg.layouts.len());
@@ -234,7 +253,7 @@ mod tests {
         let len = default.layouts.len();
 
         let config: &str = "[(name: \"CenterMain\", column_type: MainAndStack, stack_split: Horizontal, main_split: Horizontal)]";
-        let reg = Layouts::load_with_defaults(config);
+        let reg = Layouts::from_config_with_defaults(config);
 
         // because we are overwriting an existing default layout, the amount of layouts doesn't change
         assert_eq!(len, reg.layouts.len());

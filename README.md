@@ -37,5 +37,5 @@ make
 
 ### Run the demo application
 ```shell
-make demo
+make dev
 ```
