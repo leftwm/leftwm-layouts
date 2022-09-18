@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 /// [`ReserveColumnSpace::ReserveAndCenter`] will reserve the column space and make other
 /// column(s) avoid it entirely. While a value of [`ReserveColumnSpace::None`]
 /// makes other columns overtake the empty column space.
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ReserveColumnSpace {
     /// No space will be reserved. Instead, the populated space
     /// will take over the empty space. This is the default variant.

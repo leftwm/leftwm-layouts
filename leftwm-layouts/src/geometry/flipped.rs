@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 /// Represents the four states an object can be in,
 /// if it can be flipped horizontally and vertically.
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Flipped {
     /// Nothing is flipped at all
     ///

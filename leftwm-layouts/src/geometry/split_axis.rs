@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 /// *Disclaimer: As it may be confusing - The terms vertical/horizontal are referring to the "splits"
 /// not the orientation of the resulting stack. For example, a [`SplitAxis::Horizontal`] SplitAxis splits a rect by horizontal cuts, resulting
 /// in a "vertically stacked" list of rects. See the variants' documentation for clarification.*
-#[derive(PartialEq, Clone, Copy, Serialize, Deserialize, Debug)]
+#[derive(PartialEq, Eq, Clone, Copy, Serialize, Deserialize, Debug)]
 pub enum SplitAxis {
     /// Rectangle is split by `horizontal` cuts.
     ///
