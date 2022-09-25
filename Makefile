@@ -19,5 +19,5 @@ test:
 	cd $(ROOT_DIR) && cargo fmt -- --check
 	cd $(ROOT_DIR) && cargo clippy --release
 
-demo:
+dev: 
 	cd $(ROOT_DIR) && cargo run --package demo
