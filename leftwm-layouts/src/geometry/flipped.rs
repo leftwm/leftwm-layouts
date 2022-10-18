@@ -1,8 +1,6 @@
-use serde::{Deserialize, Serialize};
-
 /// Represents the four states an object can be in,
 /// if it can be flipped horizontally and vertically.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Flipped {
     /// Nothing is flipped at all
     ///
@@ -63,10 +61,12 @@ impl Flipped {
         matches!(self, Self::Horizontal | Self::Both)
     }
 
+    /// Indicates whether the variant is flipped vertically
     pub fn is_flipped_vertical(&self) -> bool {
         matches!(self, Self::Vertical | Self::Both)
     }
 
+    /// Get the horizontally inverted [Flipped] variant
     pub fn toggle_horizontal(&self) -> Flipped {
         match self {
             Self::None => Self::Horizontal,
@@ -76,6 +76,7 @@ impl Flipped {
         }
     }
 
+    /// Get the vertically inverted [Flipped] variant
     pub fn toggle_vertical(&self) -> Flipped {
         match self {
             Self::None => Self::Vertical,
