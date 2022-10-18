@@ -1,9 +1,6 @@
-use serde::{Deserialize, Serialize};
-
 /// Helper enum to represent a size which can be
 /// an absolute pixel value or a relative ratio value
-#[derive(Debug, Clone, PartialEq, Copy, Serialize, Deserialize)]
-#[serde(untagged)]
+#[derive(Debug, Clone, PartialEq, Copy)]
 pub enum Size {
     Pixel(i32),
     Ratio(f32),

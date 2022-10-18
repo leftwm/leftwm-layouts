@@ -1,9 +1,7 @@
-use serde::{Deserialize, Serialize};
-
 use super::Rect;
 
 /// Represents the four different possibilities of rotation.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Rotation {
     /// A rotation of 0° (ie. no rotation).
     /// This is the default value.

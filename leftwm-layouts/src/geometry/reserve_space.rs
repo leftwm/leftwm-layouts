@@ -1,11 +1,9 @@
-use serde::{Deserialize, Serialize};
-
 /// Determines whether the space of a column should be reserved
 /// when there is no window inside the column. A value of [`ReserveColumnSpace::Reserve`] or
 /// [`ReserveColumnSpace::ReserveAndCenter`] will reserve the column space and make other
 /// column(s) avoid it entirely. While a value of [`ReserveColumnSpace::None`]
 /// makes other columns overtake the empty column space.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ReserveColumnSpace {
     /// No space will be reserved. Instead, the populated space
     /// will take over the empty space. This is the default variant.

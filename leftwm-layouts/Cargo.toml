@@ -11,8 +11,5 @@ readme = "README.md"
 keywords = ["leftwm", "layouts", "window-manager"]
 
 [dependencies]
-serde = { version = "1", features = ["derive"] }
-ron = "0.7"
 
 [dev-dependencies]
-ron = "0.7"
