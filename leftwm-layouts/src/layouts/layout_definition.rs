@@ -36,6 +36,7 @@ impl Layouts {
         self.layouts.iter().position(|l| l.name.as_str() == name)
     }
 
+    #[allow(dead_code)]
     fn append_or_overwrite(&mut self, layout: LayoutDefinition) {
         match self.layouts.iter().position(|x| x.name == layout.name) {
             None => self.layouts.insert(0, layout.to_owned()),
