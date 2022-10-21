@@ -38,6 +38,7 @@ impl Layouts {
         self.layouts.iter().position(|l| l.name.as_str() == name)
     }
 
+    #[allow(dead_code)]
     fn append_or_overwrite(&mut self, layout: LayoutDefinition) {
         match self.layouts.iter().position(|x| x.name == layout.name) {
             None => self.layouts.insert(0, layout.to_owned()),
@@ -47,25 +48,121 @@ impl Layouts {
         }
     }
 
-    pub fn from_config_with_defaults(config: &str) -> Self {
-        let mut layouts: Layouts = Layouts::default();
-        let custom_layouts: Vec<LayoutDefinition> = ron::from_str(config).unwrap();
-        for custom_layout in custom_layouts {
-            layouts.append_or_overwrite(custom_layout);
-        }
-        layouts
-    }
+    // pub fn from_config_with_defaults(config: &str) -> Self {
+    //     let mut layouts: Layouts = Layouts::default();
+    //     let custom_layouts: Vec<LayoutDefinition> = ron::from_str(config).unwrap();
+    //     for custom_layout in custom_layouts {
+    //         layouts.append_or_overwrite(custom_layout);
+    //     }
+    //     layouts
+    // }
 
-    pub fn from_config(config: &str) -> Self {
-        let layouts: Vec<LayoutDefinition> = ron::from_str(config).unwrap();
-        Self { layouts }
-    }
+    // pub fn from_config(config: &str) -> Self {
+    //     let layouts: Vec<LayoutDefinition> = ron::from_str(config).unwrap();
+    //     Self { layouts }
+    // }
 }
 
 impl Default for Layouts {
     fn default() -> Self {
-        let default_layouts = include_str!("layouts.ron");
-        let layouts: Vec<LayoutDefinition> = ron::from_str(default_layouts).unwrap();
+        let even_horizontal = LayoutDefinition {
+            name: String::from("EvenHorizontal"),
+            column_type: ColumnType::Stack,
+            stack_split: SplitAxis::Vertical,
+            ..LayoutDefinition::default()
+        };
+        let even_vertical = LayoutDefinition {
+            name: String::from("EvenVertical"),
+            column_type: ColumnType::Stack,
+            stack_split: SplitAxis::Horizontal,
+            ..LayoutDefinition::default()
+        };
+        let monocle = LayoutDefinition {
+            name: String::from("Monocle"),
+            column_type: ColumnType::Stack,
+            stack_split: SplitAxis::None,
+            main_split: SplitAxis::None,
+            ..LayoutDefinition::default()
+        };
+        let grid = LayoutDefinition {
+            name: String::from("Grid"),
+            column_type: ColumnType::Stack,
+            stack_split: SplitAxis::Grid,
+            ..LayoutDefinition::default()
+        };
+        let main_and_vert_stack = LayoutDefinition {
+            name: String::from("MainAndVertStack"),
+            column_type: ColumnType::MainAndStack,
+            stack_split: SplitAxis::Horizontal,
+            ..LayoutDefinition::default()
+        };
+        let main_and_horizontal_stack = LayoutDefinition {
+            name: String::from("MainAndHorizontalStack"),
+            column_type: ColumnType::MainAndStack,
+            stack_split: SplitAxis::Vertical,
+            ..LayoutDefinition::default()
+        };
+        let right_main_and_vert_stack = LayoutDefinition {
+            name: String::from("RightMainAndVertStack"),
+            column_type: ColumnType::MainAndStack,
+            stack_split: SplitAxis::Horizontal,
+            flipped: Flipped::Vertical,
+            ..LayoutDefinition::default()
+        };
+        let fibonacci = LayoutDefinition {
+            name: String::from("Fibonacci"),
+            column_type: ColumnType::MainAndStack,
+            stack_split: SplitAxis::Fibonacci,
+            ..LayoutDefinition::default()
+        };
+        let dwindle = LayoutDefinition {
+            name: String::from("Dwindle"),
+            column_type: ColumnType::MainAndStack,
+            stack_split: SplitAxis::Dwindle,
+            ..LayoutDefinition::default()
+        };
+        let main_and_deck = LayoutDefinition {
+            name: String::from("MainAndDeck"),
+            column_type: ColumnType::MainAndStack,
+            stack_split: SplitAxis::None,
+            main_split: SplitAxis::None,
+            ..LayoutDefinition::default()
+        };
+        let center_main = LayoutDefinition {
+            name: String::from("CenterMain"),
+            column_type: ColumnType::CenterMain,
+            stack_split: SplitAxis::Horizontal,
+            ..LayoutDefinition::default()
+        };
+        let center_main_balanced = LayoutDefinition {
+            name: String::from("CenterMainBalanced"),
+            column_type: ColumnType::CenterMain,
+            stack_split: SplitAxis::Dwindle,
+            ..LayoutDefinition::default()
+        };
+        let center_main_fluid = LayoutDefinition {
+            name: String::from("CenterMainFluid"),
+            column_type: ColumnType::CenterMain,
+            stack_split: SplitAxis::Horizontal,
+            reserve_column_space: ReserveColumnSpace::Reserve,
+            balance_stacks: false,
+            ..LayoutDefinition::default()
+        };
+        let layouts = vec![
+            even_horizontal,
+            even_vertical,
+            monocle,
+            grid,
+            main_and_vert_stack,
+            main_and_horizontal_stack,
+            right_main_and_vert_stack,
+            fibonacci,
+            dwindle,
+            main_and_deck,
+            center_main,
+            center_main_balanced,
+            center_main_fluid,
+        ];
         Self { layouts }
     }
 }
@@ -153,6 +250,23 @@ pub struct LayoutDefinition {
     pub balance_stacks: bool,
 }
 
+impl Default for LayoutDefinition {
+    fn default() -> Self {
+        LayoutDefinition {
+            name: String::from("Default"),
+            column_type: ColumnType::MainAndStack,
+            flipped: Flipped::default(),
+            rotation: Rotation::default(),
+            main_window_count: 1,
+            main_size: Size::Ratio(0.5),
+            main_split: SplitAxis::Vertical,
+            stack_split: SplitAxis::Horizontal,
+            reserve_column_space: ReserveColumnSpace::None,
+            balance_stacks: true,
+        }
+    }
+}
+
 impl LayoutDefinition {
     pub fn increase_main_size(&mut self, upper_bound: i32) {
         self.main_size = match self.main_size {
@@ -233,29 +347,29 @@ mod tests {
         assert!(reg.get("MainAndVertStack").is_some());
     }
 
-    #[test]
-    fn load_default_with_additional_layouts() {
-        let default = Layouts::default();
-        let len = default.layouts.len();
+    // #[test]
+    // fn load_default_with_additional_layouts() {
+    //     let default = Layouts::default();
+    //     let len = default.layouts.len();
 
-        let config: &str = "[(name: \"SomeCustomLayout\", column_type: MainAndStack, stack_split: Horizontal, main_split: Horizontal)]";
-        let reg = Layouts::from_config_with_defaults(config);
+    //     let config: &str = "[(name: \"SomeCustomLayout\", column_type: MainAndStack, stack_split: Horizontal, main_split: Horizontal)]";
+    //     let reg = Layouts::from_config_with_defaults(config);
 
-        // because of the custom layout, there is one more than in the defaults
-        assert_eq!(len + 1, reg.layouts.len());
+    //     // because of the custom layout, there is one more than in the defaults
+    //     assert_eq!(len + 1, reg.layouts.len());
 
-        assert!(reg.get("SomeCustomLayout").is_some());
-    }
+    //     assert!(reg.get("SomeCustomLayout").is_some());
+    // }
 
-    #[test]
-    fn load_default_with_customizing_defaults() {
-        let default = Layouts::default();
-        let len = default.layouts.len();
+    // #[test]
+    // fn load_default_with_customizing_defaults() {
+    //     let default = Layouts::default();
+    //     let len = default.layouts.len();
 
-        let config: &str = "[(name: \"CenterMain\", column_type: MainAndStack, stack_split: Horizontal, main_split: Horizontal)]";
-        let reg = Layouts::from_config_with_defaults(config);
+    //     let config: &str = "[(name: \"CenterMain\", column_type: MainAndStack, stack_split: Horizontal, main_split: Horizontal)]";
+    //     let reg = Layouts::from_config_with_defaults(config);
 
-        // because we are overwriting an existing default layout, the amount of layouts doesn't change
-        assert_eq!(len, reg.layouts.len());
-    }
+    //     // because we are overwriting an existing default layout, the amount of layouts doesn't change
+    //     assert_eq!(len, reg.layouts.len());
+    // }
 }
