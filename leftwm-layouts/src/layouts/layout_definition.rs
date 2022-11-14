@@ -8,7 +8,7 @@ type LayoutName = String;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Layouts {
-    layouts: Vec<LayoutDefinition>,
+    pub layouts: Vec<LayoutDefinition>,
 }
 
 impl Eq for Layouts {}
