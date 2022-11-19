@@ -22,7 +22,7 @@ use super::three_column;
 /// ```
 pub fn stack_main_stack(
     window_count: usize,
-    container: Rect,
+    container: &Rect,
     definition: &LayoutDefinition,
 ) -> Vec<Rect> {
     let tiles: &mut Vec<Rect> = &mut Vec::new();

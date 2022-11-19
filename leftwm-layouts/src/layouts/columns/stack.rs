@@ -16,8 +16,8 @@ use crate::{
 /// +-----------+
 /// ```
 #[allow(dead_code)]
-pub fn stack(window_count: usize, container: Rect, definition: &LayoutDefinition) -> Vec<Rect> {
-    geometry::split(&container, window_count, &definition.stack_split)
+pub fn stack(window_count: usize, container: &Rect, definition: &LayoutDefinition) -> Vec<Rect> {
+    geometry::split(container, window_count, &definition.stack_split)
 }
 
 #[cfg(test)]

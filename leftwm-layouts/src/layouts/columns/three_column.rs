@@ -4,7 +4,7 @@ use crate::geometry::{remainderless_division, Rect, ReserveColumnSpace, Size};
 
 pub fn three_column(
     window_count: usize,
-    container: Rect,
+    container: &Rect,
     main_window_count: usize,
     main_size: Size,
     reserve_column_space: ReserveColumnSpace,
@@ -80,7 +80,7 @@ pub fn three_column(
         Some(Rect {
             x: main_offset as i32,
             w: main_width as u32,
-            ..container
+            ..*container
         })
     } else {
         None
@@ -90,7 +90,7 @@ pub fn three_column(
         Some(Rect {
             x: left_stack_offset as i32,
             w: left_stack_width as u32,
-            ..container
+            ..*container
         })
     } else {
         None
@@ -100,7 +100,7 @@ pub fn three_column(
         Some(Rect {
             x: right_stack_offset as i32,
             w: right_stack_width as u32,
-            ..container
+            ..*container
         })
     } else {
         None
@@ -126,7 +126,7 @@ mod tests {
     fn three_column_with_filled_columns() {
         let (left_stack, main, right_stack) = three_column(
             3,
-            CONTAINER,
+            &CONTAINER,
             1,
             Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::None,
@@ -165,7 +165,7 @@ mod tests {
     fn three_column_with_filled_columns_reserved() {
         let (left_stack, main, right_stack) = three_column(
             3,
-            CONTAINER,
+            &CONTAINER,
             1,
             Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::Reserve,
@@ -204,7 +204,7 @@ mod tests {
     fn three_column_with_filled_columns_reserved_and_centered() {
         let (left_stack, main, right_stack) = three_column(
             3,
-            CONTAINER,
+            &CONTAINER,
             1,
             Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::ReserveAndCenter,
@@ -243,7 +243,7 @@ mod tests {
     fn three_column_with_no_right_stack_unreserved() {
         let (left_stack, main, right_stack) = three_column(
             2,
-            CONTAINER,
+            &CONTAINER,
             1,
             Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::None,
@@ -274,7 +274,7 @@ mod tests {
     fn three_column_with_no_right_stack_reserved() {
         let (left_stack, main, right_stack) = three_column(
             2,
-            CONTAINER,
+            &CONTAINER,
             1,
             Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::Reserve,
@@ -305,7 +305,7 @@ mod tests {
     fn three_column_with_no_right_stack_reserved_and_centered() {
         let (left_stack, main, right_stack) = three_column(
             2,
-            CONTAINER,
+            &CONTAINER,
             1,
             Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::ReserveAndCenter,
@@ -336,7 +336,7 @@ mod tests {
     fn three_column_with_no_stack_unreserved() {
         let (left_stack, main, right_stack) = three_column(
             1,
-            CONTAINER,
+            &CONTAINER,
             1,
             Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::None,
@@ -359,7 +359,7 @@ mod tests {
     fn three_column_with_no_stack_reserved() {
         let (left_stack, main, right_stack) = three_column(
             1,
-            CONTAINER,
+            &CONTAINER,
             1,
             Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::Reserve,
@@ -382,7 +382,7 @@ mod tests {
     fn three_column_with_no_stack_reserved_and_centered() {
         let (left_stack, main, right_stack) = three_column(
             1,
-            CONTAINER,
+            &CONTAINER,
             1,
             Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::ReserveAndCenter,
@@ -405,7 +405,7 @@ mod tests {
     fn three_column_with_no_main_two_stacks_unreserved() {
         let (left_stack, main, right_stack) = three_column(
             2,
-            CONTAINER,
+            &CONTAINER,
             0,
             Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::None,
@@ -436,7 +436,7 @@ mod tests {
     fn three_column_with_no_main_two_stacks_reserved() {
         let (left_stack, main, right_stack) = three_column(
             2,
-            CONTAINER,
+            &CONTAINER,
             0,
             Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::Reserve,
@@ -467,7 +467,7 @@ mod tests {
     fn three_column_with_no_main_two_stacks_reserved_and_centered() {
         let (left_stack, main, right_stack) = three_column(
             2,
-            CONTAINER,
+            &CONTAINER,
             0,
             Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::ReserveAndCenter,
@@ -498,7 +498,7 @@ mod tests {
     fn three_column_with_no_main_left_stacks_unreserved() {
         let (left_stack, main, right_stack) = three_column(
             1,
-            CONTAINER,
+            &CONTAINER,
             0,
             Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::None,
@@ -521,7 +521,7 @@ mod tests {
     fn three_column_with_no_main_left_stacks_reserved() {
         let (left_stack, main, right_stack) = three_column(
             1,
-            CONTAINER,
+            &CONTAINER,
             0,
             Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::Reserve,
@@ -544,7 +544,7 @@ mod tests {
     fn three_column_with_no_main_left_stacks_reserved_and_centered() {
         let (left_stack, main, right_stack) = three_column(
             1,
-            CONTAINER,
+            &CONTAINER,
             0,
             Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::ReserveAndCenter,
@@ -567,7 +567,7 @@ mod tests {
     fn three_column_with_no_windows() {
         let (left_stack, main, right_stack) = three_column(
             0,
-            CONTAINER,
+            &CONTAINER,
             1,
             Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::None,

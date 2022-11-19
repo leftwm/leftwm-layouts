@@ -21,7 +21,7 @@ use super::two_column;
 /// the generic Rotation and Flipped utilities can be used.*
 pub fn main_stack(
     window_count: usize,
-    container: Rect,
+    container: &Rect,
     layout_definition: &LayoutDefinition,
 ) -> Vec<Rect> {
     let tiles: &mut Vec<Rect> = &mut Vec::new();

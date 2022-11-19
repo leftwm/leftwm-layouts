@@ -4,7 +4,7 @@ use crate::geometry::{Rect, ReserveColumnSpace, Size};
 
 pub fn two_column(
     window_count: usize,
-    container: Rect,
+    container: &Rect,
     main_window_count: usize,
     main_size: Size,
     reserve_column_space: ReserveColumnSpace,
@@ -79,7 +79,7 @@ mod tests {
     fn two_column_with_filled_columns() {
         let (main, stack) = two_column(
             3,
-            CONTAINER,
+            &CONTAINER,
             1,
             Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::None,
@@ -108,7 +108,7 @@ mod tests {
     fn two_column_with_filled_columns_reserved() {
         let (main, stack) = two_column(
             3,
-            CONTAINER,
+            &CONTAINER,
             1,
             Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::Reserve,
@@ -137,7 +137,7 @@ mod tests {
     fn two_column_with_filled_columns_reserved_and_centered() {
         let (main, stack) = two_column(
             3,
-            CONTAINER,
+            &CONTAINER,
             1,
             Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::ReserveAndCenter,
@@ -166,7 +166,7 @@ mod tests {
     fn two_column_with_no_stack_windows_unreserved() {
         let (main, stack) = two_column(
             1,
-            CONTAINER,
+            &CONTAINER,
             1,
             Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::None,
@@ -187,7 +187,7 @@ mod tests {
     fn two_column_with_no_main_windows_unreserved() {
         let (main, stack) = two_column(
             1,
-            CONTAINER,
+            &CONTAINER,
             0,
             Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::None,
@@ -208,7 +208,7 @@ mod tests {
     fn two_column_with_no_main_windows_reserved() {
         let (main, stack) = two_column(
             1,
-            CONTAINER,
+            &CONTAINER,
             0,
             Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::Reserve,
@@ -229,7 +229,7 @@ mod tests {
     fn two_column_with_no_stack_windows_reserved() {
         let (main, stack) = two_column(
             1,
-            CONTAINER,
+            &CONTAINER,
             1,
             Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::Reserve,
@@ -250,7 +250,7 @@ mod tests {
     fn two_column_with_no_main_windows_reserved_and_centered() {
         let (main, stack) = two_column(
             1,
-            CONTAINER,
+            &CONTAINER,
             0,
             Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::ReserveAndCenter,
@@ -271,7 +271,7 @@ mod tests {
     fn two_column_with_no_stack_windows_reserved_and_centered() {
         let (main, stack) = two_column(
             1,
-            CONTAINER,
+            &CONTAINER,
             1,
             Size::Ratio(0.65),
             crate::geometry::ReserveColumnSpace::ReserveAndCenter,

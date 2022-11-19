@@ -211,7 +211,7 @@ fn layout_preview() -> impl Widget<DemoState> {
         let layout = data.current().to_owned();
 
         //let layout: LayoutEnum = data.layout.into();
-        let calcs = leftwm_layouts::apply(layout, data.window_count, container);
+        let calcs = leftwm_layouts::apply(&layout, data.window_count, &container);
         let step = 1.0 / data.window_count as f64;
         let mut alpha = 1.0;
         calcs.into_iter().enumerate().for_each(|(i, o)| {
