@@ -282,6 +282,10 @@ impl LayoutDefinition {
         };
     }
 
+    pub fn set_main_size(&mut self, px: i32) {
+        self.main_size = Size::Pixel(px);
+    }
+
     pub fn increase_main_window_count(&mut self) {
         self.main_window_count = self.main_window_count.saturating_add(1);
     }
@@ -290,18 +294,10 @@ impl LayoutDefinition {
         self.main_window_count = self.main_window_count.saturating_sub(1);
     }
 
-    pub fn fallback() -> Self {
-        Self {
-            name: String::from("MainAndStack"),
-            column_type: ColumnType::MainAndStack,
-            flipped: Flipped::None,
-            rotation: Rotation::North,
-            main_window_count: 1,
-            main_size: Size::Ratio(0.5),
-            main_split: SplitAxis::Vertical,
-            stack_split: SplitAxis::Horizontal,
-            reserve_column_space: ReserveColumnSpace::None,
-            balance_stacks: true,
+    pub fn rotate(&mut self, clockwise: bool) {
+        self.rotation = match clockwise {
+            true => self.rotation.clockwise(),
+            false => self.rotation.counter_clockwise(),
         }
     }
 }

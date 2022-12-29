@@ -94,6 +94,16 @@ impl Rotation {
             Rotation::West => Rotation::North,
         }
     }
+
+    /// Get the next rotation variant when rotating counter clockwise
+    pub fn counter_clockwise(&self) -> Self {
+        match self {
+            Rotation::North => Rotation::West,
+            Rotation::West => Rotation::South,
+            Rotation::South => Rotation::East,
+            Rotation::East => Rotation::North,
+        }
+    }
 }
 
 impl Default for Rotation {
