@@ -26,7 +26,7 @@ pub fn main_stack(
 ) -> Vec<Rect> {
     let tiles: &mut Vec<Rect> = &mut Vec::new();
     if window_count == 0 {
-        return tiles.to_vec();
+        return tiles.clone();
     }
     let (main_tile, stack_tile) = two_column(
         window_count,
@@ -54,7 +54,7 @@ pub fn main_stack(
         ));
     }
 
-    tiles.to_vec()
+    tiles.clone()
 }
 
 #[cfg(test)]

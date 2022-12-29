@@ -23,7 +23,7 @@ impl Layouts {
     }
 
     pub fn names(&self) -> Vec<String> {
-        self.layouts.iter().map(|x| x.name.to_owned()).collect()
+        self.layouts.iter().map(|x| x.name.clone()).collect()
     }
 
     pub fn len(&self) -> usize {
@@ -41,7 +41,7 @@ impl Layouts {
     #[allow(dead_code)]
     fn append_or_overwrite(&mut self, layout: LayoutDefinition) {
         match self.layouts.iter().position(|x| x.name == layout.name) {
-            None => self.layouts.insert(0, layout.to_owned()),
+            None => self.layouts.insert(0, layout.clone()),
             Some(i) => {
                 self.layouts[i] = layout;
             }
@@ -295,9 +295,10 @@ impl LayoutDefinition {
     }
 
     pub fn rotate(&mut self, clockwise: bool) {
-        self.rotation = match clockwise {
-            true => self.rotation.clockwise(),
-            false => self.rotation.counter_clockwise(),
+        self.rotation = if clockwise {
+            self.rotation.clockwise()
+        } else {
+            self.rotation.counter_clockwise()
         }
     }
 }

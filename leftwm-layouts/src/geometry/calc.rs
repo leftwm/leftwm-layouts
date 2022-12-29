@@ -34,14 +34,14 @@ pub fn remainderless_division(a: usize, b: usize) -> Vec<usize> {
         } else {
             div
         };
-        vec.push(val)
+        vec.push(val);
     }
     vec
 }
 
 /// Flip the given list of Rects according to the provided flipped parameter
 pub fn flip(container: Rect, rects: &mut [Rect], flipped: &Flipped) {
-    rects.iter_mut().for_each(|rect| {
+    for rect in rects.iter_mut() {
         if flipped.is_flipped_horizontal() {
             // from left edge as far away as right side is from right edge before being flipped
             let right_window_edge = rect.x + rect.w as i32;
@@ -54,7 +54,7 @@ pub fn flip(container: Rect, rects: &mut [Rect], flipped: &Flipped) {
             let bottom_container_edge = container.y + container.h as i32;
             rect.y = bottom_container_edge - bottom_window_edge;
         }
-    });
+    }
 }
 
 pub fn translate_rotation(container: Rect, rect: &mut Rect, rotation: &Rotation) {
@@ -75,7 +75,7 @@ pub fn translate_rotation(container: Rect, rect: &mut Rect, rotation: &Rotation)
             let next_anchor = rotation.next_anchor(rect);
             rect.x = next_anchor.1;
             rect.y = container.w as i32 - next_anchor.0;
-            std::mem::swap(&mut rect.w, &mut rect.h)
+            std::mem::swap(&mut rect.w, &mut rect.h);
         }
     }
 }
@@ -169,7 +169,7 @@ pub fn split(rect: &Rect, amount: usize, axis: &SplitAxis) -> Vec<Rect> {
                     tiles.push(remaining_tile);
                 }
             }
-            tiles.to_vec()
+            tiles.clone()
         }
         SplitAxis::Dwindle => {
             let tiles: &mut Vec<Rect> = &mut Vec::new();
@@ -190,7 +190,7 @@ pub fn split(rect: &Rect, amount: usize, axis: &SplitAxis) -> Vec<Rect> {
                     tiles.push(remaining_tile);
                 }
             }
-            tiles.to_vec()
+            tiles.clone()
         }
         &SplitAxis::None => {
             vec![*rect]

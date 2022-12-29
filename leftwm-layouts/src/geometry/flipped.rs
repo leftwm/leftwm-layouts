@@ -67,6 +67,7 @@ impl Flipped {
         matches!(self, Self::Vertical | Self::Both)
     }
 
+    #[must_use]
     pub fn toggle_horizontal(&self) -> Flipped {
         match self {
             Self::None => Self::Horizontal,
@@ -76,6 +77,7 @@ impl Flipped {
         }
     }
 
+    #[must_use]
     pub fn toggle_vertical(&self) -> Flipped {
         match self {
             Self::None => Self::Vertical,

@@ -1,5 +1,5 @@
 /// Represents a rectangle with a position ([`Rect::x`], [`Rect::y`])
-/// and dimensions ([`Rect::w`], [Rect::`h`]).
+/// and dimensions ([`Rect::w`], [`Rect::h`]).
 ///
 /// ## Demonstration
 /// ```txt
