@@ -57,7 +57,11 @@ pub fn flip(container: Rect, rects: &mut [Rect], flipped: &Flipped) {
     }
 }
 
-pub fn translate_rotation(container: Rect, rect: &mut Rect, rotation: &Rotation) {
+pub fn rotate(rects: &mut [Rect], rotation: &Rotation) {
+    println!("todo");
+}
+
+fn translate_rotation(container: Rect, rect: &mut Rect, rotation: &Rotation) {
     match &rotation {
         Rotation::North => {}
         Rotation::East => {
@@ -204,6 +208,8 @@ mod tests {
         geometry::calc::{divrem, remainderless_division, split},
         geometry::{Rect, SplitAxis},
     };
+
+    use super::rotate;
 
     #[test]
     fn divrem_100_by_3_gives_33_1() {
@@ -575,4 +581,247 @@ mod tests {
         assert_eq!(rects.len(), 1);
         assert!(rects[0].eq(&CONTAINER));
     }
+   
+    #[test]
+    fn rotate_0_degrees() {
+        // +---------------+
+        // |               |
+        // +-------+-------+  0°
+        // +-------+       |
+        // +-------+-------+
+        let mut rects = vec![
+            Rect{x:0,y:0,w:400,h:100},
+            Rect{x:200,y:100,w:200,h:100},
+            Rect{x:0,y:150,w:200,h:50},
+            Rect{x:0,y:100,w:200,h:50},
+        ];
+
+        rotate(&mut rects, &crate::geometry::Rotation::North);
+
+        // +---------------+
+        // |               |
+        // +-------+-------+  0°
+        // +-------+       |
+        // +-------+-------+
+        assert_eq!(rects, vec![
+            Rect{x:0,y:0,w:400,h:100},
+            Rect{x:200,y:100,w:200,h:100},
+            Rect{x:0,y:150,w:200,h:50},
+            Rect{x:0,y:100,w:200,h:50},
+        ]);
+    }
+
+    #[test]
+    fn rotate_90_degrees() {
+        // +---------------+
+        // |               |
+        // +-------+-------+  0°
+        // +-------+       |
+        // +-------+-------+
+        let mut rects = vec![
+            Rect{x:0,y:0,w:400,h:100},
+            Rect{x:200,y:100,w:200,h:100},
+            Rect{x:0,y:150,w:200,h:50},
+            Rect{x:0,y:100,w:200,h:50},
+        ];
+
+        rotate(&mut rects, &crate::geometry::Rotation::East);
+
+        // +---+---+-------+
+        // |   |   |       |
+        // +---+---+       |  90°
+        // |       |       |
+        // +-------+-------+
+        assert_eq!(rects, vec![
+            Rect{x:200,y:0,w:200,h:200},
+            Rect{x:0,y:100,w:200,h:100},
+            Rect{x:0,y:0,w:100,h:100},
+            Rect{x:100,y:0,w:100,h:100},
+        ]);
+    }
+
+    #[test]
+    fn rotate_180_degrees() {
+        // +---------------+
+        // |               |
+        // +-------+-------+  0°
+        // +-------+       |
+        // +-------+-------+
+        let mut rects = vec![
+            Rect{x:0,y:0,w:400,h:100},
+            Rect{x:200,y:100,w:200,h:100},
+            Rect{x:0,y:150,w:200,h:50},
+            Rect{x:0,y:100,w:200,h:50},
+        ];
+
+        rotate(&mut rects, &crate::geometry::Rotation::East);
+
+        // +-------+-------+
+        // |       +-------+
+        // +-------+-------+  180°
+        // |               |
+        // +---------------+
+        assert_eq!(rects, vec![
+            Rect{x:0,y:100,w:400,h:100},
+            Rect{x:0,y:0,w:200,h:100},
+            Rect{x:200,y:0,w:200,h:50},
+            Rect{x:200,y:50,w:200,h:50},
+        ]);
+    }
+
+    #[test]
+    fn rotate_270_degrees() {
+        // +---------------+
+        // |               |
+        // +-------+-------+  0°
+        // +-------+       |
+        // +-------+-------+
+        let mut rects = vec![
+            Rect{x:0,y:0,w:400,h:100},
+            Rect{x:200,y:100,w:200,h:100},
+            Rect{x:0,y:150,w:200,h:50},
+            Rect{x:0,y:100,w:200,h:50},
+        ];
+
+        rotate(&mut rects, &crate::geometry::Rotation::East);
+
+        // +-------+-------+
+        // |       |       |
+        // |       +---+---+  270°
+        // |       |   |   |
+        // +-------+---+---+
+        assert_eq!(rects, vec![
+            Rect{x:0,y:0,w:200,h:200},
+            Rect{x:200,y:0,w:200,h:100},
+            Rect{x:300,y:100,w:100,h:100},
+            Rect{x:200,y:100,w:100,h:100},
+        ]);
+    }
+
+    #[test]
+    fn rotate_0_degrees_with_offset() {
+        // xxxxxxxxxxxxxxxxxxxxxxxxxx
+        // xxxxxxxx +---------------+
+        // xxxxxxxx |               |
+        // xxxxxxxx +-------+-------+  0°
+        // xxxxxxxx +-------+       |
+        // xxxxxxxx +-------+-------+
+        let mut rects = vec![
+            Rect{x:200,y:50,w:400,h:100},
+            Rect{x:400,y:150,w:200,h:100},
+            Rect{x:200,y:200,w:200,h:50},
+            Rect{x:200,y:150,w:200,h:50},
+        ];
+
+        rotate(&mut rects, &crate::geometry::Rotation::North);
+
+        // xxxxxxxxxxxxxxxxxxxxxxxxxx
+        // xxxxxxxx +---------------+
+        // xxxxxxxx |               |
+        // xxxxxxxx +-------+-------+  0°
+        // xxxxxxxx +-------+       |
+        // xxxxxxxx +-------+-------+
+        assert_eq!(rects, vec![
+            Rect{x:200,y:50,w:400,h:100},
+            Rect{x:400,y:150,w:200,h:100},
+            Rect{x:200,y:200,w:200,h:50},
+            Rect{x:200,y:150,w:200,h:50},
+        ]);
+    }
+
+    #[test]
+    fn rotate_90_degrees_with_offset() {
+        // xxxxxxxxxxxxxxxxxxxxxxxxxx
+        // xxxxxxxx +---------------+
+        // xxxxxxxx |               |
+        // xxxxxxxx +-------+-------+  0°
+        // xxxxxxxx +-------+       |
+        // xxxxxxxx +-------+-------+
+        let mut rects = vec![
+            Rect{x:200,y:50,w:400,h:100},
+            Rect{x:400,y:150,w:200,h:100},
+            Rect{x:200,y:200,w:200,h:50},
+            Rect{x:200,y:150,w:200,h:50},
+        ];
+
+        rotate(&mut rects, &crate::geometry::Rotation::North);
+
+        // xxxxxxxxxxxxxxxxxxxxxxxxxx
+        // xxxxxxxx +---+---+-------+
+        // xxxxxxxx |   |   |       |
+        // xxxxxxxx +---+---+       |  90°
+        // xxxxxxxx |       |       |
+        // xxxxxxxx +-------+-------+
+        assert_eq!(rects, vec![
+            Rect{x:400,y:50,w:200,h:200},
+            Rect{x:200,y:150,w:200,h:100},
+            Rect{x:200,y:50,w:100,h:100},
+            Rect{x:300,y:50,w:100,h:100},
+        ]);
+    }
+
+    #[test]
+    fn rotate_180_degrees_with_offset() {
+        // xxxxxxxxxxxxxxxxxxxxxxxxxx
+        // xxxxxxxx +---------------+
+        // xxxxxxxx |               |
+        // xxxxxxxx +-------+-------+  0°
+        // xxxxxxxx +-------+       |
+        // xxxxxxxx +-------+-------+
+        let mut rects = vec![
+            Rect{x:200,y:50,w:400,h:100},
+            Rect{x:400,y:150,w:200,h:100},
+            Rect{x:200,y:200,w:200,h:50},
+            Rect{x:200,y:150,w:200,h:50},
+        ];
+
+        rotate(&mut rects, &crate::geometry::Rotation::North);
+
+        // xxxxxxxxxxxxxxxxxxxxxxxxxx
+        // xxxxxxxx +-------+-------+
+        // xxxxxxxx |       +-------+
+        // xxxxxxxx +-------+-------+  180°
+        // xxxxxxxx |               |
+        // xxxxxxxx +---------------+
+        assert_eq!(rects, vec![
+            Rect{x:200,y:150,w:400,h:100},
+            Rect{x:200,y:50,w:200,h:100},
+            Rect{x:400,y:50,w:200,h:50},
+            Rect{x:400,y:100,w:200,h:50},
+        ]);
+    }
+
+    #[test]
+    fn rotate_270_degrees_with_offset() {
+        // xxxxxxxxxxxxxxxxxxxxxxxxxx
+        // xxxxxxxx +---------------+
+        // xxxxxxxx |               |
+        // xxxxxxxx +-------+-------+  0°
+        // xxxxxxxx +-------+       |
+        // xxxxxxxx +-------+-------+
+        let mut rects = vec![
+            Rect{x:200,y:50,w:400,h:100},
+            Rect{x:400,y:150,w:200,h:100},
+            Rect{x:200,y:200,w:200,h:50},
+            Rect{x:200,y:150,w:200,h:50},
+        ];
+
+        rotate(&mut rects, &crate::geometry::Rotation::North);
+
+        // xxxxxxxxxxxxxxxxxxxxxxxxxx
+        // xxxxxxxx +-------+-------+
+        // xxxxxxxx |       |       |
+        // xxxxxxxx |       +---+---+  270°
+        // xxxxxxxx |       |   |   |
+        // xxxxxxxx +-------+---+---+
+        assert_eq!(rects, vec![
+            Rect{x:200,y:50,w:200,h:200},
+            Rect{x:400,y:50,w:200,h:100},
+            Rect{x:500,y:150,w:100,h:100},
+            Rect{x:400,y:150,w:100,h:100},
+        ]);
+    }
+
+    // todo: test with negative offset
+
 }

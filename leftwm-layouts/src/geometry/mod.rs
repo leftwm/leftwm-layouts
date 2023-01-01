@@ -7,7 +7,7 @@ mod rotation;
 mod size;
 mod split_axis;
 
-pub use calc::{divrem, flip, remainderless_division, split, translate_rotation};
+pub use calc::{divrem, flip, remainderless_division, split, rotate};
 pub use column_type::ColumnType;
 pub use flipped::Flipped;
 pub use rect::Rect;
