@@ -46,6 +46,13 @@ impl Rect {
         let y = self.y + (self.h as f32 / 2.0).round() as i32;
         (x, y)
     }
+
+    pub fn contains(&self, point: (i32, i32)) -> bool {
+        self.x <= point.0
+            && point.0 <= self.x + self.w as i32
+            && self.y <= point.1
+            && point.1 <= self.y + self.h as i32
+    }
 }
 
 impl Default for Rect {
@@ -55,6 +62,41 @@ impl Default for Rect {
             y: 0,
             w: 500,
             h: 250,
+        }
+    }
+}
+
+pub struct FloatRect {
+    pub x: f32,
+    pub y: f32,
+    pub w: f32,
+    pub h: f32,
+}
+
+impl FloatRect {
+    pub fn new(x: f32, y: f32, w: f32, h: f32) -> Self {
+        Self { x, y, w, h }
+    }
+}
+
+impl From<&Rect> for FloatRect {
+    fn from(rect: &Rect) -> FloatRect {
+        FloatRect {
+            x: rect.x as f32,
+            y: rect.y as f32,
+            w: rect.w as f32,
+            h: rect.h as f32,
+        }
+    }
+}
+
+impl From<&FloatRect> for Rect {
+    fn from(rect: &FloatRect) -> Rect {
+        Rect {
+            x: rect.x as i32,
+            y: rect.y as i32,
+            w: rect.w as u32,
+            h: rect.h as u32,
         }
     }
 }
