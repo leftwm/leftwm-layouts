@@ -104,10 +104,6 @@ pub fn rotate(rects: &mut [Rect], rotation: &Rotation) {
         }
     }
 
-    for rect in &normalized_float_rects {
-        println!("Rotated: {}, {}, {}, {}", rect.x, rect.y, rect.w, rect.h);
-    }
-
     // Revert the normalization and convert back to integer coordinates
     let new_rects: Vec<Rect> = normalized_float_rects
         .iter()
@@ -122,7 +118,53 @@ pub fn rotate(rects: &mut [Rect], rotation: &Rotation) {
     // assign result to rects
     rects.copy_from_slice(&new_rects[..rects.len()]);
 
-    // TODO padding
+    // Fill missing pixels
+    let n_rects = rects.len();
+    for i in 0..n_rects {
+        let mut wide_enough = true;
+        let mut high_enough = true;
+
+        // check whether rect "almost bounds" another rect
+        for other in rects.iter() {
+            if other != &rects[i]
+                && !other.contains((rects[i].x + rects[i].w as i32, rects[i].y + 1))
+                && other.contains((rects[i].x + rects[i].w as i32 + 1, rects[i].y + 1))
+            {
+                wide_enough = false;
+            }
+            if other != &rects[i]
+                && !other.contains((rects[i].x + 1, rects[i].y + rects[i].h as i32))
+                && other.contains((rects[i].x + 1, rects[i].y + rects[i].w as i32 + 1))
+            {
+                high_enough = false;
+            }
+        }
+
+        // check whether rect "almost bounds" the outer rect
+        if rects[i].x + rects[i].w as i32 + 1
+            == original_outer_rect.x + original_outer_rect.w as i32
+        {
+            wide_enough = false;
+        }
+
+        // check whether rect "almost bounds" the outer rect
+        if rects[i].y + rects[i].h as i32 + 1
+            == original_outer_rect.y + original_outer_rect.h as i32
+        {
+            high_enough = false;
+        }
+
+        if !wide_enough
+            && original_outer_rect.contains((rects[i].x + rects[i].w as i32 + 1, rects[i].y))
+        {
+            rects[i].w += 1;
+        }
+        if !high_enough
+            && original_outer_rect.contains((rects[i].x, rects[i].y + rects[i].h as i32 + 1))
+        {
+            rects[i].h += 1;
+        }
+    }
 }
 
 fn outer_rect(rects: &[Rect]) -> Rect {
@@ -1232,6 +1274,54 @@ mod tests {
                     y: 150,
                     w: 100,
                     h: 100
+                },
+            ]
+        );
+    }
+
+    #[test]
+    fn rotate_90_degrees_non_divisible() {
+        // +---------------+
+        // |         |     |
+        // +         |     +  0°
+        // +         |     |
+        // +---------+-----+
+        let mut rects = vec![
+            Rect {
+                x: 0,
+                y: 0,
+                w: 201,
+                h: 100,
+            },
+            Rect {
+                x: 201,
+                y: 0,
+                w: 200,
+                h: 100,
+            },
+        ];
+
+        rotate(&mut rects, &crate::geometry::Rotation::East);
+
+        // +---------------+
+        // |               |
+        // +---------------|  90°
+        // |               |
+        // +---------------+
+        assert_eq!(
+            rects,
+            vec![
+                Rect {
+                    x: 0,
+                    y: 0,
+                    w: 401,
+                    h: 50,
+                },
+                Rect {
+                    x: 0,
+                    y: 50,
+                    w: 401,
+                    h: 50,
                 },
             ]
         );

@@ -1,4 +1,4 @@
-/// Represents a rectangle with a position ([`Rect::x`], [`Rect::y`])
+//, rects[i].y/ Represents a rectangle with a position ([`Rect::x`], [`Rect::y`])
 /// and dimensions ([`Rect::w`], [`Rect::h`]).
 ///
 /// ## Demonstration
@@ -47,6 +47,9 @@ impl Rect {
         (x, y)
     }
 
+    /// Check whether a point is contained in a `Rect`.
+    ///
+    /// The boundary counts as part of the `Rect`.
     pub fn contains(&self, point: (i32, i32)) -> bool {
         self.x <= point.0
             && point.0 <= self.x + self.w as i32
@@ -133,5 +136,27 @@ mod tests {
     fn center_calculation_at_rounded_position() {
         let rect = Rect::new(100, 100, 387, 399);
         assert_eq!(rect.center(), (294, 300))
+    }
+
+    #[test]
+    fn contains_boundary() {
+        let rect = Rect::new(100, 100, 400, 100);
+        assert!(rect.contains((100, 100)));
+        assert!(rect.contains((500, 100)));
+        assert!(rect.contains((500, 200)));
+        assert!(rect.contains((100, 200)));
+    }
+
+    #[test]
+    fn does_not_contain_points_outside_rect() {
+        let rect = Rect::new(100, 100, 400, 100);
+        assert!(!rect.contains((99, 100)));
+        assert!(!rect.contains((501, 100)));
+        assert!(!rect.contains((501, 200)));
+        assert!(!rect.contains((99, 200)));
+        assert!(!rect.contains((100, 99)));
+        assert!(!rect.contains((500, 99)));
+        assert!(!rect.contains((500, 201)));
+        assert!(!rect.contains((100, 201)));
     }
 }
