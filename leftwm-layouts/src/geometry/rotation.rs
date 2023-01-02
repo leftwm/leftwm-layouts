@@ -72,9 +72,9 @@ impl Rotation {
     /// the Rect's anchor after it is rotated.
     ///
     /// ## Explanation
-    /// The anchor point of a [`Rect`] is usually the top-left (x,y).
-    /// When a [`Rect`] is rotated inside a layout, then another corner
-    /// of the [`Rect`] will become the new anchor point after the rotation.
+    /// The anchor point of a [`FloatRect`] is usually the top-left (x,y).
+    /// When a [`FloatRect`] is rotated inside a layout, then another corner
+    /// of the [`FloatRect`] will become the new anchor point after the rotation.
     /// This method returns the current position of that corner.
     pub fn next_anchor(&self, rect: &FloatRect) -> (f32, f32) {
         match self {

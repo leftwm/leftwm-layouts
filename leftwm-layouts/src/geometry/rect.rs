@@ -1,4 +1,4 @@
-//, rects[i].y/ Represents a rectangle with a position ([`Rect::x`], [`Rect::y`])
+/// Represents a rectangle with a position ([`Rect::x`], [`Rect::y`])
 /// and dimensions ([`Rect::w`], [`Rect::h`]).
 ///
 /// ## Demonstration
@@ -69,6 +69,9 @@ impl Default for Rect {
     }
 }
 
+/// Similar to `Rect`, but with less functionality
+///
+/// Intended to perform operations that require rounding afterwards, e.g. rotation.
 pub struct FloatRect {
     pub x: f32,
     pub y: f32,

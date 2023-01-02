@@ -57,21 +57,29 @@ pub fn flip(container: Rect, rects: &mut [Rect], flipped: &Flipped) {
     }
 }
 
+/// Rotates an array of `Rect`s within the smallest rectangle that contains them all
+///
+/// Provided that the array has no gaps (i.e. pixels within the outer rectangle that
+/// belong to none of the `Rect`s in the array), the result after applying this function won't
+/// have gaps either.
+/// Similarly, if the array has no overlaps (i.e. pixels that are part of multiple `Rect`s
+/// in the array), neither will the result.
 pub fn rotate(rects: &mut [Rect], rotation: &Rotation) {
-    let original_outer_rect = outer_rect(rects);
+    let outer_rect = outer_rect(rects);
 
-    // In this normalization, the outer Rect is a 1x1 rectangle at (0,0)
+    // In this normalization, the outer Rect is a 1x1 rectangle at (0/0)
     let mut normalized_float_rects: Vec<FloatRect> = rects
         .iter()
         .map(|rect| {
-            if original_outer_rect.w != 0 && original_outer_rect.h != 0 {
+            if outer_rect.w != 0 && outer_rect.h != 0 {
                 FloatRect {
-                    x: (rect.x - original_outer_rect.x) as f32 / original_outer_rect.w as f32,
-                    y: (rect.y - original_outer_rect.y) as f32 / original_outer_rect.h as f32,
-                    w: rect.w as f32 / original_outer_rect.w as f32,
-                    h: rect.h as f32 / original_outer_rect.h as f32,
+                    x: (rect.x - outer_rect.x) as f32 / outer_rect.w as f32,
+                    y: (rect.y - outer_rect.y) as f32 / outer_rect.h as f32,
+                    w: rect.w as f32 / outer_rect.w as f32,
+                    h: rect.h as f32 / outer_rect.h as f32,
                 }
             } else {
+                // invisible rect might as well be at (0,0)
                 FloatRect {
                     x: 0.0,
                     y: 0.0,
@@ -82,7 +90,7 @@ pub fn rotate(rects: &mut [Rect], rotation: &Rotation) {
         })
         .collect();
 
-    // Rotate normalized_float_rects naively
+    // Rotate normalized_float_rects
     for mut rect in &mut normalized_float_rects {
         let next_anchor = rotation.next_anchor(rect);
         match &rotation {
@@ -108,10 +116,10 @@ pub fn rotate(rects: &mut [Rect], rotation: &Rotation) {
     let new_rects: Vec<Rect> = normalized_float_rects
         .iter()
         .map(|rect| Rect {
-            x: (rect.x * original_outer_rect.w as f32) as i32 + original_outer_rect.x,
-            y: (rect.y * original_outer_rect.h as f32) as i32 + original_outer_rect.y,
-            w: (rect.w * original_outer_rect.w as f32) as u32,
-            h: (rect.h * original_outer_rect.h as f32) as u32,
+            x: (rect.x * outer_rect.w as f32) as i32 + outer_rect.x,
+            y: (rect.y * outer_rect.h as f32) as i32 + outer_rect.y,
+            w: (rect.w * outer_rect.w as f32) as u32,
+            h: (rect.h * outer_rect.h as f32) as u32,
         })
         .collect();
 
@@ -141,27 +149,19 @@ pub fn rotate(rects: &mut [Rect], rotation: &Rotation) {
         }
 
         // check whether rect "almost bounds" the outer rect
-        if rects[i].x + rects[i].w as i32 + 1
-            == original_outer_rect.x + original_outer_rect.w as i32
-        {
+        if rects[i].x + rects[i].w as i32 + 1 == outer_rect.x + outer_rect.w as i32 {
             wide_enough = false;
         }
 
         // check whether rect "almost bounds" the outer rect
-        if rects[i].y + rects[i].h as i32 + 1
-            == original_outer_rect.y + original_outer_rect.h as i32
-        {
+        if rects[i].y + rects[i].h as i32 + 1 == outer_rect.y + outer_rect.h as i32 {
             high_enough = false;
         }
 
-        if !wide_enough
-            && original_outer_rect.contains((rects[i].x + rects[i].w as i32 + 1, rects[i].y))
-        {
+        if !wide_enough && outer_rect.contains((rects[i].x + rects[i].w as i32 + 1, rects[i].y)) {
             rects[i].w += 1;
         }
-        if !high_enough
-            && original_outer_rect.contains((rects[i].x, rects[i].y + rects[i].h as i32 + 1))
-        {
+        if !high_enough && outer_rect.contains((rects[i].x, rects[i].y + rects[i].h as i32 + 1)) {
             rects[i].h += 1;
         }
     }
