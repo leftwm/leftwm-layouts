@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use super::Rect;
+use super::{FloatRect, Rect};
 
 /// Represents the four different possibilities of rotation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -72,16 +72,16 @@ impl Rotation {
     /// the Rect's anchor after it is rotated.
     ///
     /// ## Explanation
-    /// The anchor point of a [`Rect`] is usually the top-left (x,y).
-    /// When a [`Rect`] is rotated inside a layout, then another corner
-    /// of the [`Rect`] will become the new anchor point after the rotation.
+    /// The anchor point of a [`FloatRect`] is usually the top-left (x,y).
+    /// When a [`FloatRect`] is rotated inside a layout, then another corner
+    /// of the [`FloatRect`] will become the new anchor point after the rotation.
     /// This method returns the current position of that corner.
-    pub fn next_anchor(&self, rect: &Rect) -> (i32, i32) {
+    pub fn next_anchor(&self, rect: &FloatRect) -> (f32, f32) {
         match self {
-            Self::North => (rect.x, rect.y),                // top-left
-            Self::East => (rect.x, rect.y + rect.h as i32), // bottom-left
-            Self::South => (rect.x + rect.w as i32, rect.y + rect.h as i32), // bottom-right
-            Self::West => (rect.x + rect.w as i32, rect.y), // top-right
+            Self::North => (rect.x, rect.y),                   // top-left
+            Self::East => (rect.x, rect.y + rect.h),           // bottom-left
+            Self::South => (rect.x + rect.w, rect.y + rect.h), // bottom-right
+            Self::West => (rect.x + rect.w, rect.y),           // top-right
         }
     }
 
@@ -116,7 +116,7 @@ impl Default for Rotation {
 
 #[cfg(test)]
 mod tests {
-    use crate::geometry::Rect;
+    use crate::geometry::{FloatRect, Rect};
 
     use super::Rotation;
 
@@ -161,29 +161,29 @@ mod tests {
 
     #[test]
     fn calc_anchor_north() {
-        let rect = Rect::new(0, 0, 1920, 1080);
+        let rect = FloatRect::new(0.0, 0.0, 1920.0, 1080.0);
         let anchor = Rotation::North.next_anchor(&rect);
-        assert_eq!(anchor, (0, 0));
+        assert_eq!(anchor, (0.0, 0.0));
     }
 
     #[test]
     fn calc_anchor_east() {
-        let rect = Rect::new(0, 0, 1920, 1080);
+        let rect = FloatRect::new(0.0, 0.0, 1920.0, 1080.0);
         let anchor = Rotation::East.next_anchor(&rect);
-        assert_eq!(anchor, (0, 1080));
+        assert_eq!(anchor, (0.0, 1080.0));
     }
 
     #[test]
     fn calc_anchor_south() {
-        let rect = Rect::new(0, 0, 1920, 1080);
+        let rect = FloatRect::new(0.0, 0.0, 1920.0, 1080.0);
         let anchor = Rotation::South.next_anchor(&rect);
-        assert_eq!(anchor, (1920, 1080));
+        assert_eq!(anchor, (1920.0, 1080.0));
     }
 
     #[test]
     fn calc_anchor_west() {
-        let rect = Rect::new(0, 0, 1920, 1080);
+        let rect = FloatRect::new(0.0, 0.0, 1920.0, 1080.0);
         let anchor = Rotation::West.next_anchor(&rect);
-        assert_eq!(anchor, (1920, 0));
+        assert_eq!(anchor, (1920.0, 0.0));
     }
 }

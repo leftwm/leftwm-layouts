@@ -1,4 +1,4 @@
-use crate::geometry::{Flipped, Rect, Rotation, SplitAxis};
+use crate::geometry::{Flipped, FloatRect, Rect, Rotation, SplitAxis};
 use std::ops::Rem;
 
 /// Divide the provided `a` by `b` and return the
@@ -57,27 +57,139 @@ pub fn flip(container: Rect, rects: &mut [Rect], flipped: &Flipped) {
     }
 }
 
-pub fn translate_rotation(container: Rect, rect: &mut Rect, rotation: &Rotation) {
-    match &rotation {
-        Rotation::North => {}
-        Rotation::East => {
-            let next_anchor = rotation.next_anchor(rect);
-            rect.x = container.h as i32 - next_anchor.1;
-            rect.y = next_anchor.0;
-            std::mem::swap(&mut rect.w, &mut rect.h);
-        }
-        Rotation::South => {
-            let next_anchor = rotation.next_anchor(rect);
-            rect.x = container.w as i32 - next_anchor.0;
-            rect.y = container.h as i32 - next_anchor.1;
-        }
-        Rotation::West => {
-            let next_anchor = rotation.next_anchor(rect);
-            rect.x = next_anchor.1;
-            rect.y = container.w as i32 - next_anchor.0;
-            std::mem::swap(&mut rect.w, &mut rect.h);
+/// Rotates an array of `Rect`s within the smallest rectangle that contains them all
+///
+/// Provided that the array has no gaps (i.e. pixels within the outer rectangle that
+/// belong to none of the `Rect`s in the array), the result after applying this function won't
+/// have gaps either.
+/// Similarly, if the array has no overlaps (i.e. pixels that are part of multiple `Rect`s
+/// in the array), neither will the result.
+pub fn rotate(rects: &mut [Rect], rotation: &Rotation) {
+    let outer_rect = outer_rect(rects);
+
+    // In this normalization, the outer Rect is a 1x1 rectangle at (0/0)
+    let mut normalized_float_rects: Vec<FloatRect> = rects
+        .iter()
+        .map(|rect| {
+            if outer_rect.w != 0 && outer_rect.h != 0 {
+                FloatRect {
+                    x: (rect.x - outer_rect.x) as f32 / outer_rect.w as f32,
+                    y: (rect.y - outer_rect.y) as f32 / outer_rect.h as f32,
+                    w: rect.w as f32 / outer_rect.w as f32,
+                    h: rect.h as f32 / outer_rect.h as f32,
+                }
+            } else {
+                // invisible rect might as well be at (0,0)
+                FloatRect::new(0.0, 0.0, 0.0, 0.0)
+            }
+        })
+        .collect();
+
+    // Rotate normalized_float_rects
+    for mut rect in &mut normalized_float_rects {
+        let next_anchor = rotation.next_anchor(rect);
+        match &rotation {
+            Rotation::North => {}
+            Rotation::East => {
+                rect.x = 1.0 - next_anchor.1;
+                rect.y = next_anchor.0;
+                std::mem::swap(&mut rect.w, &mut rect.h);
+            }
+            Rotation::South => {
+                rect.x = 1.0 - next_anchor.0;
+                rect.y = 1.0 - next_anchor.1;
+            }
+            Rotation::West => {
+                rect.x = next_anchor.1;
+                rect.y = 1.0 - next_anchor.0;
+                std::mem::swap(&mut rect.w, &mut rect.h);
+            }
         }
     }
+
+    // Revert the normalization and convert back to integer coordinates
+    let new_rects: Vec<Rect> = normalized_float_rects
+        .iter()
+        .map(|rect| Rect {
+            x: (rect.x * outer_rect.w as f32) as i32 + outer_rect.x,
+            y: (rect.y * outer_rect.h as f32) as i32 + outer_rect.y,
+            w: (rect.w * outer_rect.w as f32) as u32,
+            h: (rect.h * outer_rect.h as f32) as u32,
+        })
+        .collect();
+
+    // assign result to rects
+    rects.copy_from_slice(&new_rects[..rects.len()]);
+
+    // Fill missing pixels
+    let n_rects = rects.len();
+    for i in 0..n_rects {
+        let mut wide_enough = true;
+        let mut high_enough = true;
+
+        // check whether rect "almost bounds" another rect
+        for other in rects.iter() {
+            if other != &rects[i]
+                && !other.contains((rects[i].x + rects[i].w as i32, rects[i].y + 1))
+                && other.contains((rects[i].x + rects[i].w as i32 + 1, rects[i].y + 1))
+            {
+                wide_enough = false;
+            }
+            if other != &rects[i]
+                && !other.contains((rects[i].x + 1, rects[i].y + rects[i].h as i32))
+                && other.contains((rects[i].x + 1, rects[i].y + rects[i].w as i32 + 1))
+            {
+                high_enough = false;
+            }
+        }
+
+        // check whether rect "almost bounds" the outer rect
+        if rects[i].x + rects[i].w as i32 + 1 == outer_rect.x + outer_rect.w as i32 {
+            wide_enough = false;
+        }
+
+        // check whether rect "almost bounds" the outer rect
+        if rects[i].y + rects[i].h as i32 + 1 == outer_rect.y + outer_rect.h as i32 {
+            high_enough = false;
+        }
+
+        if !wide_enough && outer_rect.contains((rects[i].x + rects[i].w as i32 + 1, rects[i].y)) {
+            rects[i].w += 1;
+        }
+        if !high_enough && outer_rect.contains((rects[i].x, rects[i].y + rects[i].h as i32 + 1)) {
+            rects[i].h += 1;
+        }
+    }
+}
+
+fn outer_rect(rects: &[Rect]) -> Rect {
+    Rect {
+        x: min_x(rects),
+        y: min_y(rects),
+        w: (max_x(rects) - min_x(rects)) as u32,
+        h: (max_y(rects) - min_y(rects)) as u32,
+    }
+}
+
+fn min_x(rects: &[Rect]) -> i32 {
+    rects.iter().map(|rect| rect.x).min().unwrap_or(0)
+}
+fn min_y(rects: &[Rect]) -> i32 {
+    rects.iter().map(|rect| rect.y).min().unwrap_or(0)
+}
+fn max_x(rects: &[Rect]) -> i32 {
+    rects
+        .iter()
+        .map(|rect| rect.x + rect.w as i32)
+        .max()
+        .unwrap_or(0)
+}
+fn max_y(rects: &[Rect]) -> i32 {
+    rects
+        .iter()
+        .map(|rect| rect.y + rect.h as i32)
+        .max()
+        .unwrap_or(0)
 }
 
 /// Splits the provided rectangle (`Rect`) into smaller rectangles
@@ -205,6 +317,8 @@ mod tests {
         geometry::{Rect, SplitAxis},
     };
 
+    use super::rotate;
+
     #[test]
     fn divrem_100_by_3_gives_33_1() {
         let result = divrem(100, 3);
@@ -259,18 +373,8 @@ mod tests {
     fn split_vertical_two_windows() {
         let rects = split(&CONTAINER, 2, &SplitAxis::Vertical);
         assert_eq!(rects.len(), 2);
-        let expected_first = Rect {
-            x: 0,
-            y: 0,
-            w: 200,
-            h: 200,
-        };
-        let expected_second = Rect {
-            x: 200,
-            y: 0,
-            w: 200,
-            h: 200,
-        };
+        let expected_first = Rect::new(0, 0, 200, 200);
+        let expected_second = Rect::new(200, 0, 200, 200);
         assert!(rects[0].eq(&expected_first));
         assert!(rects[1].eq(&expected_second));
     }
@@ -280,24 +384,9 @@ mod tests {
         let rects = split(&CONTAINER, 3, &SplitAxis::Vertical);
         assert_eq!(rects.len(), 3);
         // first window must be larger because of the remainderless division
-        let expected_first = Rect {
-            x: 0,
-            y: 0,
-            w: 134,
-            h: 200,
-        };
-        let expected_second = Rect {
-            x: 134,
-            y: 0,
-            w: 133,
-            h: 200,
-        };
-        let expected_third = Rect {
-            x: 267,
-            y: 0,
-            w: 133,
-            h: 200,
-        };
+        let expected_first = Rect::new(0, 0, 134, 200);
+        let expected_second = Rect::new(134, 0, 133, 200);
+        let expected_third = Rect::new(267, 0, 133, 200);
         assert!(rects[0].eq(&expected_first));
         assert!(rects[1].eq(&expected_second));
         assert!(rects[2].eq(&expected_third));
@@ -307,18 +396,8 @@ mod tests {
     fn split_horizontal_two_windows() {
         let rects = split(&CONTAINER, 2, &SplitAxis::Horizontal);
         assert_eq!(rects.len(), 2);
-        let expected_first = Rect {
-            x: 0,
-            y: 0,
-            w: 400,
-            h: 100,
-        };
-        let expected_second = Rect {
-            x: 0,
-            y: 100,
-            w: 400,
-            h: 100,
-        };
+        let expected_first = Rect::new(0, 0, 400, 100);
+        let expected_second = Rect::new(0, 100, 400, 100);
         assert!(rects[0].eq(&expected_first));
         assert!(rects[1].eq(&expected_second));
     }
@@ -328,24 +407,9 @@ mod tests {
         let rects = split(&CONTAINER, 3, &SplitAxis::Horizontal);
         assert_eq!(rects.len(), 3);
         // first two windows must be taller because of remainderless division
-        let expected_first = Rect {
-            x: 0,
-            y: 0,
-            w: 400,
-            h: 67,
-        };
-        let expected_second = Rect {
-            x: 0,
-            y: 67,
-            w: 400,
-            h: 67,
-        };
-        let expected_third = Rect {
-            x: 0,
-            y: 134,
-            w: 400,
-            h: 66,
-        };
+        let expected_first = Rect::new(0, 0, 400, 67);
+        let expected_second = Rect::new(0, 67, 400, 67);
+        let expected_third = Rect::new(0, 134, 400, 66);
         assert!(rects[0].eq(&expected_first));
         assert!(rects[1].eq(&expected_second));
         assert!(rects[2].eq(&expected_third));
@@ -355,24 +419,9 @@ mod tests {
     fn split_grid_three_windows() {
         let rects = split(&CONTAINER, 3, &SplitAxis::Grid);
         assert_eq!(rects.len(), 3);
-        let expected_first = Rect {
-            x: 0,
-            y: 0,
-            w: 200,
-            h: 200,
-        };
-        let expected_second = Rect {
-            x: 200,
-            y: 0,
-            w: 200,
-            h: 100,
-        };
-        let expected_third = Rect {
-            x: 200,
-            y: 100,
-            w: 200,
-            h: 100,
-        };
+        let expected_first = Rect::new(0, 0, 200, 200);
+        let expected_second = Rect::new(200, 0, 200, 100);
+        let expected_third = Rect::new(200, 100, 200, 100);
         assert!(rects[0].eq(&expected_first));
         assert!(rects[1].eq(&expected_second));
         assert!(rects[2].eq(&expected_third));
@@ -382,30 +431,10 @@ mod tests {
     fn split_grid_four_windows() {
         let rects = split(&CONTAINER, 4, &SplitAxis::Grid);
         assert_eq!(rects.len(), 4);
-        let expected_first = Rect {
-            x: 0,
-            y: 0,
-            w: 200,
-            h: 100,
-        };
-        let expected_second = Rect {
-            x: 0,
-            y: 100,
-            w: 200,
-            h: 100,
-        };
-        let expected_third = Rect {
-            x: 200,
-            y: 0,
-            w: 200,
-            h: 100,
-        };
-        let expected_fourth = Rect {
-            x: 200,
-            y: 100,
-            w: 200,
-            h: 100,
-        };
+        let expected_first = Rect::new(0, 0, 200, 100);
+        let expected_second = Rect::new(0, 100, 200, 100);
+        let expected_third = Rect::new(200, 0, 200, 100);
+        let expected_fourth = Rect::new(200, 100, 200, 100);
         assert!(rects[0].eq(&expected_first));
         assert!(rects[1].eq(&expected_second));
         assert!(rects[2].eq(&expected_third));
@@ -416,30 +445,10 @@ mod tests {
     fn split_fibonacci_four_windows() {
         let rects = split(&CONTAINER, 4, &SplitAxis::Fibonacci);
         assert_eq!(rects.len(), 4);
-        let expected_first = Rect {
-            x: 0,
-            y: 0,
-            w: 400,
-            h: 100,
-        };
-        let expected_second = Rect {
-            x: 200,
-            y: 100,
-            w: 200,
-            h: 100,
-        };
-        let expected_third = Rect {
-            x: 0,
-            y: 150,
-            w: 200,
-            h: 50,
-        };
-        let expected_fourth = Rect {
-            x: 0,
-            y: 100,
-            w: 200,
-            h: 50,
-        };
+        let expected_first = Rect::new(0, 0, 400, 100);
+        let expected_second = Rect::new(200, 100, 200, 100);
+        let expected_third = Rect::new(0, 150, 200, 50);
+        let expected_fourth = Rect::new(0, 100, 200, 50);
         assert!(rects[0].eq(&expected_first));
         assert!(rects[1].eq(&expected_second));
         assert!(rects[2].eq(&expected_third));
@@ -450,36 +459,11 @@ mod tests {
     fn split_fibonacci_five_windows() {
         let rects = split(&CONTAINER, 5, &SplitAxis::Fibonacci);
         assert_eq!(rects.len(), 5);
-        let expected_first = Rect {
-            x: 0,
-            y: 0,
-            w: 400,
-            h: 100,
-        };
-        let expected_second = Rect {
-            x: 200,
-            y: 100,
-            w: 200,
-            h: 100,
-        };
-        let expected_third = Rect {
-            x: 0,
-            y: 150,
-            w: 200,
-            h: 50,
-        };
-        let expected_fourth = Rect {
-            x: 0,
-            y: 100,
-            w: 100,
-            h: 50,
-        };
-        let expected_fifth = Rect {
-            x: 100,
-            y: 100,
-            w: 100,
-            h: 50,
-        };
+        let expected_first = Rect::new(0, 0, 400, 100);
+        let expected_second = Rect::new(200, 100, 200, 100);
+        let expected_third = Rect::new(0, 150, 200, 50);
+        let expected_fourth = Rect::new(0, 100, 100, 50);
+        let expected_fifth = Rect::new(100, 100, 100, 50);
         assert!(rects[0].eq(&expected_first));
         assert!(rects[1].eq(&expected_second));
         assert!(rects[2].eq(&expected_third));
@@ -491,30 +475,10 @@ mod tests {
     fn split_dwindle_four_windows() {
         let rects = split(&CONTAINER, 4, &SplitAxis::Dwindle);
         assert_eq!(rects.len(), 4);
-        let expected_first = Rect {
-            x: 0,
-            y: 0,
-            w: 400,
-            h: 100,
-        };
-        let expected_second = Rect {
-            x: 0,
-            y: 100,
-            w: 200,
-            h: 100,
-        };
-        let expected_third = Rect {
-            x: 200,
-            y: 100,
-            w: 200,
-            h: 50,
-        };
-        let expected_fourth = Rect {
-            x: 200,
-            y: 150,
-            w: 200,
-            h: 50,
-        };
+        let expected_first = Rect::new(0, 0, 400, 100);
+        let expected_second = Rect::new(0, 100, 200, 100);
+        let expected_third = Rect::new(200, 100, 200, 50);
+        let expected_fourth = Rect::new(200, 150, 200, 50);
         assert!(rects[0].eq(&expected_first));
         assert!(rects[1].eq(&expected_second));
         assert!(rects[2].eq(&expected_third));
@@ -525,36 +489,11 @@ mod tests {
     fn split_dwindle_five_windows() {
         let rects = split(&CONTAINER, 5, &SplitAxis::Dwindle);
         assert_eq!(rects.len(), 5);
-        let expected_first = Rect {
-            x: 0,
-            y: 0,
-            w: 400,
-            h: 100,
-        };
-        let expected_second = Rect {
-            x: 0,
-            y: 100,
-            w: 200,
-            h: 100,
-        };
-        let expected_third = Rect {
-            x: 200,
-            y: 100,
-            w: 200,
-            h: 50,
-        };
-        let expected_fourth = Rect {
-            x: 200,
-            y: 150,
-            w: 100,
-            h: 50,
-        };
-        let expected_fifth = Rect {
-            x: 300,
-            y: 150,
-            w: 100,
-            h: 50,
-        };
+        let expected_first = Rect::new(0, 0, 400, 100);
+        let expected_second = Rect::new(0, 100, 200, 100);
+        let expected_third = Rect::new(200, 100, 200, 50);
+        let expected_fourth = Rect::new(200, 150, 100, 50);
+        let expected_fifth = Rect::new(300, 150, 100, 50);
         assert!(rects[0].eq(&expected_first));
         assert!(rects[1].eq(&expected_second));
         assert!(rects[2].eq(&expected_third));
@@ -575,4 +514,292 @@ mod tests {
         assert_eq!(rects.len(), 1);
         assert!(rects[0].eq(&CONTAINER));
     }
+
+    #[test]
+    fn rotate_0_degrees() {
+        // +---------------+
+        // |               |
+        // +-------+-------+  0°
+        // +-------+       |
+        // +-------+-------+
+        let mut rects = vec![
+            Rect::new(0, 0, 400, 100),
+            Rect::new(200, 100, 200, 100),
+            Rect::new(0, 150, 200, 50),
+            Rect::new(0, 100, 200, 50),
+        ];
+
+        rotate(&mut rects, &crate::geometry::Rotation::North);
+
+        // +---------------+
+        // |               |
+        // +-------+-------+  0°
+        // +-------+       |
+        // +-------+-------+
+        assert_eq!(
+            rects,
+            vec![
+                Rect::new(0, 0, 400, 100),
+                Rect::new(200, 100, 200, 100),
+                Rect::new(0, 150, 200, 50),
+                Rect::new(0, 100, 200, 50),
+            ]
+        );
+    }
+
+    #[test]
+    fn rotate_90_degrees() {
+        // +---------------+
+        // |               |
+        // +-------+-------+  0°
+        // +-------+       |
+        // +-------+-------+
+        let mut rects = vec![
+            Rect::new(0, 0, 400, 100),
+            Rect::new(200, 100, 200, 100),
+            Rect::new(0, 150, 200, 50),
+            Rect::new(0, 100, 200, 50),
+        ];
+
+        rotate(&mut rects, &crate::geometry::Rotation::East);
+
+        // +---+---+-------+
+        // |   |   |       |
+        // +---+---+       |  90°
+        // |       |       |
+        // +-------+-------+
+        assert_eq!(
+            rects,
+            vec![
+                Rect::new(200, 0, 200, 200),
+                Rect::new(0, 100, 200, 100),
+                Rect::new(0, 0, 100, 100),
+                Rect::new(100, 0, 100, 100),
+            ]
+        );
+    }
+
+    #[test]
+    fn rotate_180_degrees() {
+        // +---------------+
+        // |               |
+        // +-------+-------+  0°
+        // +-------+       |
+        // +-------+-------+
+        let mut rects = vec![
+            Rect::new(0, 0, 400, 100),
+            Rect::new(200, 100, 200, 100),
+            Rect::new(0, 150, 200, 50),
+            Rect::new(0, 100, 200, 50),
+        ];
+
+        rotate(&mut rects, &crate::geometry::Rotation::South);
+
+        // +-------+-------+
+        // |       +-------+
+        // +-------+-------+  180°
+        // |               |
+        // +---------------+
+        assert_eq!(
+            rects,
+            vec![
+                Rect::new(0, 100, 400, 100),
+                Rect::new(0, 0, 200, 100),
+                Rect::new(200, 0, 200, 50),
+                Rect::new(200, 50, 200, 50),
+            ]
+        );
+    }
+
+    #[test]
+    fn rotate_270_degrees() {
+        // +---------------+
+        // |               |
+        // +-------+-------+  0°
+        // +-------+       |
+        // +-------+-------+
+        let mut rects = vec![
+            Rect::new(0, 0, 400, 100),
+            Rect::new(200, 100, 200, 100),
+            Rect::new(0, 150, 200, 50),
+            Rect::new(0, 100, 200, 50),
+        ];
+
+        rotate(&mut rects, &crate::geometry::Rotation::West);
+
+        // +-------+-------+
+        // |       |       |
+        // |       +---+---+  270°
+        // |       |   |   |
+        // +-------+---+---+
+        assert_eq!(
+            rects,
+            vec![
+                Rect::new(0, 0, 200, 200),
+                Rect::new(200, 0, 200, 100),
+                Rect::new(300, 100, 100, 100),
+                Rect::new(200, 100, 100, 100),
+            ]
+        );
+    }
+
+    #[test]
+    fn rotate_0_degrees_with_offset() {
+        // xxxxxxxxxxxxxxxxxxxxxxxxxx
+        // xxxxxxxx +---------------+
+        // xxxxxxxx |               |
+        // xxxxxxxx +-------+-------+  0°
+        // xxxxxxxx +-------+       |
+        // xxxxxxxx +-------+-------+
+        let mut rects = vec![
+            Rect::new(200, 50, 400, 100),
+            Rect::new(400, 150, 200, 100),
+            Rect::new(200, 200, 200, 50),
+            Rect::new(200, 150, 200, 50),
+        ];
+
+        rotate(&mut rects, &crate::geometry::Rotation::North);
+
+        // xxxxxxxxxxxxxxxxxxxxxxxxxx
+        // xxxxxxxx +---------------+
+        // xxxxxxxx |               |
+        // xxxxxxxx +-------+-------+  0°
+        // xxxxxxxx +-------+       |
+        // xxxxxxxx +-------+-------+
+        assert_eq!(
+            rects,
+            vec![
+                Rect::new(200, 50, 400, 100),
+                Rect::new(400, 150, 200, 100),
+                Rect::new(200, 200, 200, 50),
+                Rect::new(200, 150, 200, 50),
+            ]
+        );
+    }
+
+    #[test]
+    fn rotate_90_degrees_with_offset() {
+        // xxxxxxxxxxxxxxxxxxxxxxxxxx
+        // xxxxxxxx +---------------+
+        // xxxxxxxx |               |
+        // xxxxxxxx +-------+-------+  0°
+        // xxxxxxxx +-------+       |
+        // xxxxxxxx +-------+-------+
+        let mut rects = vec![
+            Rect::new(200, 50, 400, 100),
+            Rect::new(400, 150, 200, 100),
+            Rect::new(200, 200, 200, 50),
+            Rect::new(200, 150, 200, 50),
+        ];
+
+        rotate(&mut rects, &crate::geometry::Rotation::East);
+
+        // xxxxxxxxxxxxxxxxxxxxxxxxxx
+        // xxxxxxxx +---+---+-------+
+        // xxxxxxxx |   |   |       |
+        // xxxxxxxx +---+---+       |  90°
+        // xxxxxxxx |       |       |
+        // xxxxxxxx +-------+-------+
+        assert_eq!(
+            rects,
+            vec![
+                Rect::new(400, 50, 200, 200),
+                Rect::new(200, 150, 200, 100),
+                Rect::new(200, 50, 100, 100),
+                Rect::new(300, 50, 100, 100),
+            ]
+        );
+    }
+
+    #[test]
+    fn rotate_180_degrees_with_offset() {
+        // xxxxxxxxxxxxxxxxxxxxxxxxxx
+        // xxxxxxxx +---------------+
+        // xxxxxxxx |               |
+        // xxxxxxxx +-------+-------+  0°
+        // xxxxxxxx +-------+       |
+        // xxxxxxxx +-------+-------+
+        let mut rects = vec![
+            Rect::new(200, 50, 400, 100),
+            Rect::new(400, 150, 200, 100),
+            Rect::new(200, 200, 200, 50),
+            Rect::new(200, 150, 200, 50),
+        ];
+
+        rotate(&mut rects, &crate::geometry::Rotation::South);
+
+        // xxxxxxxxxxxxxxxxxxxxxxxxxx
+        // xxxxxxxx +-------+-------+
+        // xxxxxxxx |       +-------+
+        // xxxxxxxx +-------+-------+  180°
+        // xxxxxxxx |               |
+        // xxxxxxxx +---------------+
+        assert_eq!(
+            rects,
+            vec![
+                Rect::new(200, 150, 400, 100),
+                Rect::new(200, 50, 200, 100),
+                Rect::new(400, 50, 200, 50),
+                Rect::new(400, 100, 200, 50),
+            ]
+        );
+    }
+
+    #[test]
+    fn rotate_270_degrees_with_offset() {
+        // xxxxxxxxxxxxxxxxxxxxxxxxxx
+        // xxxxxxxx +---------------+
+        // xxxxxxxx |               |
+        // xxxxxxxx +-------+-------+  0°
+        // xxxxxxxx +-------+       |
+        // xxxxxxxx +-------+-------+
+        let mut rects = vec![
+            Rect::new(200, 50, 400, 100),
+            Rect::new(400, 150, 200, 100),
+            Rect::new(200, 200, 200, 50),
+            Rect::new(200, 150, 200, 50),
+        ];
+
+        rotate(&mut rects, &crate::geometry::Rotation::West);
+
+        // xxxxxxxxxxxxxxxxxxxxxxxxxx
+        // xxxxxxxx +-------+-------+
+        // xxxxxxxx |       |       |
+        // xxxxxxxx |       +---+---+  270°
+        // xxxxxxxx |       |   |   |
+        // xxxxxxxx +-------+---+---+
+        assert_eq!(
+            rects,
+            vec![
+                Rect::new(200, 50, 200, 200),
+                Rect::new(400, 50, 200, 100),
+                Rect::new(500, 150, 100, 100),
+                Rect::new(400, 150, 100, 100),
+            ]
+        );
+    }
+
+    #[test]
+    fn rotate_90_degrees_non_divisible() {
+        // +---------------+
+        // |         |     |
+        // +         |     +  0°
+        // +         |     |
+        // +---------+-----+
+        let mut rects = vec![Rect::new(0, 0, 201, 100), Rect::new(201, 0, 200, 100)];
+
+        rotate(&mut rects, &crate::geometry::Rotation::East);
+
+        // +---------------+
+        // |               |
+        // +---------------|  90°
+        // |               |
+        // +---------------+
+        assert_eq!(
+            rects,
+            vec![Rect::new(0, 0, 401, 50,), Rect::new(0, 50, 401, 50,),]
+        );
+    }
+
+    // todo: test with negative offset
 }
