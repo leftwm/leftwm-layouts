@@ -10,9 +10,9 @@ pub mod layouts;
 pub fn apply(definition: &LayoutDefinition, window_count: usize, container: &Rect) -> Vec<Rect> {
     // calculate the layout
     let mut rects = match definition.column_type {
-        ColumnType::Stack => stack(window_count, &container, definition),
-        ColumnType::MainAndStack => main_stack(window_count, &container, definition),
-        ColumnType::CenterMain => stack_main_stack(window_count, &container, definition),
+        ColumnType::Stack => stack(window_count, container, definition),
+        ColumnType::MainAndStack => main_stack(window_count, container, definition),
+        ColumnType::CenterMain => stack_main_stack(window_count, container, definition),
     };
 
     // flip the layout (if necessary)
