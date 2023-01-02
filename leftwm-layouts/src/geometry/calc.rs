@@ -80,12 +80,7 @@ pub fn rotate(rects: &mut [Rect], rotation: &Rotation) {
                 }
             } else {
                 // invisible rect might as well be at (0,0)
-                FloatRect {
-                    x: 0.0,
-                    y: 0.0,
-                    w: 0.0,
-                    h: 0.0,
-                }
+                FloatRect::new(0.0, 0.0, 0.0, 0.0)
             }
         })
         .collect();
@@ -378,18 +373,8 @@ mod tests {
     fn split_vertical_two_windows() {
         let rects = split(&CONTAINER, 2, &SplitAxis::Vertical);
         assert_eq!(rects.len(), 2);
-        let expected_first = Rect {
-            x: 0,
-            y: 0,
-            w: 200,
-            h: 200,
-        };
-        let expected_second = Rect {
-            x: 200,
-            y: 0,
-            w: 200,
-            h: 200,
-        };
+        let expected_first = Rect::new(0, 0, 200, 200);
+        let expected_second = Rect::new(200, 0, 200, 200);
         assert!(rects[0].eq(&expected_first));
         assert!(rects[1].eq(&expected_second));
     }
@@ -399,24 +384,9 @@ mod tests {
         let rects = split(&CONTAINER, 3, &SplitAxis::Vertical);
         assert_eq!(rects.len(), 3);
         // first window must be larger because of the remainderless division
-        let expected_first = Rect {
-            x: 0,
-            y: 0,
-            w: 134,
-            h: 200,
-        };
-        let expected_second = Rect {
-            x: 134,
-            y: 0,
-            w: 133,
-            h: 200,
-        };
-        let expected_third = Rect {
-            x: 267,
-            y: 0,
-            w: 133,
-            h: 200,
-        };
+        let expected_first = Rect::new(0, 0, 134, 200);
+        let expected_second = Rect::new(134, 0, 133, 200);
+        let expected_third = Rect::new(267, 0, 133, 200);
         assert!(rects[0].eq(&expected_first));
         assert!(rects[1].eq(&expected_second));
         assert!(rects[2].eq(&expected_third));
@@ -426,18 +396,8 @@ mod tests {
     fn split_horizontal_two_windows() {
         let rects = split(&CONTAINER, 2, &SplitAxis::Horizontal);
         assert_eq!(rects.len(), 2);
-        let expected_first = Rect {
-            x: 0,
-            y: 0,
-            w: 400,
-            h: 100,
-        };
-        let expected_second = Rect {
-            x: 0,
-            y: 100,
-            w: 400,
-            h: 100,
-        };
+        let expected_first = Rect::new(0, 0, 400, 100);
+        let expected_second = Rect::new(0, 100, 400, 100);
         assert!(rects[0].eq(&expected_first));
         assert!(rects[1].eq(&expected_second));
     }
@@ -447,24 +407,9 @@ mod tests {
         let rects = split(&CONTAINER, 3, &SplitAxis::Horizontal);
         assert_eq!(rects.len(), 3);
         // first two windows must be taller because of remainderless division
-        let expected_first = Rect {
-            x: 0,
-            y: 0,
-            w: 400,
-            h: 67,
-        };
-        let expected_second = Rect {
-            x: 0,
-            y: 67,
-            w: 400,
-            h: 67,
-        };
-        let expected_third = Rect {
-            x: 0,
-            y: 134,
-            w: 400,
-            h: 66,
-        };
+        let expected_first = Rect::new(0, 0, 400, 67);
+        let expected_second = Rect::new(0, 67, 400, 67);
+        let expected_third = Rect::new(0, 134, 400, 66);
         assert!(rects[0].eq(&expected_first));
         assert!(rects[1].eq(&expected_second));
         assert!(rects[2].eq(&expected_third));
@@ -474,24 +419,9 @@ mod tests {
     fn split_grid_three_windows() {
         let rects = split(&CONTAINER, 3, &SplitAxis::Grid);
         assert_eq!(rects.len(), 3);
-        let expected_first = Rect {
-            x: 0,
-            y: 0,
-            w: 200,
-            h: 200,
-        };
-        let expected_second = Rect {
-            x: 200,
-            y: 0,
-            w: 200,
-            h: 100,
-        };
-        let expected_third = Rect {
-            x: 200,
-            y: 100,
-            w: 200,
-            h: 100,
-        };
+        let expected_first = Rect::new(0, 0, 200, 200);
+        let expected_second = Rect::new(200, 0, 200, 100);
+        let expected_third = Rect::new(200, 100, 200, 100);
         assert!(rects[0].eq(&expected_first));
         assert!(rects[1].eq(&expected_second));
         assert!(rects[2].eq(&expected_third));
@@ -501,30 +431,10 @@ mod tests {
     fn split_grid_four_windows() {
         let rects = split(&CONTAINER, 4, &SplitAxis::Grid);
         assert_eq!(rects.len(), 4);
-        let expected_first = Rect {
-            x: 0,
-            y: 0,
-            w: 200,
-            h: 100,
-        };
-        let expected_second = Rect {
-            x: 0,
-            y: 100,
-            w: 200,
-            h: 100,
-        };
-        let expected_third = Rect {
-            x: 200,
-            y: 0,
-            w: 200,
-            h: 100,
-        };
-        let expected_fourth = Rect {
-            x: 200,
-            y: 100,
-            w: 200,
-            h: 100,
-        };
+        let expected_first = Rect::new(0, 0, 200, 100);
+        let expected_second = Rect::new(0, 100, 200, 100);
+        let expected_third = Rect::new(200, 0, 200, 100);
+        let expected_fourth = Rect::new(200, 100, 200, 100);
         assert!(rects[0].eq(&expected_first));
         assert!(rects[1].eq(&expected_second));
         assert!(rects[2].eq(&expected_third));
@@ -535,30 +445,10 @@ mod tests {
     fn split_fibonacci_four_windows() {
         let rects = split(&CONTAINER, 4, &SplitAxis::Fibonacci);
         assert_eq!(rects.len(), 4);
-        let expected_first = Rect {
-            x: 0,
-            y: 0,
-            w: 400,
-            h: 100,
-        };
-        let expected_second = Rect {
-            x: 200,
-            y: 100,
-            w: 200,
-            h: 100,
-        };
-        let expected_third = Rect {
-            x: 0,
-            y: 150,
-            w: 200,
-            h: 50,
-        };
-        let expected_fourth = Rect {
-            x: 0,
-            y: 100,
-            w: 200,
-            h: 50,
-        };
+        let expected_first = Rect::new(0, 0, 400, 100);
+        let expected_second = Rect::new(200, 100, 200, 100);
+        let expected_third = Rect::new(0, 150, 200, 50);
+        let expected_fourth = Rect::new(0, 100, 200, 50);
         assert!(rects[0].eq(&expected_first));
         assert!(rects[1].eq(&expected_second));
         assert!(rects[2].eq(&expected_third));
@@ -569,36 +459,11 @@ mod tests {
     fn split_fibonacci_five_windows() {
         let rects = split(&CONTAINER, 5, &SplitAxis::Fibonacci);
         assert_eq!(rects.len(), 5);
-        let expected_first = Rect {
-            x: 0,
-            y: 0,
-            w: 400,
-            h: 100,
-        };
-        let expected_second = Rect {
-            x: 200,
-            y: 100,
-            w: 200,
-            h: 100,
-        };
-        let expected_third = Rect {
-            x: 0,
-            y: 150,
-            w: 200,
-            h: 50,
-        };
-        let expected_fourth = Rect {
-            x: 0,
-            y: 100,
-            w: 100,
-            h: 50,
-        };
-        let expected_fifth = Rect {
-            x: 100,
-            y: 100,
-            w: 100,
-            h: 50,
-        };
+        let expected_first = Rect::new(0, 0, 400, 100);
+        let expected_second = Rect::new(200, 100, 200, 100);
+        let expected_third = Rect::new(0, 150, 200, 50);
+        let expected_fourth = Rect::new(0, 100, 100, 50);
+        let expected_fifth = Rect::new(100, 100, 100, 50);
         assert!(rects[0].eq(&expected_first));
         assert!(rects[1].eq(&expected_second));
         assert!(rects[2].eq(&expected_third));
@@ -610,30 +475,10 @@ mod tests {
     fn split_dwindle_four_windows() {
         let rects = split(&CONTAINER, 4, &SplitAxis::Dwindle);
         assert_eq!(rects.len(), 4);
-        let expected_first = Rect {
-            x: 0,
-            y: 0,
-            w: 400,
-            h: 100,
-        };
-        let expected_second = Rect {
-            x: 0,
-            y: 100,
-            w: 200,
-            h: 100,
-        };
-        let expected_third = Rect {
-            x: 200,
-            y: 100,
-            w: 200,
-            h: 50,
-        };
-        let expected_fourth = Rect {
-            x: 200,
-            y: 150,
-            w: 200,
-            h: 50,
-        };
+        let expected_first = Rect::new(0, 0, 400, 100);
+        let expected_second = Rect::new(0, 100, 200, 100);
+        let expected_third = Rect::new(200, 100, 200, 50);
+        let expected_fourth = Rect::new(200, 150, 200, 50);
         assert!(rects[0].eq(&expected_first));
         assert!(rects[1].eq(&expected_second));
         assert!(rects[2].eq(&expected_third));
@@ -644,36 +489,11 @@ mod tests {
     fn split_dwindle_five_windows() {
         let rects = split(&CONTAINER, 5, &SplitAxis::Dwindle);
         assert_eq!(rects.len(), 5);
-        let expected_first = Rect {
-            x: 0,
-            y: 0,
-            w: 400,
-            h: 100,
-        };
-        let expected_second = Rect {
-            x: 0,
-            y: 100,
-            w: 200,
-            h: 100,
-        };
-        let expected_third = Rect {
-            x: 200,
-            y: 100,
-            w: 200,
-            h: 50,
-        };
-        let expected_fourth = Rect {
-            x: 200,
-            y: 150,
-            w: 100,
-            h: 50,
-        };
-        let expected_fifth = Rect {
-            x: 300,
-            y: 150,
-            w: 100,
-            h: 50,
-        };
+        let expected_first = Rect::new(0, 0, 400, 100);
+        let expected_second = Rect::new(0, 100, 200, 100);
+        let expected_third = Rect::new(200, 100, 200, 50);
+        let expected_fourth = Rect::new(200, 150, 100, 50);
+        let expected_fifth = Rect::new(300, 150, 100, 50);
         assert!(rects[0].eq(&expected_first));
         assert!(rects[1].eq(&expected_second));
         assert!(rects[2].eq(&expected_third));
@@ -703,30 +523,10 @@ mod tests {
         // +-------+       |
         // +-------+-------+
         let mut rects = vec![
-            Rect {
-                x: 0,
-                y: 0,
-                w: 400,
-                h: 100,
-            },
-            Rect {
-                x: 200,
-                y: 100,
-                w: 200,
-                h: 100,
-            },
-            Rect {
-                x: 0,
-                y: 150,
-                w: 200,
-                h: 50,
-            },
-            Rect {
-                x: 0,
-                y: 100,
-                w: 200,
-                h: 50,
-            },
+            Rect::new(0, 0, 400, 100),
+            Rect::new(200, 100, 200, 100),
+            Rect::new(0, 150, 200, 50),
+            Rect::new(0, 100, 200, 50),
         ];
 
         rotate(&mut rects, &crate::geometry::Rotation::North);
@@ -739,30 +539,10 @@ mod tests {
         assert_eq!(
             rects,
             vec![
-                Rect {
-                    x: 0,
-                    y: 0,
-                    w: 400,
-                    h: 100
-                },
-                Rect {
-                    x: 200,
-                    y: 100,
-                    w: 200,
-                    h: 100
-                },
-                Rect {
-                    x: 0,
-                    y: 150,
-                    w: 200,
-                    h: 50
-                },
-                Rect {
-                    x: 0,
-                    y: 100,
-                    w: 200,
-                    h: 50
-                },
+                Rect::new(0, 0, 400, 100),
+                Rect::new(200, 100, 200, 100),
+                Rect::new(0, 150, 200, 50),
+                Rect::new(0, 100, 200, 50),
             ]
         );
     }
@@ -775,30 +555,10 @@ mod tests {
         // +-------+       |
         // +-------+-------+
         let mut rects = vec![
-            Rect {
-                x: 0,
-                y: 0,
-                w: 400,
-                h: 100,
-            },
-            Rect {
-                x: 200,
-                y: 100,
-                w: 200,
-                h: 100,
-            },
-            Rect {
-                x: 0,
-                y: 150,
-                w: 200,
-                h: 50,
-            },
-            Rect {
-                x: 0,
-                y: 100,
-                w: 200,
-                h: 50,
-            },
+            Rect::new(0, 0, 400, 100),
+            Rect::new(200, 100, 200, 100),
+            Rect::new(0, 150, 200, 50),
+            Rect::new(0, 100, 200, 50),
         ];
 
         rotate(&mut rects, &crate::geometry::Rotation::East);
@@ -811,30 +571,10 @@ mod tests {
         assert_eq!(
             rects,
             vec![
-                Rect {
-                    x: 200,
-                    y: 0,
-                    w: 200,
-                    h: 200
-                },
-                Rect {
-                    x: 0,
-                    y: 100,
-                    w: 200,
-                    h: 100
-                },
-                Rect {
-                    x: 0,
-                    y: 0,
-                    w: 100,
-                    h: 100
-                },
-                Rect {
-                    x: 100,
-                    y: 0,
-                    w: 100,
-                    h: 100
-                },
+                Rect::new(200, 0, 200, 200),
+                Rect::new(0, 100, 200, 100),
+                Rect::new(0, 0, 100, 100),
+                Rect::new(100, 0, 100, 100),
             ]
         );
     }
@@ -847,30 +587,10 @@ mod tests {
         // +-------+       |
         // +-------+-------+
         let mut rects = vec![
-            Rect {
-                x: 0,
-                y: 0,
-                w: 400,
-                h: 100,
-            },
-            Rect {
-                x: 200,
-                y: 100,
-                w: 200,
-                h: 100,
-            },
-            Rect {
-                x: 0,
-                y: 150,
-                w: 200,
-                h: 50,
-            },
-            Rect {
-                x: 0,
-                y: 100,
-                w: 200,
-                h: 50,
-            },
+            Rect::new(0, 0, 400, 100),
+            Rect::new(200, 100, 200, 100),
+            Rect::new(0, 150, 200, 50),
+            Rect::new(0, 100, 200, 50),
         ];
 
         rotate(&mut rects, &crate::geometry::Rotation::South);
@@ -883,30 +603,10 @@ mod tests {
         assert_eq!(
             rects,
             vec![
-                Rect {
-                    x: 0,
-                    y: 100,
-                    w: 400,
-                    h: 100
-                },
-                Rect {
-                    x: 0,
-                    y: 0,
-                    w: 200,
-                    h: 100
-                },
-                Rect {
-                    x: 200,
-                    y: 0,
-                    w: 200,
-                    h: 50
-                },
-                Rect {
-                    x: 200,
-                    y: 50,
-                    w: 200,
-                    h: 50
-                },
+                Rect::new(0, 100, 400, 100),
+                Rect::new(0, 0, 200, 100),
+                Rect::new(200, 0, 200, 50),
+                Rect::new(200, 50, 200, 50),
             ]
         );
     }
@@ -919,30 +619,10 @@ mod tests {
         // +-------+       |
         // +-------+-------+
         let mut rects = vec![
-            Rect {
-                x: 0,
-                y: 0,
-                w: 400,
-                h: 100,
-            },
-            Rect {
-                x: 200,
-                y: 100,
-                w: 200,
-                h: 100,
-            },
-            Rect {
-                x: 0,
-                y: 150,
-                w: 200,
-                h: 50,
-            },
-            Rect {
-                x: 0,
-                y: 100,
-                w: 200,
-                h: 50,
-            },
+            Rect::new(0, 0, 400, 100),
+            Rect::new(200, 100, 200, 100),
+            Rect::new(0, 150, 200, 50),
+            Rect::new(0, 100, 200, 50),
         ];
 
         rotate(&mut rects, &crate::geometry::Rotation::West);
@@ -955,30 +635,10 @@ mod tests {
         assert_eq!(
             rects,
             vec![
-                Rect {
-                    x: 0,
-                    y: 0,
-                    w: 200,
-                    h: 200
-                },
-                Rect {
-                    x: 200,
-                    y: 0,
-                    w: 200,
-                    h: 100
-                },
-                Rect {
-                    x: 300,
-                    y: 100,
-                    w: 100,
-                    h: 100
-                },
-                Rect {
-                    x: 200,
-                    y: 100,
-                    w: 100,
-                    h: 100
-                },
+                Rect::new(0, 0, 200, 200),
+                Rect::new(200, 0, 200, 100),
+                Rect::new(300, 100, 100, 100),
+                Rect::new(200, 100, 100, 100),
             ]
         );
     }
@@ -992,30 +652,10 @@ mod tests {
         // xxxxxxxx +-------+       |
         // xxxxxxxx +-------+-------+
         let mut rects = vec![
-            Rect {
-                x: 200,
-                y: 50,
-                w: 400,
-                h: 100,
-            },
-            Rect {
-                x: 400,
-                y: 150,
-                w: 200,
-                h: 100,
-            },
-            Rect {
-                x: 200,
-                y: 200,
-                w: 200,
-                h: 50,
-            },
-            Rect {
-                x: 200,
-                y: 150,
-                w: 200,
-                h: 50,
-            },
+            Rect::new(200, 50, 400, 100),
+            Rect::new(400, 150, 200, 100),
+            Rect::new(200, 200, 200, 50),
+            Rect::new(200, 150, 200, 50),
         ];
 
         rotate(&mut rects, &crate::geometry::Rotation::North);
@@ -1029,30 +669,10 @@ mod tests {
         assert_eq!(
             rects,
             vec![
-                Rect {
-                    x: 200,
-                    y: 50,
-                    w: 400,
-                    h: 100
-                },
-                Rect {
-                    x: 400,
-                    y: 150,
-                    w: 200,
-                    h: 100
-                },
-                Rect {
-                    x: 200,
-                    y: 200,
-                    w: 200,
-                    h: 50
-                },
-                Rect {
-                    x: 200,
-                    y: 150,
-                    w: 200,
-                    h: 50
-                },
+                Rect::new(200, 50, 400, 100),
+                Rect::new(400, 150, 200, 100),
+                Rect::new(200, 200, 200, 50),
+                Rect::new(200, 150, 200, 50),
             ]
         );
     }
@@ -1066,30 +686,10 @@ mod tests {
         // xxxxxxxx +-------+       |
         // xxxxxxxx +-------+-------+
         let mut rects = vec![
-            Rect {
-                x: 200,
-                y: 50,
-                w: 400,
-                h: 100,
-            },
-            Rect {
-                x: 400,
-                y: 150,
-                w: 200,
-                h: 100,
-            },
-            Rect {
-                x: 200,
-                y: 200,
-                w: 200,
-                h: 50,
-            },
-            Rect {
-                x: 200,
-                y: 150,
-                w: 200,
-                h: 50,
-            },
+            Rect::new(200, 50, 400, 100),
+            Rect::new(400, 150, 200, 100),
+            Rect::new(200, 200, 200, 50),
+            Rect::new(200, 150, 200, 50),
         ];
 
         rotate(&mut rects, &crate::geometry::Rotation::East);
@@ -1103,30 +703,10 @@ mod tests {
         assert_eq!(
             rects,
             vec![
-                Rect {
-                    x: 400,
-                    y: 50,
-                    w: 200,
-                    h: 200
-                },
-                Rect {
-                    x: 200,
-                    y: 150,
-                    w: 200,
-                    h: 100
-                },
-                Rect {
-                    x: 200,
-                    y: 50,
-                    w: 100,
-                    h: 100
-                },
-                Rect {
-                    x: 300,
-                    y: 50,
-                    w: 100,
-                    h: 100
-                },
+                Rect::new(400, 50, 200, 200),
+                Rect::new(200, 150, 200, 100),
+                Rect::new(200, 50, 100, 100),
+                Rect::new(300, 50, 100, 100),
             ]
         );
     }
@@ -1140,30 +720,10 @@ mod tests {
         // xxxxxxxx +-------+       |
         // xxxxxxxx +-------+-------+
         let mut rects = vec![
-            Rect {
-                x: 200,
-                y: 50,
-                w: 400,
-                h: 100,
-            },
-            Rect {
-                x: 400,
-                y: 150,
-                w: 200,
-                h: 100,
-            },
-            Rect {
-                x: 200,
-                y: 200,
-                w: 200,
-                h: 50,
-            },
-            Rect {
-                x: 200,
-                y: 150,
-                w: 200,
-                h: 50,
-            },
+            Rect::new(200, 50, 400, 100),
+            Rect::new(400, 150, 200, 100),
+            Rect::new(200, 200, 200, 50),
+            Rect::new(200, 150, 200, 50),
         ];
 
         rotate(&mut rects, &crate::geometry::Rotation::South);
@@ -1177,30 +737,10 @@ mod tests {
         assert_eq!(
             rects,
             vec![
-                Rect {
-                    x: 200,
-                    y: 150,
-                    w: 400,
-                    h: 100
-                },
-                Rect {
-                    x: 200,
-                    y: 50,
-                    w: 200,
-                    h: 100
-                },
-                Rect {
-                    x: 400,
-                    y: 50,
-                    w: 200,
-                    h: 50
-                },
-                Rect {
-                    x: 400,
-                    y: 100,
-                    w: 200,
-                    h: 50
-                },
+                Rect::new(200, 150, 400, 100),
+                Rect::new(200, 50, 200, 100),
+                Rect::new(400, 50, 200, 50),
+                Rect::new(400, 100, 200, 50),
             ]
         );
     }
@@ -1214,30 +754,10 @@ mod tests {
         // xxxxxxxx +-------+       |
         // xxxxxxxx +-------+-------+
         let mut rects = vec![
-            Rect {
-                x: 200,
-                y: 50,
-                w: 400,
-                h: 100,
-            },
-            Rect {
-                x: 400,
-                y: 150,
-                w: 200,
-                h: 100,
-            },
-            Rect {
-                x: 200,
-                y: 200,
-                w: 200,
-                h: 50,
-            },
-            Rect {
-                x: 200,
-                y: 150,
-                w: 200,
-                h: 50,
-            },
+            Rect::new(200, 50, 400, 100),
+            Rect::new(400, 150, 200, 100),
+            Rect::new(200, 200, 200, 50),
+            Rect::new(200, 150, 200, 50),
         ];
 
         rotate(&mut rects, &crate::geometry::Rotation::West);
@@ -1251,30 +771,10 @@ mod tests {
         assert_eq!(
             rects,
             vec![
-                Rect {
-                    x: 200,
-                    y: 50,
-                    w: 200,
-                    h: 200
-                },
-                Rect {
-                    x: 400,
-                    y: 50,
-                    w: 200,
-                    h: 100
-                },
-                Rect {
-                    x: 500,
-                    y: 150,
-                    w: 100,
-                    h: 100
-                },
-                Rect {
-                    x: 400,
-                    y: 150,
-                    w: 100,
-                    h: 100
-                },
+                Rect::new(200, 50, 200, 200),
+                Rect::new(400, 50, 200, 100),
+                Rect::new(500, 150, 100, 100),
+                Rect::new(400, 150, 100, 100),
             ]
         );
     }
@@ -1286,20 +786,7 @@ mod tests {
         // +         |     +  0°
         // +         |     |
         // +---------+-----+
-        let mut rects = vec![
-            Rect {
-                x: 0,
-                y: 0,
-                w: 201,
-                h: 100,
-            },
-            Rect {
-                x: 201,
-                y: 0,
-                w: 200,
-                h: 100,
-            },
-        ];
+        let mut rects = vec![Rect::new(0, 0, 201, 100), Rect::new(201, 0, 200, 100)];
 
         rotate(&mut rects, &crate::geometry::Rotation::East);
 
@@ -1310,20 +797,7 @@ mod tests {
         // +---------------+
         assert_eq!(
             rects,
-            vec![
-                Rect {
-                    x: 0,
-                    y: 0,
-                    w: 401,
-                    h: 50,
-                },
-                Rect {
-                    x: 0,
-                    y: 50,
-                    w: 401,
-                    h: 50,
-                },
-            ]
+            vec![Rect::new(0, 0, 401, 50,), Rect::new(0, 50, 401, 50,),]
         );
     }
 
