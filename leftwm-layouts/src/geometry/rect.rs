@@ -46,6 +46,16 @@ impl Rect {
         let y = self.y + (self.h as f32 / 2.0).round() as i32;
         (x, y)
     }
+
+    /// Check whether a point is contained in a `Rect`.
+    ///
+    /// The boundary counts as part of the `Rect`.
+    pub fn contains(&self, point: (i32, i32)) -> bool {
+        self.x <= point.0
+            && point.0 <= self.x + self.w as i32
+            && self.y <= point.1
+            && point.1 <= self.y + self.h as i32
+    }
 }
 
 impl Default for Rect {
@@ -55,6 +65,44 @@ impl Default for Rect {
             y: 0,
             w: 500,
             h: 250,
+        }
+    }
+}
+
+/// Similar to `Rect`, but with less functionality
+///
+/// Intended to perform operations that require rounding afterwards, e.g. rotation.
+pub struct FloatRect {
+    pub x: f32,
+    pub y: f32,
+    pub w: f32,
+    pub h: f32,
+}
+
+impl FloatRect {
+    pub fn new(x: f32, y: f32, w: f32, h: f32) -> Self {
+        Self { x, y, w, h }
+    }
+}
+
+impl From<&Rect> for FloatRect {
+    fn from(rect: &Rect) -> FloatRect {
+        FloatRect {
+            x: rect.x as f32,
+            y: rect.y as f32,
+            w: rect.w as f32,
+            h: rect.h as f32,
+        }
+    }
+}
+
+impl From<&FloatRect> for Rect {
+    fn from(rect: &FloatRect) -> Rect {
+        Rect {
+            x: rect.x as i32,
+            y: rect.y as i32,
+            w: rect.w as u32,
+            h: rect.h as u32,
         }
     }
 }
@@ -91,5 +139,27 @@ mod tests {
     fn center_calculation_at_rounded_position() {
         let rect = Rect::new(100, 100, 387, 399);
         assert_eq!(rect.center(), (294, 300))
+    }
+
+    #[test]
+    fn contains_boundary() {
+        let rect = Rect::new(100, 100, 400, 100);
+        assert!(rect.contains((100, 100)));
+        assert!(rect.contains((500, 100)));
+        assert!(rect.contains((500, 200)));
+        assert!(rect.contains((100, 200)));
+    }
+
+    #[test]
+    fn does_not_contain_points_outside_rect() {
+        let rect = Rect::new(100, 100, 400, 100);
+        assert!(!rect.contains((99, 100)));
+        assert!(!rect.contains((501, 100)));
+        assert!(!rect.contains((501, 200)));
+        assert!(!rect.contains((99, 200)));
+        assert!(!rect.contains((100, 99)));
+        assert!(!rect.contains((500, 99)));
+        assert!(!rect.contains((500, 201)));
+        assert!(!rect.contains((100, 201)));
     }
 }
