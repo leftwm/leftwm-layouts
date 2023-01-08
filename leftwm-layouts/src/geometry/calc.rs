@@ -1,4 +1,4 @@
-use crate::geometry::{Flipped, Float, Rect, Rotation, SplitAxis};
+use crate::geometry::{Flipped, Rect, Rotation, SplitAxis};
 use std::ops::Rem;
 
 /// Divide the provided `a` by `b` and return the
@@ -65,59 +65,9 @@ pub fn flip(container: &Rect, rects: &mut [Rect], flipped: &Flipped) {
 /// Similarly, if the array has no overlaps (i.e. pixels that are part of multiple `Rect`s
 /// in the array), neither will the result.
 pub fn rotate(container: &Rect, rects: &mut [Rect], rotation: &Rotation) {
-    // In this normalization, the outer Rect is a 1x1 rectangle at (0/0)
-    let mut normalized_float_rects: Vec<Float> = rects
-        .iter()
-        .map(|rect| {
-            if container.w != 0 && container.h != 0 {
-                Float {
-                    x: (rect.x - container.x) as f32 / container.w as f32,
-                    y: (rect.y - container.y) as f32 / container.h as f32,
-                    w: rect.w as f32 / container.w as f32,
-                    h: rect.h as f32 / container.h as f32,
-                }
-            } else {
-                // invisible rect might as well be at (0,0)
-                Float::new(0.0, 0.0, 0.0, 0.0)
-            }
-        })
-        .collect();
-
-    // Rotate normalized_float_rects
-    for mut rect in &mut normalized_float_rects {
-        let next_anchor = rotation.next_anchor(rect);
-        match &rotation {
-            Rotation::North => {}
-            Rotation::East => {
-                rect.x = 1.0 - next_anchor.1;
-                rect.y = next_anchor.0;
-                std::mem::swap(&mut rect.w, &mut rect.h);
-            }
-            Rotation::South => {
-                rect.x = 1.0 - next_anchor.0;
-                rect.y = 1.0 - next_anchor.1;
-            }
-            Rotation::West => {
-                rect.x = next_anchor.1;
-                rect.y = 1.0 - next_anchor.0;
-                std::mem::swap(&mut rect.w, &mut rect.h);
-            }
-        }
+    for rect in rects.iter_mut() {
+        rotate_single_rect(rect, rotation, container);
     }
-
-    // Revert the normalization and convert back to integer coordinates
-    let new_rects: Vec<Rect> = normalized_float_rects
-        .iter()
-        .map(|rect| Rect {
-            x: (rect.x * container.w as f32) as i32 + container.x,
-            y: (rect.y * container.h as f32) as i32 + container.y,
-            w: (rect.w * container.w as f32) as u32,
-            h: (rect.h * container.h as f32) as u32,
-        })
-        .collect();
-
-    // assign result to rects
-    rects.copy_from_slice(&new_rects[..rects.len()]);
 
     // Fill missing pixels
     let n_rects = rects.len();
@@ -158,6 +108,53 @@ pub fn rotate(container: &Rect, rects: &mut [Rect], rotation: &Rotation) {
             rects[i].h += 1;
         }
     }
+}
+
+fn rotate_single_rect(rect: &mut Rect, rotation: &Rotation, container: &Rect) {
+    // normalize so that Rect is at position (0/0)
+    rect.x -= container.x;
+    rect.y -= container.y;
+
+    // rotate
+    let next_anchor = rotation.next_anchor(rect);
+    match rotation {
+        Rotation::North => {}
+        Rotation::East => {
+            rect.x = container.h as i32 - next_anchor.1;
+            rect.y = next_anchor.0;
+            std::mem::swap(&mut rect.w, &mut rect.h);
+        }
+        Rotation::South => {
+            let next_anchor = rotation.next_anchor(rect);
+            rect.x = container.w as i32 - next_anchor.0;
+            rect.y = container.h as i32 - next_anchor.1;
+        }
+        Rotation::West => {
+            let next_anchor = rotation.next_anchor(rect);
+            rect.x = next_anchor.1;
+            rect.y = container.w as i32 - next_anchor.0;
+            std::mem::swap(&mut rect.w, &mut rect.h);
+        }
+    }
+
+    // new aspect ratio
+    match rotation {
+        Rotation::North | Rotation::South => {}
+        Rotation::East | Rotation::West => {
+            rect.x *= container.w as i32;
+            rect.x /= container.h as i32;
+            rect.y *= container.h as i32;
+            rect.y /= container.w as i32;
+            rect.w *= container.w;
+            rect.w /= container.h;
+            rect.h *= container.h;
+            rect.h /= container.w;
+        }
+    }
+
+    // revert normalization
+    rect.x += container.x;
+    rect.y += container.y;
 }
 
 /// Splits the provided rectangle (`Rect`) into smaller rectangles
