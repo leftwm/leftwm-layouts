@@ -120,9 +120,8 @@ impl Default for Rotation {
 
 #[cfg(test)]
 mod tests {
-    use crate::geometry::Rect;
-
     use super::Rotation;
+    use crate::geometry::Rect;
 
     const SQUARE: Rect = Rect {
         x: 0,

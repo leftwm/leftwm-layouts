@@ -4,9 +4,6 @@
     <strong>Library providing fixed but parameterized window layout calculations</strong>
   </p>
   <p>
-    <a href="https://github.com/leftwm/leftwm-layouts/actions/workflows/ci.yml">
-        <img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/leftwm/leftwm-layouts/CI">
-    </a>
     <a href="#">
         <img alt="Libraries.io dependency status for GitHub repo" src="https://img.shields.io/librariesio/github/leftwm/leftwm-layouts" />
     </a>
