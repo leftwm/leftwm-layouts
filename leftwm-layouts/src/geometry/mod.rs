@@ -10,7 +10,6 @@ mod split_axis;
 pub use calc::{divrem, flip, remainderless_division, rotate, split};
 pub use column_type::ColumnType;
 pub use flipped::Flipped;
-use rect::FloatRect;
 pub use rect::Rect;
 pub use reserve_space::ReserveColumnSpace;
 pub use rotation::Rotation;

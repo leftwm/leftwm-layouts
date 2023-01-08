@@ -1,4 +1,4 @@
-use crate::geometry::{Flipped, FloatRect, Rect, Rotation, SplitAxis};
+use crate::geometry::{Flipped, Rect, Rotation, SplitAxis};
 use std::ops::Rem;
 
 /// Divide the provided `a` by `b` and return the
@@ -66,60 +66,9 @@ pub fn flip(container: Rect, rects: &mut [Rect], flipped: &Flipped) {
 /// in the array), neither will the result.
 pub fn rotate(rects: &mut [Rect], rotation: &Rotation) {
     let outer_rect = outer_rect(rects);
-
-    // In this normalization, the outer Rect is a 1x1 rectangle at (0/0)
-    let mut normalized_float_rects: Vec<FloatRect> = rects
-        .iter()
-        .map(|rect| {
-            if outer_rect.w != 0 && outer_rect.h != 0 {
-                FloatRect {
-                    x: (rect.x - outer_rect.x) as f32 / outer_rect.w as f32,
-                    y: (rect.y - outer_rect.y) as f32 / outer_rect.h as f32,
-                    w: rect.w as f32 / outer_rect.w as f32,
-                    h: rect.h as f32 / outer_rect.h as f32,
-                }
-            } else {
-                // invisible rect might as well be at (0,0)
-                FloatRect::new(0.0, 0.0, 0.0, 0.0)
-            }
-        })
-        .collect();
-
-    // Rotate normalized_float_rects
-    for mut rect in &mut normalized_float_rects {
-        let next_anchor = rotation.next_anchor(rect);
-        match &rotation {
-            Rotation::North => {}
-            Rotation::East => {
-                rect.x = 1.0 - next_anchor.1;
-                rect.y = next_anchor.0;
-                std::mem::swap(&mut rect.w, &mut rect.h);
-            }
-            Rotation::South => {
-                rect.x = 1.0 - next_anchor.0;
-                rect.y = 1.0 - next_anchor.1;
-            }
-            Rotation::West => {
-                rect.x = next_anchor.1;
-                rect.y = 1.0 - next_anchor.0;
-                std::mem::swap(&mut rect.w, &mut rect.h);
-            }
-        }
+    for rect in rects.iter_mut() {
+        rotate_single_rect(rect, rotation, &outer_rect);
     }
-
-    // Revert the normalization and convert back to integer coordinates
-    let new_rects: Vec<Rect> = normalized_float_rects
-        .iter()
-        .map(|rect| Rect {
-            x: (rect.x * outer_rect.w as f32) as i32 + outer_rect.x,
-            y: (rect.y * outer_rect.h as f32) as i32 + outer_rect.y,
-            w: (rect.w * outer_rect.w as f32) as u32,
-            h: (rect.h * outer_rect.h as f32) as u32,
-        })
-        .collect();
-
-    // assign result to rects
-    rects.copy_from_slice(&new_rects[..rects.len()]);
 
     // Fill missing pixels
     let n_rects = rects.len();
@@ -160,6 +109,53 @@ pub fn rotate(rects: &mut [Rect], rotation: &Rotation) {
             rects[i].h += 1;
         }
     }
+}
+
+fn rotate_single_rect(rect: &mut Rect, rotation: &Rotation, outer_rect: &Rect) {
+    // normalize so that Rect is at position (0/0)
+    rect.x -= outer_rect.x;
+    rect.y -= outer_rect.y;
+
+    // rotate
+    let next_anchor = rotation.next_anchor(rect);
+    match rotation {
+        Rotation::North => {}
+        Rotation::East => {
+            rect.x = outer_rect.h as i32 - next_anchor.1;
+            rect.y = next_anchor.0;
+            std::mem::swap(&mut rect.w, &mut rect.h);
+        }
+        Rotation::South => {
+            let next_anchor = rotation.next_anchor(rect);
+            rect.x = outer_rect.w as i32 - next_anchor.0;
+            rect.y = outer_rect.h as i32 - next_anchor.1;
+        }
+        Rotation::West => {
+            let next_anchor = rotation.next_anchor(rect);
+            rect.x = next_anchor.1;
+            rect.y = outer_rect.w as i32 - next_anchor.0;
+            std::mem::swap(&mut rect.w, &mut rect.h);
+        }
+    }
+
+    // new aspect ratio
+    match rotation {
+        Rotation::North | Rotation::South => {}
+        Rotation::East | Rotation::West => {
+            rect.x *= outer_rect.w as i32;
+            rect.x /= outer_rect.h as i32;
+            rect.y *= outer_rect.h as i32;
+            rect.y /= outer_rect.w as i32;
+            rect.w *= outer_rect.w;
+            rect.w /= outer_rect.h;
+            rect.h *= outer_rect.h;
+            rect.h /= outer_rect.w;
+        }
+    }
+
+    // revert normalization
+    rect.x += outer_rect.x;
+    rect.y += outer_rect.y;
 }
 
 fn outer_rect(rects: &[Rect]) -> Rect {
