@@ -40,7 +40,7 @@ pub fn remainderless_division(a: usize, b: usize) -> Vec<usize> {
 }
 
 /// Flip the given list of Rects according to the provided flipped parameter
-pub fn flip(container: &Rect, rects: &mut [Rect], flipped: &Flipped) {
+pub fn flip(container: &Rect, rects: &mut [Rect], flipped: Flipped) {
     for rect in rects.iter_mut() {
         if flipped.is_flipped_horizontal() {
             // from left edge as far away as right side is from right edge before being flipped
@@ -64,7 +64,7 @@ pub fn flip(container: &Rect, rects: &mut [Rect], flipped: &Flipped) {
 /// have gaps either.
 /// Similarly, if the array has no overlaps (i.e. pixels that are part of multiple `Rect`s
 /// in the array), neither will the result.
-pub fn rotate(container: &Rect, rects: &mut [Rect], rotation: &Rotation) {
+pub fn rotate(container: &Rect, rects: &mut [Rect], rotation: Rotation) {
     for rect in rects.iter_mut() {
         rotate_single_rect(rect, rotation, container);
     }
@@ -110,7 +110,7 @@ pub fn rotate(container: &Rect, rects: &mut [Rect], rotation: &Rotation) {
     }
 }
 
-fn rotate_single_rect(rect: &mut Rect, rotation: &Rotation, container: &Rect) {
+fn rotate_single_rect(rect: &mut Rect, rotation: Rotation, container: &Rect) {
     // normalize so that Rect is at position (0/0)
     rect.x -= container.x;
     rect.y -= container.y;
@@ -279,7 +279,7 @@ pub fn split(rect: &Rect, amount: usize, axis: &SplitAxis) -> Vec<Rect> {
 mod tests {
     use crate::{
         geometry::calc::{divrem, remainderless_division, split},
-        geometry::{Rect, SplitAxis},
+        geometry::{Rect, Rotation, SplitAxis},
     };
 
     use super::rotate;
@@ -496,7 +496,7 @@ mod tests {
             Rect::new(0, 100, 200, 50),
         ];
 
-        rotate(&container, &mut rects, &crate::geometry::Rotation::North);
+        rotate(&container, &mut rects, Rotation::North);
 
         // +---------------+
         // |               |
@@ -530,7 +530,7 @@ mod tests {
             Rect::new(0, 100, 200, 50),
         ];
 
-        rotate(&container, &mut rects, &crate::geometry::Rotation::East);
+        rotate(&container, &mut rects, Rotation::East);
 
         // +---+---+-------+
         // |   |   |       |
@@ -564,7 +564,7 @@ mod tests {
             Rect::new(0, 100, 200, 50),
         ];
 
-        rotate(&container, &mut rects, &crate::geometry::Rotation::South);
+        rotate(&container, &mut rects, Rotation::South);
 
         // +-------+-------+
         // |       +-------+
@@ -598,7 +598,7 @@ mod tests {
             Rect::new(0, 100, 200, 50),
         ];
 
-        rotate(&container, &mut rects, &crate::geometry::Rotation::West);
+        rotate(&container, &mut rects, Rotation::West);
 
         // +-------+-------+
         // |       |       |
@@ -633,7 +633,7 @@ mod tests {
             Rect::new(200, 150, 200, 50),
         ];
 
-        rotate(&container, &mut rects, &crate::geometry::Rotation::North);
+        rotate(&container, &mut rects, Rotation::North);
 
         // xxxxxxxxxxxxxxxxxxxxxxxxxx
         // xxxxxxxx +---------------+
@@ -669,7 +669,7 @@ mod tests {
             Rect::new(200, 150, 200, 50),
         ];
 
-        rotate(&container, &mut rects, &crate::geometry::Rotation::East);
+        rotate(&container, &mut rects, Rotation::East);
 
         // xxxxxxxxxxxxxxxxxxxxxxxxxx
         // xxxxxxxx +---+---+-------+
@@ -705,7 +705,7 @@ mod tests {
             Rect::new(200, 150, 200, 50),
         ];
 
-        rotate(&container, &mut rects, &crate::geometry::Rotation::South);
+        rotate(&container, &mut rects, Rotation::South);
 
         // xxxxxxxxxxxxxxxxxxxxxxxxxx
         // xxxxxxxx +-------+-------+
@@ -741,7 +741,7 @@ mod tests {
             Rect::new(200, 150, 200, 50),
         ];
 
-        rotate(&container, &mut rects, &crate::geometry::Rotation::West);
+        rotate(&container, &mut rects, Rotation::West);
 
         // xxxxxxxxxxxxxxxxxxxxxxxxxx
         // xxxxxxxx +-------+-------+
@@ -771,7 +771,7 @@ mod tests {
         // +---------+-----+
         let mut rects = vec![Rect::new(0, 0, 201, 100), Rect::new(201, 0, 200, 100)];
 
-        rotate(&container, &mut rects, &crate::geometry::Rotation::East);
+        rotate(&container, &mut rects, Rotation::East);
 
         // +---------------+
         // |               |

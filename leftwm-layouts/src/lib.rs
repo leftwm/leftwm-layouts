@@ -16,10 +16,10 @@ pub fn apply(definition: &LayoutDefinition, window_count: usize, container: &Rec
     };
 
     // flip the layout (if necessary)
-    geometry::flip(container, &mut rects, &definition.flipped);
+    geometry::flip(container, &mut rects, definition.flipped);
 
     // rotate the layout (if necessary)
-    geometry::rotate(container, &mut rects, &definition.rotation);
+    geometry::rotate(container, &mut rects, definition.rotation);
 
     rects
 }
