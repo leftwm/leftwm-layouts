@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use super::{FloatRect, Rect};
+use super::{Float, Rect};
 
 /// Represents the four different possibilities of rotation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -76,7 +76,7 @@ impl Rotation {
     /// When a [`FloatRect`] is rotated inside a layout, then another corner
     /// of the [`FloatRect`] will become the new anchor point after the rotation.
     /// This method returns the current position of that corner.
-    pub fn next_anchor(&self, rect: &FloatRect) -> (f32, f32) {
+    pub fn next_anchor(&self, rect: &Float) -> (f32, f32) {
         match self {
             Self::North => (rect.x, rect.y),                   // top-left
             Self::East => (rect.x, rect.y + rect.h),           // bottom-left
@@ -116,7 +116,7 @@ impl Default for Rotation {
 
 #[cfg(test)]
 mod tests {
-    use crate::geometry::{FloatRect, Rect};
+    use crate::geometry::{Float, Rect};
 
     use super::Rotation;
 
@@ -161,28 +161,28 @@ mod tests {
 
     #[test]
     fn calc_anchor_north() {
-        let rect = FloatRect::new(0.0, 0.0, 1920.0, 1080.0);
+        let rect = Float::new(0.0, 0.0, 1920.0, 1080.0);
         let anchor = Rotation::North.next_anchor(&rect);
         assert_eq!(anchor, (0.0, 0.0));
     }
 
     #[test]
     fn calc_anchor_east() {
-        let rect = FloatRect::new(0.0, 0.0, 1920.0, 1080.0);
+        let rect = Float::new(0.0, 0.0, 1920.0, 1080.0);
         let anchor = Rotation::East.next_anchor(&rect);
         assert_eq!(anchor, (0.0, 1080.0));
     }
 
     #[test]
     fn calc_anchor_south() {
-        let rect = FloatRect::new(0.0, 0.0, 1920.0, 1080.0);
+        let rect = Float::new(0.0, 0.0, 1920.0, 1080.0);
         let anchor = Rotation::South.next_anchor(&rect);
         assert_eq!(anchor, (1920.0, 1080.0));
     }
 
     #[test]
     fn calc_anchor_west() {
-        let rect = FloatRect::new(0.0, 0.0, 1920.0, 1080.0);
+        let rect = Float::new(0.0, 0.0, 1920.0, 1080.0);
         let anchor = Rotation::West.next_anchor(&rect);
         assert_eq!(anchor, (1920.0, 0.0));
     }

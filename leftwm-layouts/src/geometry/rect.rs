@@ -72,22 +72,22 @@ impl Default for Rect {
 /// Similar to `Rect`, but with less functionality
 ///
 /// Intended to perform operations that require rounding afterwards, e.g. rotation.
-pub struct FloatRect {
+pub struct Float {
     pub x: f32,
     pub y: f32,
     pub w: f32,
     pub h: f32,
 }
 
-impl FloatRect {
+impl Float {
     pub fn new(x: f32, y: f32, w: f32, h: f32) -> Self {
         Self { x, y, w, h }
     }
 }
 
-impl From<&Rect> for FloatRect {
-    fn from(rect: &Rect) -> FloatRect {
-        FloatRect {
+impl From<&Rect> for Float {
+    fn from(rect: &Rect) -> Float {
+        Float {
             x: rect.x as f32,
             y: rect.y as f32,
             w: rect.w as f32,
@@ -96,8 +96,8 @@ impl From<&Rect> for FloatRect {
     }
 }
 
-impl From<&FloatRect> for Rect {
-    fn from(rect: &FloatRect) -> Rect {
+impl From<&Float> for Rect {
+    fn from(rect: &Float) -> Rect {
         Rect {
             x: rect.x as i32,
             y: rect.y as i32,

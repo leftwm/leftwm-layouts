@@ -1,4 +1,4 @@
-use crate::geometry::{Flipped, FloatRect, Rect, Rotation, SplitAxis};
+use crate::geometry::{Flipped, Float, Rect, Rotation, SplitAxis};
 use std::ops::Rem;
 
 /// Divide the provided `a` by `b` and return the
@@ -40,7 +40,7 @@ pub fn remainderless_division(a: usize, b: usize) -> Vec<usize> {
 }
 
 /// Flip the given list of Rects according to the provided flipped parameter
-pub fn flip(container: Rect, rects: &mut [Rect], flipped: &Flipped) {
+pub fn flip(container: &Rect, rects: &mut [Rect], flipped: &Flipped) {
     for rect in rects.iter_mut() {
         if flipped.is_flipped_horizontal() {
             // from left edge as far away as right side is from right edge before being flipped
@@ -64,23 +64,21 @@ pub fn flip(container: Rect, rects: &mut [Rect], flipped: &Flipped) {
 /// have gaps either.
 /// Similarly, if the array has no overlaps (i.e. pixels that are part of multiple `Rect`s
 /// in the array), neither will the result.
-pub fn rotate(rects: &mut [Rect], rotation: &Rotation) {
-    let outer_rect = outer_rect(rects);
-
+pub fn rotate(container: &Rect, rects: &mut [Rect], rotation: &Rotation) {
     // In this normalization, the outer Rect is a 1x1 rectangle at (0/0)
-    let mut normalized_float_rects: Vec<FloatRect> = rects
+    let mut normalized_float_rects: Vec<Float> = rects
         .iter()
         .map(|rect| {
-            if outer_rect.w != 0 && outer_rect.h != 0 {
-                FloatRect {
-                    x: (rect.x - outer_rect.x) as f32 / outer_rect.w as f32,
-                    y: (rect.y - outer_rect.y) as f32 / outer_rect.h as f32,
-                    w: rect.w as f32 / outer_rect.w as f32,
-                    h: rect.h as f32 / outer_rect.h as f32,
+            if container.w != 0 && container.h != 0 {
+                Float {
+                    x: (rect.x - container.x) as f32 / container.w as f32,
+                    y: (rect.y - container.y) as f32 / container.h as f32,
+                    w: rect.w as f32 / container.w as f32,
+                    h: rect.h as f32 / container.h as f32,
                 }
             } else {
                 // invisible rect might as well be at (0,0)
-                FloatRect::new(0.0, 0.0, 0.0, 0.0)
+                Float::new(0.0, 0.0, 0.0, 0.0)
             }
         })
         .collect();
@@ -111,10 +109,10 @@ pub fn rotate(rects: &mut [Rect], rotation: &Rotation) {
     let new_rects: Vec<Rect> = normalized_float_rects
         .iter()
         .map(|rect| Rect {
-            x: (rect.x * outer_rect.w as f32) as i32 + outer_rect.x,
-            y: (rect.y * outer_rect.h as f32) as i32 + outer_rect.y,
-            w: (rect.w * outer_rect.w as f32) as u32,
-            h: (rect.h * outer_rect.h as f32) as u32,
+            x: (rect.x * container.w as f32) as i32 + container.x,
+            y: (rect.y * container.h as f32) as i32 + container.y,
+            w: (rect.w * container.w as f32) as u32,
+            h: (rect.h * container.h as f32) as u32,
         })
         .collect();
 
@@ -144,52 +142,22 @@ pub fn rotate(rects: &mut [Rect], rotation: &Rotation) {
         }
 
         // check whether rect "almost bounds" the outer rect
-        if rects[i].x + rects[i].w as i32 + 1 == outer_rect.x + outer_rect.w as i32 {
+        if rects[i].x + rects[i].w as i32 + 1 == container.x + container.w as i32 {
             wide_enough = false;
         }
 
         // check whether rect "almost bounds" the outer rect
-        if rects[i].y + rects[i].h as i32 + 1 == outer_rect.y + outer_rect.h as i32 {
+        if rects[i].y + rects[i].h as i32 + 1 == container.y + container.h as i32 {
             high_enough = false;
         }
 
-        if !wide_enough && outer_rect.contains((rects[i].x + rects[i].w as i32 + 1, rects[i].y)) {
+        if !wide_enough && container.contains((rects[i].x + rects[i].w as i32 + 1, rects[i].y)) {
             rects[i].w += 1;
         }
-        if !high_enough && outer_rect.contains((rects[i].x, rects[i].y + rects[i].h as i32 + 1)) {
+        if !high_enough && container.contains((rects[i].x, rects[i].y + rects[i].h as i32 + 1)) {
             rects[i].h += 1;
         }
     }
-}
-
-fn outer_rect(rects: &[Rect]) -> Rect {
-    Rect {
-        x: min_x(rects),
-        y: min_y(rects),
-        w: (max_x(rects) - min_x(rects)) as u32,
-        h: (max_y(rects) - min_y(rects)) as u32,
-    }
-}
-
-fn min_x(rects: &[Rect]) -> i32 {
-    rects.iter().map(|rect| rect.x).min().unwrap_or(0)
-}
-fn min_y(rects: &[Rect]) -> i32 {
-    rects.iter().map(|rect| rect.y).min().unwrap_or(0)
-}
-fn max_x(rects: &[Rect]) -> i32 {
-    rects
-        .iter()
-        .map(|rect| rect.x + rect.w as i32)
-        .max()
-        .unwrap_or(0)
-}
-fn max_y(rects: &[Rect]) -> i32 {
-    rects
-        .iter()
-        .map(|rect| rect.y + rect.h as i32)
-        .max()
-        .unwrap_or(0)
 }
 
 /// Splits the provided rectangle (`Rect`) into smaller rectangles
@@ -517,6 +485,8 @@ mod tests {
 
     #[test]
     fn rotate_0_degrees() {
+        let container = Rect::new(0, 0, 400, 200);
+
         // +---------------+
         // |               |
         // +-------+-------+  0°
@@ -529,7 +499,7 @@ mod tests {
             Rect::new(0, 100, 200, 50),
         ];
 
-        rotate(&mut rects, &crate::geometry::Rotation::North);
+        rotate(&container, &mut rects, &crate::geometry::Rotation::North);
 
         // +---------------+
         // |               |
@@ -549,6 +519,8 @@ mod tests {
 
     #[test]
     fn rotate_90_degrees() {
+        let container = Rect::new(0, 0, 400, 200);
+
         // +---------------+
         // |               |
         // +-------+-------+  0°
@@ -561,7 +533,7 @@ mod tests {
             Rect::new(0, 100, 200, 50),
         ];
 
-        rotate(&mut rects, &crate::geometry::Rotation::East);
+        rotate(&container, &mut rects, &crate::geometry::Rotation::East);
 
         // +---+---+-------+
         // |   |   |       |
@@ -581,6 +553,8 @@ mod tests {
 
     #[test]
     fn rotate_180_degrees() {
+        let container = Rect::new(0, 0, 400, 200);
+
         // +---------------+
         // |               |
         // +-------+-------+  0°
@@ -593,7 +567,7 @@ mod tests {
             Rect::new(0, 100, 200, 50),
         ];
 
-        rotate(&mut rects, &crate::geometry::Rotation::South);
+        rotate(&container, &mut rects, &crate::geometry::Rotation::South);
 
         // +-------+-------+
         // |       +-------+
@@ -613,6 +587,8 @@ mod tests {
 
     #[test]
     fn rotate_270_degrees() {
+        let container = Rect::new(0, 0, 400, 200);
+
         // +---------------+
         // |               |
         // +-------+-------+  0°
@@ -625,7 +601,7 @@ mod tests {
             Rect::new(0, 100, 200, 50),
         ];
 
-        rotate(&mut rects, &crate::geometry::Rotation::West);
+        rotate(&container, &mut rects, &crate::geometry::Rotation::West);
 
         // +-------+-------+
         // |       |       |
@@ -645,6 +621,8 @@ mod tests {
 
     #[test]
     fn rotate_0_degrees_with_offset() {
+        let container = Rect::new(200, 50, 400, 200);
+
         // xxxxxxxxxxxxxxxxxxxxxxxxxx
         // xxxxxxxx +---------------+
         // xxxxxxxx |               |
@@ -658,7 +636,7 @@ mod tests {
             Rect::new(200, 150, 200, 50),
         ];
 
-        rotate(&mut rects, &crate::geometry::Rotation::North);
+        rotate(&container, &mut rects, &crate::geometry::Rotation::North);
 
         // xxxxxxxxxxxxxxxxxxxxxxxxxx
         // xxxxxxxx +---------------+
@@ -679,6 +657,8 @@ mod tests {
 
     #[test]
     fn rotate_90_degrees_with_offset() {
+        let container = Rect::new(200, 50, 400, 200);
+
         // xxxxxxxxxxxxxxxxxxxxxxxxxx
         // xxxxxxxx +---------------+
         // xxxxxxxx |               |
@@ -692,7 +672,7 @@ mod tests {
             Rect::new(200, 150, 200, 50),
         ];
 
-        rotate(&mut rects, &crate::geometry::Rotation::East);
+        rotate(&container, &mut rects, &crate::geometry::Rotation::East);
 
         // xxxxxxxxxxxxxxxxxxxxxxxxxx
         // xxxxxxxx +---+---+-------+
@@ -713,6 +693,8 @@ mod tests {
 
     #[test]
     fn rotate_180_degrees_with_offset() {
+        let container = Rect::new(200, 50, 400, 200);
+
         // xxxxxxxxxxxxxxxxxxxxxxxxxx
         // xxxxxxxx +---------------+
         // xxxxxxxx |               |
@@ -726,7 +708,7 @@ mod tests {
             Rect::new(200, 150, 200, 50),
         ];
 
-        rotate(&mut rects, &crate::geometry::Rotation::South);
+        rotate(&container, &mut rects, &crate::geometry::Rotation::South);
 
         // xxxxxxxxxxxxxxxxxxxxxxxxxx
         // xxxxxxxx +-------+-------+
@@ -747,6 +729,8 @@ mod tests {
 
     #[test]
     fn rotate_270_degrees_with_offset() {
+        let container = Rect::new(200, 50, 400, 200);
+
         // xxxxxxxxxxxxxxxxxxxxxxxxxx
         // xxxxxxxx +---------------+
         // xxxxxxxx |               |
@@ -760,7 +744,7 @@ mod tests {
             Rect::new(200, 150, 200, 50),
         ];
 
-        rotate(&mut rects, &crate::geometry::Rotation::West);
+        rotate(&container, &mut rects, &crate::geometry::Rotation::West);
 
         // xxxxxxxxxxxxxxxxxxxxxxxxxx
         // xxxxxxxx +-------+-------+
@@ -781,6 +765,8 @@ mod tests {
 
     #[test]
     fn rotate_90_degrees_non_divisible() {
+        let container = Rect::new(0, 0, 401, 100);
+
         // +---------------+
         // |         |     |
         // +         |     +  0°
@@ -788,7 +774,7 @@ mod tests {
         // +---------+-----+
         let mut rects = vec![Rect::new(0, 0, 201, 100), Rect::new(201, 0, 200, 100)];
 
-        rotate(&mut rects, &crate::geometry::Rotation::East);
+        rotate(&container, &mut rects, &crate::geometry::Rotation::East);
 
         // +---------------+
         // |               |
@@ -797,7 +783,7 @@ mod tests {
         // +---------------+
         assert_eq!(
             rects,
-            vec![Rect::new(0, 0, 401, 50,), Rect::new(0, 50, 401, 50,),]
+            vec![Rect::new(0, 0, 401, 50), Rect::new(0, 50, 401, 50)]
         );
     }
 
