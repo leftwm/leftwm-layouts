@@ -1,0 +1,13 @@
+[
+    (
+    name: "CenterMainFluid", 
+    column_type: CenterMain, 
+    flipped: None, 
+    rotation: North, 
+    main_window_count: 1, 
+    main_size: Ratio(0.5), 
+    main_split: Vertical, 
+    stack_split: Horizontal, 
+    reserve_column_space: Reserve, 
+    balance_stacks: false 
+    ), LayoutDefinition { name: "CenterMain", column_type: CenterMain, flipped: None, rotation: North, main_window_count: 1, main_size: Ratio(0.5), main_split: Vertical, stack_split: Horizontal, reserve_column_space: None, balance_stacks: true }, LayoutDefinition { name: "Fibonacci", column_type: MainAndStack, flipped: None, rotation: North, main_window_count: 1, main_size: Ratio(0.5), main_split: Vertical, stack_split: Fibonacci, reserve_column_space: None, balance_stacks: true }, LayoutDefinition { name: "MainAndDeck", column_type: MainAndStack, flipped: None, rotation: North, main_window_count: 1, main_size: Ratio(0.5), main_split: None, stack_split: None, reserve_column_space: None, balance_stacks: true }, LayoutDefinition { name: "Monocle", column_type: Stack, flipped: None, rotation: North, main_window_count: 1, main_size: Ratio(0.5), main_split: None, stack_split: None, reserve_column_space: None, balance_stacks: true }]

@@ -1,25 +1,146 @@
-use geometry::ColumnType;
+use std::cmp;
+
 use geometry::Rect;
-use layouts::columns::{main_stack, stack, stack_main_stack};
+use layouts::three_column;
+use layouts::two_column;
 pub use layouts::LayoutDefinition;
-pub use layouts::Layouts;
 
 pub mod geometry;
 pub mod layouts;
 
 pub fn apply(definition: &LayoutDefinition, window_count: usize, container: &Rect) -> Vec<Rect> {
-    // calculate the layout
-    let mut rects = match definition.column_type {
-        ColumnType::Stack => stack(window_count, container, definition),
-        ColumnType::MainAndStack => main_stack(window_count, container, definition),
-        ColumnType::CenterMain => stack_main_stack(window_count, container, definition),
+    if window_count == 0 {
+        return vec![];
+    }
+
+    let mut rects = match (&definition.main, &definition.alternate_stack) {
+        // single-column layout
+        (None, _) => geometry::split(container, window_count, definition.stack.split),
+        // two-column layout
+        (Some(main), None) => {
+            let (main_tile, stack_tile) = two_column(
+                window_count,
+                container,
+                main.count,
+                main.size,
+                definition.reserve,
+            );
+
+            // root rotation
+            match (main_tile, stack_tile) {
+                (None, None) => {}
+                (None, Some(b)) => {
+                    geometry::rotate(container, &mut vec![b], definition.root.rotate)
+                }
+                (Some(a), None) => {
+                    geometry::rotate(container, &mut vec![a], definition.root.rotate)
+                }
+                (Some(a), Some(b)) => {
+                    geometry::rotate(container, &mut vec![a, b], definition.root.rotate)
+                }
+            }
+
+            //geometry::flip(container, &mut rects, definition.flip);
+
+            let mut main_tiles = vec![];
+            if let Some(tile) = main_tile {
+                main_tiles.append(&mut geometry::split(&tile, main.count, main.split));
+                geometry::rotate(container, &mut main_tiles, main.rotate);
+                geometry::flip(container, &mut main_tiles, main.flip);
+            }
+
+            let mut stack_tiles = vec![];
+            if let Some(tile) = stack_tile {
+                stack_tiles.append(&mut geometry::split(
+                    &tile,
+                    window_count.saturating_sub(main.count),
+                    definition.stack.split,
+                ));
+                geometry::rotate(container, &mut stack_tiles, definition.stack.rotate);
+                geometry::flip(container, &mut stack_tiles, definition.stack.flip);
+            }
+
+            let mut all = vec![];
+            all.append(&mut main_tiles);
+            all.append(&mut stack_tiles);
+            all
+        }
+        (Some(main), Some(alternate_stack)) => {
+            let main_window_count = cmp::min(main.count, window_count);
+            let stack_window_count = window_count.saturating_sub(main_window_count);
+            let balance_stacks = definition.stack.split.is_some();
+            let (left_window_count, right_window_count) = if balance_stacks {
+                let counts = geometry::remainderless_division(stack_window_count, 2);
+                (counts[0], counts[1])
+            } else {
+                (1, cmp::max(0, stack_window_count.saturating_sub(1)))
+            };
+
+            let (left_column, main_column, right_column) = three_column(
+                window_count,
+                container,
+                main_window_count,
+                main.size,
+                definition.reserve,
+                balance_stacks,
+            );
+
+            let mut columns = vec![];
+            if let Some(col) = left_column {
+                columns.push(col);
+            }
+            if let Some(col) = main_column {
+                columns.push(col);
+            }
+            if let Some(col) = right_column {
+                columns.push(col);
+            }
+
+            // root rotation
+            geometry::rotate(container, &mut columns, definition.root.rotate);
+
+            let mut main_tiles = vec![];
+            if let Some(tile) = main_column {
+                main_tiles.append(&mut geometry::split(&tile, main_window_count, main.split));
+                geometry::rotate(container, &mut main_tiles, main.rotate);
+                geometry::flip(container, &mut main_tiles, main.flip);
+            }
+
+            let mut left_tiles = vec![];
+            if let Some(tile) = left_column {
+                left_tiles.append(&mut geometry::split(
+                    &tile,
+                    left_window_count,
+                    definition.stack.split,
+                ));
+                geometry::rotate(container, &mut left_tiles, definition.stack.rotate);
+                geometry::flip(container, &mut left_tiles, definition.stack.flip);
+            }
+
+            let mut right_tiles = vec![];
+            if let Some(tile) = right_column {
+                right_tiles.append(&mut geometry::split(
+                    &tile,
+                    right_window_count,
+                    Some(alternate_stack.split),
+                ));
+                geometry::rotate(container, &mut right_tiles, alternate_stack.rotate);
+                geometry::flip(container, &mut right_tiles, alternate_stack.flip);
+            }
+
+            let mut tiles = vec![];
+            tiles.append(&mut main_tiles);
+            tiles.append(&mut left_tiles);
+            tiles.append(&mut right_tiles);
+            tiles
+        }
     };
 
-    // flip the layout (if necessary)
-    geometry::flip(container, &mut rects, definition.flipped);
+    // flip the whole layout
+    geometry::flip(container, &mut rects, definition.flip);
 
-    // rotate the layout (if necessary)
-    geometry::rotate(container, &mut rects, definition.rotation);
+    // rotate the whole layout
+    geometry::rotate(container, &mut rects, definition.rotate);
 
     rects
 }

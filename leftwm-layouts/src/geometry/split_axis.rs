@@ -73,8 +73,7 @@ pub enum SplitAxis {
     /// +-------+      +---+---+
     /// ```
     Dwindle,
-
-    /// Rectangle will not be split at all,
-    /// resulting in simply returning the Rect as is.
-    None,
+    // /// Rectangle will not be split at all,
+    // /// resulting in simply returning the Rect as is.
+    // None,
 }

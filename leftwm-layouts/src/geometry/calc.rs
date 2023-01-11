@@ -1,5 +1,5 @@
 use crate::geometry::{Flipped, Rect, Rotation, SplitAxis};
-use std::ops::Rem;
+use std::{ops::Rem, vec};
 
 /// Divide the provided `a` by `b` and return the
 /// result of the integer division as well as the remainder.
@@ -64,7 +64,7 @@ pub fn flip(container: &Rect, rects: &mut [Rect], flipped: Flipped) {
 /// have gaps either.
 /// Similarly, if the array has no overlaps (i.e. pixels that are part of multiple `Rect`s
 /// in the array), neither will the result.
-pub fn rotate(container: &Rect, rects: &mut [Rect], rotation: Rotation) {
+pub fn rotate(container: &Rect, rects: &mut Vec<Rect>, rotation: Rotation) {
     for rect in rects.iter_mut() {
         rotate_single_rect(rect, rotation, container);
     }
@@ -170,11 +170,14 @@ fn rotate_single_rect(rect: &mut Rect, rotation: Rotation, container: &Rect) {
 ///
 /// The rectangles will differ by 1px at maximum. The remaining space of the division is
 /// distributed evenly and by order accross the resulting rectangles, until no remaining space is left.
-pub fn split(rect: &Rect, amount: usize, axis: &SplitAxis) -> Vec<Rect> {
+pub fn split(rect: &Rect, amount: usize, axis: Option<SplitAxis>) -> Vec<Rect> {
     if amount == 0 {
         return vec![];
     }
-    match axis {
+    if axis.is_none() {
+        return vec![rect.clone()];
+    }
+    match axis.unwrap() {
         SplitAxis::Vertical => {
             let mut from_left = rect.x;
             remainderless_division(rect.w as usize, amount)
@@ -199,7 +202,7 @@ pub fn split(rect: &Rect, amount: usize, axis: &SplitAxis) -> Vec<Rect> {
         }
         SplitAxis::Grid => {
             let cols = (amount as f64).sqrt().ceil() as usize;
-            let col_tiles = split(rect, cols, &SplitAxis::Vertical);
+            let col_tiles = split(rect, cols, Some(SplitAxis::Vertical));
             // the minimum amount of rows per column
             let min_rows = (amount as f64 / cols as f64).floor() as usize;
             // the amount of columns in which there are only the minimum amount of rows
@@ -214,7 +217,7 @@ pub fn split(rect: &Rect, amount: usize, axis: &SplitAxis) -> Vec<Rect> {
                     } else {
                         min_rows + 1
                     };
-                    split(col_tile, rows, &SplitAxis::Horizontal)
+                    split(col_tile, rows, Some(SplitAxis::Horizontal))
                 })
                 .collect()
         }
@@ -234,7 +237,7 @@ pub fn split(rect: &Rect, amount: usize, axis: &SplitAxis) -> Vec<Rect> {
                         Rotation::East | Rotation::South => false,
                         Rotation::West | Rotation::North => true,
                     };
-                    let splitted_tiles = split(&remaining_tile, 2, &split_axis);
+                    let splitted_tiles = split(&remaining_tile, 2, Some(split_axis));
                     if backwards {
                         tiles.push(splitted_tiles[1]);
                         remaining_tile = splitted_tiles[0];
@@ -260,7 +263,7 @@ pub fn split(rect: &Rect, amount: usize, axis: &SplitAxis) -> Vec<Rect> {
                     SplitAxis::Vertical
                 };
                 if has_next {
-                    let splitted_tiles = split(&remaining_tile, 2, &last_axis);
+                    let splitted_tiles = split(&remaining_tile, 2, Some(last_axis));
                     tiles.push(splitted_tiles[0]);
                     remaining_tile = splitted_tiles[1];
                 } else {
@@ -268,9 +271,6 @@ pub fn split(rect: &Rect, amount: usize, axis: &SplitAxis) -> Vec<Rect> {
                 }
             }
             tiles.clone()
-        }
-        &SplitAxis::None => {
-            vec![*rect]
         }
     }
 }
@@ -323,20 +323,20 @@ mod tests {
 
     #[test]
     fn split_by_zero() {
-        let rects = split(&CONTAINER, 0, &SplitAxis::Vertical);
+        let rects = split(&CONTAINER, 0, Some(SplitAxis::Vertical));
         assert_eq!(rects.len(), 0);
     }
 
     #[test]
     fn split_single_window() {
-        let rects = split(&CONTAINER, 1, &SplitAxis::Vertical);
+        let rects = split(&CONTAINER, 1, Some(SplitAxis::Vertical));
         assert_eq!(rects.len(), 1);
         assert!(rects[0].eq(&CONTAINER));
     }
 
     #[test]
     fn split_vertical_two_windows() {
-        let rects = split(&CONTAINER, 2, &SplitAxis::Vertical);
+        let rects = split(&CONTAINER, 2, Some(SplitAxis::Vertical));
         assert_eq!(rects.len(), 2);
         let expected_first = Rect::new(0, 0, 200, 200);
         let expected_second = Rect::new(200, 0, 200, 200);
@@ -346,7 +346,7 @@ mod tests {
 
     #[test]
     fn split_vertical_three_windows() {
-        let rects = split(&CONTAINER, 3, &SplitAxis::Vertical);
+        let rects = split(&CONTAINER, 3, Some(SplitAxis::Vertical));
         assert_eq!(rects.len(), 3);
         // first window must be larger because of the remainderless division
         let expected_first = Rect::new(0, 0, 134, 200);
@@ -359,7 +359,7 @@ mod tests {
 
     #[test]
     fn split_horizontal_two_windows() {
-        let rects = split(&CONTAINER, 2, &SplitAxis::Horizontal);
+        let rects = split(&CONTAINER, 2, Some(SplitAxis::Horizontal));
         assert_eq!(rects.len(), 2);
         let expected_first = Rect::new(0, 0, 400, 100);
         let expected_second = Rect::new(0, 100, 400, 100);
@@ -369,7 +369,7 @@ mod tests {
 
     #[test]
     fn split_horizontal_three_windows() {
-        let rects = split(&CONTAINER, 3, &SplitAxis::Horizontal);
+        let rects = split(&CONTAINER, 3, Some(SplitAxis::Horizontal));
         assert_eq!(rects.len(), 3);
         // first two windows must be taller because of remainderless division
         let expected_first = Rect::new(0, 0, 400, 67);
@@ -382,7 +382,7 @@ mod tests {
 
     #[test]
     fn split_grid_three_windows() {
-        let rects = split(&CONTAINER, 3, &SplitAxis::Grid);
+        let rects = split(&CONTAINER, 3, Some(SplitAxis::Grid));
         assert_eq!(rects.len(), 3);
         let expected_first = Rect::new(0, 0, 200, 200);
         let expected_second = Rect::new(200, 0, 200, 100);
@@ -394,7 +394,7 @@ mod tests {
 
     #[test]
     fn split_grid_four_windows() {
-        let rects = split(&CONTAINER, 4, &SplitAxis::Grid);
+        let rects = split(&CONTAINER, 4, Some(SplitAxis::Grid));
         assert_eq!(rects.len(), 4);
         let expected_first = Rect::new(0, 0, 200, 100);
         let expected_second = Rect::new(0, 100, 200, 100);
@@ -408,7 +408,7 @@ mod tests {
 
     #[test]
     fn split_fibonacci_four_windows() {
-        let rects = split(&CONTAINER, 4, &SplitAxis::Fibonacci);
+        let rects = split(&CONTAINER, 4, Some(SplitAxis::Fibonacci));
         assert_eq!(rects.len(), 4);
         let expected_first = Rect::new(0, 0, 400, 100);
         let expected_second = Rect::new(200, 100, 200, 100);
@@ -422,7 +422,7 @@ mod tests {
 
     #[test]
     fn split_fibonacci_five_windows() {
-        let rects = split(&CONTAINER, 5, &SplitAxis::Fibonacci);
+        let rects = split(&CONTAINER, 5, Some(SplitAxis::Fibonacci));
         assert_eq!(rects.len(), 5);
         let expected_first = Rect::new(0, 0, 400, 100);
         let expected_second = Rect::new(200, 100, 200, 100);
@@ -438,7 +438,7 @@ mod tests {
 
     #[test]
     fn split_dwindle_four_windows() {
-        let rects = split(&CONTAINER, 4, &SplitAxis::Dwindle);
+        let rects = split(&CONTAINER, 4, Some(SplitAxis::Dwindle));
         assert_eq!(rects.len(), 4);
         let expected_first = Rect::new(0, 0, 400, 100);
         let expected_second = Rect::new(0, 100, 200, 100);
@@ -452,7 +452,7 @@ mod tests {
 
     #[test]
     fn split_dwindle_five_windows() {
-        let rects = split(&CONTAINER, 5, &SplitAxis::Dwindle);
+        let rects = split(&CONTAINER, 5, Some(SplitAxis::Dwindle));
         assert_eq!(rects.len(), 5);
         let expected_first = Rect::new(0, 0, 400, 100);
         let expected_second = Rect::new(0, 100, 200, 100);
@@ -464,20 +464,6 @@ mod tests {
         assert!(rects[2].eq(&expected_third));
         assert!(rects[3].eq(&expected_fourth));
         assert!(rects[4].eq(&expected_fifth));
-    }
-
-    #[test]
-    fn split_none_two_windows() {
-        let rects = split(&CONTAINER, 2, &SplitAxis::None);
-        assert_eq!(rects.len(), 1);
-        assert!(rects[0].eq(&CONTAINER));
-    }
-
-    #[test]
-    fn split_none_five_windows() {
-        let rects = split(&CONTAINER, 2, &SplitAxis::None);
-        assert_eq!(rects.len(), 1);
-        assert!(rects[0].eq(&CONTAINER));
     }
 
     #[test]

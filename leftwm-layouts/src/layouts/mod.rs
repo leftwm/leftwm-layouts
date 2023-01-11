@@ -1,5 +1,11 @@
 pub mod columns;
-mod layout_definition;
+pub mod layouts;
+//mod layout_definition;
+mod new_layout_definition;
 
-pub use layout_definition::LayoutDefinition;
-pub use layout_definition::Layouts;
+pub use columns::three_column;
+pub use columns::two_column;
+
+//pub use layout_definition::LayoutDefinition;
+pub use new_layout_definition::LayoutDefinition;
+//pub use layout_definition::Layouts;
