@@ -175,7 +175,7 @@ pub fn split(rect: &Rect, amount: usize, axis: Option<SplitAxis>) -> Vec<Rect> {
         return vec![];
     }
     if axis.is_none() {
-        return vec![rect.clone()];
+        return vec![*rect];
     }
     match axis.unwrap() {
         SplitAxis::Vertical => {

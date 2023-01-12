@@ -1,11 +1,11 @@
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    geometry::{ReserveColumnSpace, SplitAxis, Rotation},
+    geometry::{ReserveColumnSpace, Rotation, SplitAxis},
     LayoutDefinition,
 };
 
-use super::new_layout_definition::{AlternateStack, Main, Root, Stack};
+use super::new_layout_definition::{AlternateStack, Columns, Main, Stack};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Layouts {
@@ -121,7 +121,7 @@ impl Default for Layouts {
             name: String::from("RightMainAndVertStack"),
             main: Some(Main::default()),
             stack: Stack::default(),
-            root: Root {
+            root: Columns {
                 rotate: Rotation::South,
                 ..Default::default()
             },

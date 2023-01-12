@@ -1,6 +1,23 @@
 [
     // single column
-    (name: "EvenHorizontal", column_type: Stack, stack_split: Vertical),
+    (
+        name: "EvenHorizontal", 
+        flip: None,
+        rotate: None,
+        balance_stacks: false,
+
+        main: (
+            flip: None,
+            rotate: None,
+            split: Horizontal,
+        ),
+
+        stack: (
+
+        )
+
+        column_type: Stack, stack_split: Vertical
+    ),
     (name: "EvenVertical", column_type: Stack, stack_split: Horizontal),
     (name: "Monocle", column_type: Stack, stack_split: None, main_split: None),
     (name: "Grid", column_type: Stack, stack_split: Grid),

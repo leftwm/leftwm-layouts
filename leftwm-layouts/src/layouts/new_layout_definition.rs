@@ -14,7 +14,7 @@ pub struct LayoutDefinition {
     pub rotate: Rotation,
     pub reserve: ReserveColumnSpace,
 
-    pub root: Root,
+    pub root: Columns,
     pub main: Option<Main>,
     pub stack: Stack,
     pub alternate_stack: Option<AlternateStack>,
@@ -35,37 +35,39 @@ impl LayoutDefinition {
     }
 
     pub fn increase_main_size(&mut self, upper_bound: i32) {
-        self.main.as_mut().map(|main| {
+        if let Some(main) = self.main.as_mut() {
             main.size = match main.size {
                 Size::Pixel(x) => Size::Pixel(cmp::min(x + 50, upper_bound)),
                 Size::Ratio(x) => Size::Ratio(f32::min(1.0, x + 0.05)),
             };
-        });
+        };
     }
 
     pub fn decrease_main_size(&mut self) {
-        self.main.as_mut().map(|main| {
+        if let Some(main) = self.main.as_mut() {
             main.size = match main.size {
                 Size::Pixel(x) => Size::Pixel(cmp::max(0, x - 50)),
                 Size::Ratio(x) => Size::Ratio(f32::max(0.0, x - 0.05)),
             };
-        });
+        };
     }
 
     pub fn set_main_size(&mut self, px: i32) {
-        self.main.as_mut().map(|main| main.size = Size::Pixel(px));
+        if let Some(main) = self.main.as_mut() {
+            main.size = Size::Pixel(px)
+        };
     }
 
     pub fn increase_main_window_count(&mut self) {
-        self.main
-            .as_mut()
-            .map(|main| main.count = main.count.saturating_add(1));
+        if let Some(main) = self.main.as_mut() {
+            main.count = main.count.saturating_add(1)
+        }
     }
 
     pub fn decrease_main_window_count(&mut self) {
-        self.main
-            .as_mut()
-            .map(|main| main.count = main.count.saturating_sub(1));
+        if let Some(main) = self.main.as_mut() {
+            main.count = main.count.saturating_sub(1)
+        }
     }
 
     pub fn rotate(&mut self, clockwise: bool) {
@@ -86,10 +88,8 @@ impl LayoutDefinition {
     }*/
 
     pub fn check(&self) {
-        if let Some(_) = &self.alternate_stack {
-            if self.main.is_none() {
-                // warning -> alternate_stack is ignored -> 1-column
-            }
+        if self.alternate_stack.is_some() && self.main.is_none() {
+            // warning -> alternate_stack is ignored -> 1-column
         }
     }
 }
@@ -101,7 +101,7 @@ impl Default for LayoutDefinition {
             flip: Flipped::None,
             rotate: Rotation::North,
             reserve: ReserveColumnSpace::None,
-            root: Root::default(),
+            root: Columns::default(),
             main: Some(Main::default()),
             stack: Stack::default(),
             alternate_stack: None,
@@ -126,19 +126,10 @@ impl Default for LayoutDefinition {
     }
 }*/
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
-pub struct Root {
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone, Default)]
+pub struct Columns {
     pub flip: Flipped,
     pub rotate: Rotation,
-}
-
-impl Default for Root {
-    fn default() -> Self {
-        Self {
-            flip: Default::default(),
-            rotate: Default::default(),
-        }
-    }
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]

@@ -4,7 +4,7 @@ use druid::{
     AppLauncher, Color, Data, Insets, Lens, LocalizedString, Point, Rect, RenderContext, Widget,
     WidgetExt, WindowDesc,
 };
-use leftwm_layouts::layouts::layouts::Layouts;
+use leftwm_layouts::layouts::Layouts;
 
 const PRIMARY: Color = Color::rgb8(0x08, 0x0f, 0x0f);
 

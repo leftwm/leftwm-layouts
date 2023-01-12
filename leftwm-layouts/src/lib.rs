@@ -1,4 +1,5 @@
 use std::cmp;
+use std::vec;
 
 use geometry::Rect;
 use layouts::three_column;
@@ -18,7 +19,7 @@ pub fn apply(definition: &LayoutDefinition, window_count: usize, container: &Rec
         (None, _) => geometry::split(container, window_count, definition.stack.split),
         // two-column layout
         (Some(main), None) => {
-            let (main_tile, stack_tile) = two_column(
+            let (mut main_tile, mut stack_tile) = two_column(
                 window_count,
                 container,
                 main.count,
@@ -30,13 +31,23 @@ pub fn apply(definition: &LayoutDefinition, window_count: usize, container: &Rec
             match (main_tile, stack_tile) {
                 (None, None) => {}
                 (None, Some(b)) => {
-                    geometry::rotate(container, &mut vec![b], definition.root.rotate)
+                    let mut v = vec![b];
+                    geometry::rotate(container, &mut v, definition.root.rotate);
+                    geometry::flip(container, &mut v, definition.root.flip);
+                    main_tile = Some(v[0]);
                 }
                 (Some(a), None) => {
-                    geometry::rotate(container, &mut vec![a], definition.root.rotate)
+                    let mut v = vec![a];
+                    geometry::rotate(container, &mut v, definition.root.rotate);
+                    geometry::flip(container, &mut v, definition.root.flip);
+                    stack_tile = Some(v[0]);
                 }
                 (Some(a), Some(b)) => {
-                    geometry::rotate(container, &mut vec![a, b], definition.root.rotate)
+                    let mut v = vec![a, b];
+                    geometry::rotate(container, &mut v, definition.root.rotate);
+                    geometry::flip(container, &mut v, definition.root.flip);
+                    main_tile = Some(v[0]);
+                    stack_tile = Some(v[1]);
                 }
             }
 
@@ -98,6 +109,11 @@ pub fn apply(definition: &LayoutDefinition, window_count: usize, container: &Rec
 
             // root rotation
             geometry::rotate(container, &mut columns, definition.root.rotate);
+
+            dbg!(left_column);
+            dbg!(main_column);
+            dbg!(right_column);
+            dbg!(columns);
 
             let mut main_tiles = vec![];
             if let Some(tile) = main_column {
