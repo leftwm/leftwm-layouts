@@ -32,20 +32,20 @@ pub fn apply(definition: &LayoutDefinition, window_count: usize, container: &Rec
                 (None, None) => {}
                 (None, Some(b)) => {
                     let mut v = vec![b];
-                    geometry::rotate(container, &mut v, definition.root.rotate);
-                    geometry::flip(container, &mut v, definition.root.flip);
+                    geometry::rotate(&mut v, definition.root.rotate, container);
+                    geometry::flip(&mut v, definition.root.flip, container);
                     main_tile = Some(v[0]);
                 }
                 (Some(a), None) => {
                     let mut v = vec![a];
-                    geometry::rotate(container, &mut v, definition.root.rotate);
-                    geometry::flip(container, &mut v, definition.root.flip);
+                    geometry::rotate(&mut v, definition.root.rotate, container);
+                    geometry::flip(&mut v, definition.root.flip, container);
                     stack_tile = Some(v[0]);
                 }
                 (Some(a), Some(b)) => {
                     let mut v = vec![a, b];
-                    geometry::rotate(container, &mut v, definition.root.rotate);
-                    geometry::flip(container, &mut v, definition.root.flip);
+                    geometry::rotate(&mut v, definition.root.rotate, container);
+                    geometry::flip(&mut v, definition.root.flip, container);
                     main_tile = Some(v[0]);
                     stack_tile = Some(v[1]);
                 }
@@ -56,8 +56,8 @@ pub fn apply(definition: &LayoutDefinition, window_count: usize, container: &Rec
             let mut main_tiles = vec![];
             if let Some(tile) = main_tile {
                 main_tiles.append(&mut geometry::split(&tile, main.count, main.split));
-                geometry::rotate(container, &mut main_tiles, main.rotate);
-                geometry::flip(container, &mut main_tiles, main.flip);
+                geometry::rotate(&mut main_tiles, main.rotate, container);
+                geometry::flip(&mut main_tiles, main.flip, container);
             }
 
             let mut stack_tiles = vec![];
@@ -67,8 +67,8 @@ pub fn apply(definition: &LayoutDefinition, window_count: usize, container: &Rec
                     window_count.saturating_sub(main.count),
                     definition.stack.split,
                 ));
-                geometry::rotate(container, &mut stack_tiles, definition.stack.rotate);
-                geometry::flip(container, &mut stack_tiles, definition.stack.flip);
+                geometry::rotate(&mut stack_tiles, definition.stack.rotate, container);
+                geometry::flip(&mut stack_tiles, definition.stack.flip, container);
             }
 
             let mut all = vec![];
@@ -108,18 +108,13 @@ pub fn apply(definition: &LayoutDefinition, window_count: usize, container: &Rec
             }
 
             // root rotation
-            geometry::rotate(container, &mut columns, definition.root.rotate);
-
-            dbg!(left_column);
-            dbg!(main_column);
-            dbg!(right_column);
-            dbg!(columns);
+            geometry::rotate(&mut columns, definition.root.rotate, container);
 
             let mut main_tiles = vec![];
             if let Some(tile) = main_column {
                 main_tiles.append(&mut geometry::split(&tile, main_window_count, main.split));
-                geometry::rotate(container, &mut main_tiles, main.rotate);
-                geometry::flip(container, &mut main_tiles, main.flip);
+                geometry::rotate(&mut main_tiles, main.rotate, container);
+                geometry::flip(&mut main_tiles, main.flip, container);
             }
 
             let mut left_tiles = vec![];
@@ -129,8 +124,8 @@ pub fn apply(definition: &LayoutDefinition, window_count: usize, container: &Rec
                     left_window_count,
                     definition.stack.split,
                 ));
-                geometry::rotate(container, &mut left_tiles, definition.stack.rotate);
-                geometry::flip(container, &mut left_tiles, definition.stack.flip);
+                geometry::rotate(&mut left_tiles, definition.stack.rotate, container);
+                geometry::flip(&mut left_tiles, definition.stack.flip, container);
             }
 
             let mut right_tiles = vec![];
@@ -140,8 +135,8 @@ pub fn apply(definition: &LayoutDefinition, window_count: usize, container: &Rec
                     right_window_count,
                     Some(alternate_stack.split),
                 ));
-                geometry::rotate(container, &mut right_tiles, alternate_stack.rotate);
-                geometry::flip(container, &mut right_tiles, alternate_stack.flip);
+                geometry::rotate(&mut right_tiles, alternate_stack.rotate, container);
+                geometry::flip(&mut right_tiles, alternate_stack.flip, container);
             }
 
             let mut tiles = vec![];
@@ -153,10 +148,10 @@ pub fn apply(definition: &LayoutDefinition, window_count: usize, container: &Rec
     };
 
     // flip the whole layout
-    geometry::flip(container, &mut rects, definition.flip);
+    geometry::flip(&mut rects, definition.flip, container);
 
     // rotate the whole layout
-    geometry::rotate(container, &mut rects, definition.rotate);
+    geometry::rotate(&mut rects, definition.rotate, container);
 
     rects
 }

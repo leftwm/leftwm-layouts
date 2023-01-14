@@ -1,13 +1,13 @@
 use std::cmp;
 
-use crate::geometry::{Rect, ReserveColumnSpace, Size};
+use crate::geometry::{Rect, Reserve, Size};
 
 pub fn two_column(
     window_count: usize,
     container: &Rect,
     main_window_count: usize,
     main_size: Size,
-    reserve_column_space: ReserveColumnSpace,
+    reserve_column_space: Reserve,
 ) -> (Option<Rect>, Option<Rect>) {
     let main_window_count = cmp::min(main_window_count, window_count);
     let stack_window_count = window_count.saturating_sub(main_window_count);
@@ -29,11 +29,11 @@ pub fn two_column(
     let stack_width = container.w as usize - main_width;
 
     let main_offset = match (reserve_column_space, stack_empty) {
-        (ReserveColumnSpace::ReserveAndCenter, true) => stack_width / 2,
+        (Reserve::ReserveAndCenter, true) => stack_width / 2,
         _ => 0,
     };
     let stack_offset = match (reserve_column_space, main_empty) {
-        (ReserveColumnSpace::ReserveAndCenter, true) => main_width / 2,
+        (Reserve::ReserveAndCenter, true) => main_width / 2,
         _ => main_width,
     };
 
@@ -82,7 +82,7 @@ mod tests {
             &CONTAINER,
             1,
             Size::Ratio(0.65),
-            crate::geometry::ReserveColumnSpace::None,
+            crate::geometry::Reserve::None,
         );
         assert_eq!(
             main,
@@ -111,7 +111,7 @@ mod tests {
             &CONTAINER,
             1,
             Size::Ratio(0.65),
-            crate::geometry::ReserveColumnSpace::Reserve,
+            crate::geometry::Reserve::Reserve,
         );
         assert_eq!(
             main,
@@ -140,7 +140,7 @@ mod tests {
             &CONTAINER,
             1,
             Size::Ratio(0.65),
-            crate::geometry::ReserveColumnSpace::ReserveAndCenter,
+            crate::geometry::Reserve::ReserveAndCenter,
         );
         assert_eq!(
             main,
@@ -169,7 +169,7 @@ mod tests {
             &CONTAINER,
             1,
             Size::Ratio(0.65),
-            crate::geometry::ReserveColumnSpace::None,
+            crate::geometry::Reserve::None,
         );
         assert_eq!(
             main,
@@ -190,7 +190,7 @@ mod tests {
             &CONTAINER,
             0,
             Size::Ratio(0.65),
-            crate::geometry::ReserveColumnSpace::None,
+            crate::geometry::Reserve::None,
         );
         assert_eq!(main, None);
         assert_eq!(
@@ -211,7 +211,7 @@ mod tests {
             &CONTAINER,
             0,
             Size::Ratio(0.65),
-            crate::geometry::ReserveColumnSpace::Reserve,
+            crate::geometry::Reserve::Reserve,
         );
         assert_eq!(main, None);
         assert_eq!(
@@ -232,7 +232,7 @@ mod tests {
             &CONTAINER,
             1,
             Size::Ratio(0.65),
-            crate::geometry::ReserveColumnSpace::Reserve,
+            crate::geometry::Reserve::Reserve,
         );
         assert_eq!(
             main,
@@ -253,7 +253,7 @@ mod tests {
             &CONTAINER,
             0,
             Size::Ratio(0.65),
-            crate::geometry::ReserveColumnSpace::ReserveAndCenter,
+            crate::geometry::Reserve::ReserveAndCenter,
         );
         assert_eq!(main, None);
         assert_eq!(
@@ -274,7 +274,7 @@ mod tests {
             &CONTAINER,
             1,
             Size::Ratio(0.65),
-            crate::geometry::ReserveColumnSpace::ReserveAndCenter,
+            crate::geometry::Reserve::ReserveAndCenter,
         );
         assert_eq!(
             main,
