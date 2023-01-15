@@ -28,16 +28,18 @@ pub struct Rect {
 }
 
 impl Rect {
+    /// Shorthand method to create a new [`Rect`] with
+    /// the provided `x`, `y`, `w`, and `h`.
     pub fn new(x: i32, y: i32, w: u32, h: u32) -> Self {
         Self { x, y, w, h }
     }
 
-    /// Calculate the surface area of the `Rect`
+    /// Calculate the surface area of the [`Rect`]
     pub fn surface_area(&self) -> u32 {
         self.w * self.h
     }
 
-    /// Get the coordinate at the center of the `Rect`.
+    /// Get the coordinate at the center of the [`Rect`].
     ///
     /// The center coordinate is rounded to the nearest integer
     /// and might not be at the exact center position.
@@ -47,9 +49,9 @@ impl Rect {
         (x, y)
     }
 
-    /// Check whether a point is contained in a `Rect`.
+    /// Check whether a point is contained in a [`Rect`].
     ///
-    /// The boundary counts as part of the `Rect`.
+    /// The boundary counts as part of the [`Rect`].
     pub fn contains(&self, point: (i32, i32)) -> bool {
         self.x <= point.0
             && point.0 <= self.x + self.w as i32

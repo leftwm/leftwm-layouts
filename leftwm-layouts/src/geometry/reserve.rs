@@ -1,12 +1,12 @@
 use serde::{Deserialize, Serialize};
 
-/// Determines whether the space of a column should be reserved
-/// when there is no window inside the column. A value of [`ReserveColumnSpace::Reserve`] or
-/// [`ReserveColumnSpace::ReserveAndCenter`] will reserve the column space and make other
-/// column(s) avoid it entirely. While a value of [`ReserveColumnSpace::None`]
+/// Determines whether the space of a layouts' column should be reserved
+/// when there is no window inside the column. A value of [`Reserve::Reserve`] or
+/// [`Reserve::ReserveAndCenter`] will reserve the column space and make other
+/// column(s) avoid it entirely. While a value of [`Reserve::None`]
 /// makes other columns overtake the empty column space.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-pub enum ReserveColumnSpace {
+pub enum Reserve {
     /// No space will be reserved. Instead, the populated space
     /// will take over the empty space. This is the default variant.
     ///
@@ -50,18 +50,18 @@ pub enum ReserveColumnSpace {
     ReserveAndCenter,
 }
 
-impl ReserveColumnSpace {
+impl Reserve {
     pub fn is_reserved(&self) -> bool {
         match self {
-            ReserveColumnSpace::None => false,
-            ReserveColumnSpace::Reserve | ReserveColumnSpace::ReserveAndCenter => true,
+            Reserve::None => false,
+            Reserve::Reserve | Reserve::ReserveAndCenter => true,
         }
     }
 }
 
-impl Default for ReserveColumnSpace {
+impl Default for Reserve {
     fn default() -> Self {
-        ReserveColumnSpace::None
+        Reserve::None
     }
 }
 

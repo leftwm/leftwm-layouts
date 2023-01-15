@@ -4,8 +4,7 @@ use druid::{
     AppLauncher, Color, Data, Insets, Lens, LocalizedString, Point, Rect, RenderContext, Widget,
     WidgetExt, WindowDesc,
 };
-use leftwm_layouts::geometry::ReserveColumnSpace;
-use leftwm_layouts::Layouts;
+use leftwm_layouts::layouts::Layouts;
 
 const PRIMARY: Color = Color::rgb8(0x08, 0x0f, 0x0f);
 
@@ -33,11 +32,11 @@ impl Default for DemoState {
 }
 
 impl DemoState {
-    fn current(&self) -> &leftwm_layouts::LayoutDefinition {
+    fn current(&self) -> &leftwm_layouts::Layout {
         self.layouts.get(self.current_layout.as_str()).unwrap()
     }
 
-    fn current_mut(&mut self) -> &mut leftwm_layouts::LayoutDefinition {
+    fn current_mut(&mut self) -> &mut leftwm_layouts::Layout {
         self.layouts.get_mut(self.current_layout.as_str()).unwrap()
     }
 
@@ -63,36 +62,35 @@ impl DemoState {
     }
 
     fn increase_main_count(&mut self) {
-        self.current_mut().main_window_count += 1
+        self.current_mut().increase_main_window_count()
     }
 
     fn decrease_main_count(&mut self) {
-        self.current_mut().main_window_count =
-            self.current_mut().main_window_count.saturating_sub(1)
+        self.current_mut().decrease_main_window_count()
     }
 
     fn toggle_flipped_horizontal(&mut self) {
-        self.current_mut().flipped = self.current().flipped.toggle_horizontal()
+        //self.current_mut().flipped = self.current().flipped.toggle_horizontal()
     }
 
     fn toggle_flipped_vertical(&mut self) {
-        self.current_mut().flipped = self.current().flipped.toggle_vertical()
+        //self.current_mut().flipped = self.current().flipped.toggle_vertical()
     }
 
     fn toggle_balance_stacks(&mut self) {
-        self.current_mut().balance_stacks = !self.current().balance_stacks
+        //self.current_mut().balance_stacks = !self.current().balance_stacks
     }
 
     fn change_reserve_space(&mut self) {
-        self.current_mut().reserve_column_space = match self.current().reserve_column_space {
-            ReserveColumnSpace::None => ReserveColumnSpace::Reserve,
-            ReserveColumnSpace::Reserve => ReserveColumnSpace::ReserveAndCenter,
-            ReserveColumnSpace::ReserveAndCenter => ReserveColumnSpace::None,
-        };
+        //self.current_mut().reserve_column_space = match self.current().reserve_column_space {
+        //    ReserveColumnSpace::None => ReserveColumnSpace::Reserve,
+        //    ReserveColumnSpace::Reserve => ReserveColumnSpace::ReserveAndCenter,
+        //    ReserveColumnSpace::ReserveAndCenter => ReserveColumnSpace::None,
+        //};
     }
 
     fn rotate(&mut self) {
-        self.current_mut().rotation = self.current().rotation.clockwise();
+        self.current_mut().rotate(true);
     }
 }
 
@@ -146,7 +144,7 @@ fn controls() -> impl Widget<DemoState> {
     let dec_main_count = button("DecreaseMainCount")
         .on_click(move |_ctx, data: &mut DemoState, _env| data.decrease_main_count());
 
-    let flip_h = button(|data: &DemoState, _env: &_| {
+    /*let flip_h = button(|data: &DemoState, _env: &_| {
         format!(
             "FlipHorziontal: {}",
             data.current().flipped.is_flipped_horizontal()
@@ -160,13 +158,13 @@ fn controls() -> impl Widget<DemoState> {
             data.current().flipped.is_flipped_vertical()
         )
     })
-    .on_click(move |_ctx, data: &mut DemoState, _env| data.toggle_flipped_vertical());
+    .on_click(move |_ctx, data: &mut DemoState, _env| data.toggle_flipped_vertical());*/
 
     let rotation =
-        button(|data: &DemoState, _env: &_| format!("Rotation: {:?}", data.current().rotation))
+        button(|data: &DemoState, _env: &_| format!("Rotation: {:?}", data.current().rotate))
             .on_click(move |_ctx, data: &mut DemoState, _env| data.rotate());
 
-    let balance_stacks = button(|data: &DemoState, _env: &_| {
+    /*let balance_stacks = button(|data: &DemoState, _env: &_| {
         format!("BalanceStacks: {}", data.current().balance_stacks)
     })
     .on_click(move |_ctx, data: &mut DemoState, _env| data.toggle_balance_stacks());
@@ -177,7 +175,7 @@ fn controls() -> impl Widget<DemoState> {
             data.current().reserve_column_space
         )
     })
-    .on_click(move |_ctx, data: &mut DemoState, _env| data.change_reserve_space());
+    .on_click(move |_ctx, data: &mut DemoState, _env| data.change_reserve_space());*/
 
     let flex = Flex::column()
         .with_child(label("Layouts"))
@@ -189,11 +187,11 @@ fn controls() -> impl Widget<DemoState> {
         .with_child(dec_main_count)
         .with_child(add_window)
         .with_child(remove_window)
-        .with_child(flip_h)
-        .with_child(flip_v)
-        .with_child(rotation)
-        .with_child(balance_stacks)
-        .with_child(reserve_space);
+        .with_child(rotation);
+    /*.with_child(flip_h)
+    .with_child(flip_v)
+    .with_child(balance_stacks)
+    .with_child(reserve_space)*/
 
     flex.fix_width(260.0).expand_height().background(PRIMARY)
 }
