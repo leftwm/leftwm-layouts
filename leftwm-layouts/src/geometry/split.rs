@@ -5,7 +5,7 @@ use super::{divrem, remainderless_division, split, Rect, Rotation};
 /// Describes different ways a [`crate::geometry::Rect`] can be split.
 ///
 /// *Disclaimer: As it may be confusing - The terms vertical/horizontal are referring to the "splits"
-/// not the orientation of the resulting stack. For example, [`SplitAxis::Horizontal`]
+/// not the orientation of the resulting stack. For example, [`Split::Horizontal`]
 /// splits a rect by **horizontal cuts**, resulting in a "vertically stacked" list of rects.
 /// See the variants' documentation for clarification.*
 #[derive(PartialEq, Eq, Clone, Copy, Serialize, Deserialize, Debug)]
