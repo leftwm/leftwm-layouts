@@ -32,11 +32,11 @@ impl Default for DemoState {
 }
 
 impl DemoState {
-    fn current(&self) -> &leftwm_layouts::LayoutDefinition {
+    fn current(&self) -> &leftwm_layouts::Layout {
         self.layouts.get(self.current_layout.as_str()).unwrap()
     }
 
-    fn current_mut(&mut self) -> &mut leftwm_layouts::LayoutDefinition {
+    fn current_mut(&mut self) -> &mut leftwm_layouts::Layout {
         self.layouts.get_mut(self.current_layout.as_str()).unwrap()
     }
 

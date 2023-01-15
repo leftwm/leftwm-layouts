@@ -1,12 +1,12 @@
 pub mod columns;
 mod defaults;
-mod layout_definition;
+mod layout;
 
 pub use columns::three_column;
 pub use columns::two_column;
 
-pub use layout_definition::LayoutDefinition;
-pub use layout_definition::Layouts;
-pub use layout_definition::Main;
-pub use layout_definition::SecondStack;
-pub use layout_definition::Stack;
+pub use layout::Layout;
+pub use layout::Layouts;
+pub use layout::Main;
+pub use layout::SecondStack;
+pub use layout::Stack;

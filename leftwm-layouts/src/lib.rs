@@ -5,20 +5,20 @@ use geometry::Rect;
 use geometry::Split;
 use layouts::three_column;
 use layouts::two_column;
-pub use layouts::LayoutDefinition;
+pub use layouts::Layout;
 use layouts::Main;
 use layouts::SecondStack;
 
 pub mod geometry;
 pub mod layouts;
 
-pub fn apply(definition: &LayoutDefinition, window_count: usize, container: &Rect) -> Vec<Rect> {
+pub fn apply(definition: &Layout, window_count: usize, container: &Rect) -> Vec<Rect> {
     if window_count == 0 {
         return vec![];
     }
 
-    let mut rects = match (&definition.main, &definition.second_stack) {
-        (None, _) => stack(container, window_count, definition.stack.split),
+    let mut rects = match (&definition.columns.main, &definition.columns.second_stack) {
+        (None, _) => stack(container, window_count, definition.columns.stack.split),
         (Some(main), None) => main_stack(container, window_count, definition, main),
         (Some(main), Some(alternate_stack)) => {
             stack_main_stack(container, window_count, definition, main, alternate_stack)
@@ -41,7 +41,7 @@ fn stack(container: &Rect, window_count: usize, split: Option<Split>) -> Vec<Rec
 fn main_stack(
     container: &Rect,
     window_count: usize,
-    definition: &LayoutDefinition,
+    definition: &Layout,
     main: &Main,
 ) -> Vec<Rect> {
     let (mut main_tile, mut stack_tile) = two_column(
@@ -90,10 +90,10 @@ fn main_stack(
         stack_tiles.append(&mut geometry::split(
             &tile,
             window_count.saturating_sub(main.count),
-            definition.stack.split,
+            definition.columns.stack.split,
         ));
-        geometry::rotate(&mut stack_tiles, definition.stack.rotate, container);
-        geometry::flip(&mut stack_tiles, definition.stack.flip, container);
+        geometry::rotate(&mut stack_tiles, definition.columns.stack.rotate, container);
+        geometry::flip(&mut stack_tiles, definition.columns.stack.flip, container);
     }
 
     let mut all = vec![];
@@ -105,13 +105,13 @@ fn main_stack(
 fn stack_main_stack(
     container: &Rect,
     window_count: usize,
-    definition: &LayoutDefinition,
+    definition: &Layout,
     main: &Main,
     alternate_stack: &SecondStack,
 ) -> Vec<Rect> {
     let main_window_count = cmp::min(main.count, window_count);
     let stack_window_count = window_count.saturating_sub(main_window_count);
-    let balance_stacks = definition.stack.split.is_some();
+    let balance_stacks = definition.columns.stack.split.is_some();
     let (left_window_count, right_window_count) = if balance_stacks {
         let counts = geometry::remainderless_division(stack_window_count, 2);
         (counts[0], counts[1])
@@ -155,10 +155,10 @@ fn stack_main_stack(
         left_tiles.append(&mut geometry::split(
             &tile,
             left_window_count,
-            definition.stack.split,
+            definition.columns.stack.split,
         ));
-        geometry::rotate(&mut left_tiles, definition.stack.rotate, container);
-        geometry::flip(&mut left_tiles, definition.stack.flip, container);
+        geometry::rotate(&mut left_tiles, definition.columns.stack.rotate, container);
+        geometry::flip(&mut left_tiles, definition.columns.stack.flip, container);
     }
 
     let mut right_tiles = vec![];
@@ -180,70 +180,4 @@ fn stack_main_stack(
 }
 
 #[cfg(test)]
-mod tests {
-    /*use crate::{
-        apply, layouts::columns::ColumnType, LayoutDefinition, LayoutEnum, LayoutModifiers,
-        LayoutOptions,
-    };
-
-    const MAIN_STACK: LayoutDefinition = LayoutDefinition {
-        ..Default::default()
-    };
-
-    const CENTER_MAIN: LayoutDefinition = LayoutDefinition {
-        column_type: ColumnType::CenterMain,
-
-        ..Default::default()
-    };
-
-    const ALL_LAYOUTS: &[LayoutEnum] = &[
-        LayoutEnum::Monocle,
-        LayoutEnum::MainAndVertStack,
-        LayoutEnum::CenterMain,
-        LayoutEnum::Fibonacci,
-    ];*/
-
-    /*#[test]
-    fn returned_tiles_must_never_exceed_window_count() {
-        let modifiers: LayoutModifiers = LayoutModifiers::default();
-        let options: LayoutOptions = LayoutOptions::default();
-        for window_count in 0..25 {
-            for layout in ALL_LAYOUTS {
-                let layout = layout.get();
-                let len = layout
-                    .apply(window_count, options.container_size, &modifiers)
-                    .len();
-                assert!(len <= window_count);
-            }
-        }
-    }*/
-
-    // todo
-    //fn no_overlap_of_rects() {
-    //    todo!()
-    //}
-
-    /*#[test]
-    fn container_must_always_be_filled() {
-        let modifiers: LayoutModifiers = LayoutModifiers::default();
-        let options: LayoutOptions = LayoutOptions::default();
-        let container_area = options.container_size.surface_area();
-        for window_count in 1..10 {
-            for layout in ALL_LAYOUTS {
-                let filled_area = apply(layout, window_count, &options, &modifiers)
-                    .into_iter()
-                    .fold(0u32, |a, b| a + b.surface_area());
-                assert_eq!(container_area, filled_area);
-            }
-        }
-    }*/
-
-    /*#[test]
-    fn test_monocle_layout() {
-        let modifiers: LayoutModifiers = LayoutModifiers::default();
-        let options: LayoutOptions = LayoutOptions::default();
-        let monocle = LayoutEnum::Monocle.get();
-        let monocle_positions = monocle.apply(1, options.container_size, &modifiers);
-        assert_eq!(monocle_positions.len(), 1);
-    }*/
-}
+mod tests {}
