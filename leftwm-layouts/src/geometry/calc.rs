@@ -172,18 +172,16 @@ fn rotate_single_rect(rect: &mut Rect, rotation: Rotation, container: &Rect) {
 /// The rectangles will differ by 1px at maximum. The remaining space of the division is
 /// distributed evenly and by order accross the resulting rectangles, until no remaining space is left.
 pub fn split(rect: &Rect, amount: usize, axis: Option<Split>) -> Vec<Rect> {
-    if amount == 0 {
-        return vec![];
-    }
-    match axis {
-        Some(a) => match a {
+    match (amount, axis) {
+        (0, _) => vec![],
+        (_, None) => vec![*rect],
+        (_, Some(a)) => match a {
             Split::Vertical => vertical(rect, amount),
             Split::Horizontal => horizontal(rect, amount),
             Split::Grid => grid(rect, amount),
             Split::Fibonacci => fibonacci(rect, amount),
             Split::Dwindle => dwindle(rect, amount),
         },
-        None => vec![*rect],
     }
 }
 

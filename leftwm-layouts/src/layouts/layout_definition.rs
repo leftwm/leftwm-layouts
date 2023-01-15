@@ -75,21 +75,21 @@ pub struct LayoutDefinition {
     pub rotate: Rotation,
     pub reserve: Reserve,
 
-    pub root: Columns,
+    pub columns: Columns,
     pub main: Option<Main>,
     pub stack: Stack,
-    pub alternate_stack: Option<AlternateStack>,
+    pub second_stack: Option<SecondStack>,
 }
 
 impl LayoutDefinition {
     pub fn is_monocle(&self) -> bool {
-        self.main.is_none() && self.alternate_stack.is_none() && self.stack.split.is_none()
+        self.main.is_none() && self.second_stack.is_none() && self.stack.split.is_none()
     }
 
     pub fn is_main_and_deck(&self) -> bool {
         match &self.main {
             Some(main) => {
-                self.alternate_stack.is_none() && main.split.is_none() && self.stack.split.is_none()
+                self.second_stack.is_none() && main.split.is_none() && self.stack.split.is_none()
             }
             None => false,
         }
@@ -139,17 +139,8 @@ impl LayoutDefinition {
         }
     }
 
-    /*pub fn column_count(&self) -> usize {
-        match (&self.main, &self.alternate_stack) {
-            (None, None) => 1,
-            (None, Some(_)) => 1,
-            (Some(_), None) => 2,
-            (Some(_), Some(_)) => 3,
-        }
-    }*/
-
     pub fn check(&self) {
-        if self.alternate_stack.is_some() && self.main.is_none() {
+        if self.second_stack.is_some() && self.main.is_none() {
             // warning -> alternate_stack is ignored -> 1-column
         }
     }
@@ -170,30 +161,13 @@ impl Default for LayoutDefinition {
             flip: Flip::None,
             rotate: Rotation::North,
             reserve: Reserve::None,
-            root: Columns::default(),
+            columns: Columns::default(),
             main: Some(Main::default()),
             stack: Stack::default(),
-            alternate_stack: None,
+            second_stack: None,
         }
     }
 }
-
-/*impl Default for NewLayoutDefinition {
-    fn default() -> Self {
-        Self {
-            name: String::from("Default"),
-            column_type: ColumnType::MainAndStack,
-            flipped: Flipped::default(),
-            rotation: Rotation::default(),
-            main_window_count: 1,
-            main_size: Size::Ratio(0.5),
-            main_split: SplitAxis::Vertical,
-            stack_split: SplitAxis::Horizontal,
-            reserve_column_space: ReserveColumnSpace::None,
-            balance_stacks: true,
-        }
-    }
-}*/
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone, Default)]
 pub struct Columns {
@@ -240,13 +214,13 @@ impl Default for Stack {
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
-pub struct AlternateStack {
+pub struct SecondStack {
     pub flip: Flip,
     pub rotate: Rotation,
     pub split: Split,
 }
 
-impl Default for AlternateStack {
+impl Default for SecondStack {
     fn default() -> Self {
         Self {
             flip: Flip::default(),

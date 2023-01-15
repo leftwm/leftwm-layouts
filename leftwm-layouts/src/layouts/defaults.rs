@@ -3,7 +3,7 @@ use crate::{
     LayoutDefinition,
 };
 
-use super::layout_definition::{AlternateStack, Columns, Main, Stack};
+use super::layout_definition::{Columns, Main, SecondStack, Stack};
 
 const EVEN_HORIZONTAL: &str = "EvenHorizontal";
 const EVEN_VERTICAL: &str = "EvenVertical";
@@ -92,7 +92,7 @@ pub fn right_main_and_vert_stack() -> LayoutDefinition {
         name: RIGHT_MAIN_AND_VERT_STACK.to_string(),
         main: Some(Main::default()),
         stack: Stack::default(),
-        root: Columns {
+        columns: Columns {
             rotate: Rotation::South,
             ..Default::default()
         },
@@ -144,7 +144,7 @@ pub fn center_main() -> LayoutDefinition {
         name: CENTER_MAIN.to_string(),
         main: Some(Main::default()),
         stack: Stack::default(),
-        alternate_stack: Some(AlternateStack::default()),
+        second_stack: Some(SecondStack::default()),
         ..Default::default()
     }
 }
@@ -157,7 +157,7 @@ pub fn center_main_balanced() -> LayoutDefinition {
             split: Some(Split::Dwindle),
             ..Default::default()
         },
-        alternate_stack: Some(AlternateStack::default()),
+        second_stack: Some(SecondStack::default()),
         ..Default::default()
     }
 }
@@ -170,7 +170,7 @@ pub fn center_main_fluid() -> LayoutDefinition {
             split: None,
             ..Default::default()
         },
-        alternate_stack: Some(AlternateStack::default()),
+        second_stack: Some(SecondStack::default()),
         reserve: Reserve::Reserve,
         ..Default::default()
     }

@@ -13,15 +13,13 @@ pub enum Split {
     /// Rectangle is split by `horizontal` cuts.
     ///
     /// ```txt
-    /// +--------+        +--+--+--+        +---+---+        +---+---+        +---+---+
-    /// |        |        |  |  |  |        |   |   |        |   |   |        |   |   |
-    /// +--------+        |  |  |  |        |   |   |        |   |   |        |   |   |
-    /// |        |        |  |  |  |        |   +---+        |   +-+-+        |   +-+-+
-    /// +--------+        |  |  |  |        |   |   |        |   |_| |        |   | |_|
-    /// |        |        |  |  |  |        |   |   |        |   | | |        |   | |||
-    /// +--------+        +--+--+--+        +---+---+        +---+---+        +---+---+
-    ///                             
-    ///  vertical         horizontal          grid           fibonacci         dwindle
+    /// +--------+      +--------+
+    /// |        |      |        |
+    /// |        |      +--------+
+    /// |        |  =>  |        |
+    /// |        |      +--------+
+    /// |        |      |        |
+    /// +--------+      +--------+
     /// ```
     Horizontal,
 
@@ -78,9 +76,6 @@ pub enum Split {
     /// +-------+      +---+---+
     /// ```
     Dwindle,
-    // /// Rectangle will not be split at all,
-    // /// resulting in simply returning the Rect as is.
-    // None,
 }
 
 pub fn vertical(rect: &Rect, amount: usize) -> Vec<Rect> {
