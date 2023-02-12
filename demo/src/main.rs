@@ -98,8 +98,10 @@ fn main() {
     // create the initial app state
     let initial_state = DemoState::default();
 
+    let root_widget = build_root_widget();
+
     // describe the main window
-    let main_window = WindowDesc::new(build_root_widget)
+    let main_window = WindowDesc::new(root_widget)
         .title(WINDOW_TITLE)
         .window_size((1280.0, 720.0));
 

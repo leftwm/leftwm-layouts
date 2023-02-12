@@ -6,5 +6,5 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-druid = "0.7.0"
+druid = "0.8.0"
 leftwm-layouts = { path = "../leftwm-layouts" }
