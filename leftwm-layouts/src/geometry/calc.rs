@@ -62,7 +62,7 @@ pub fn flip(rects: &mut [Rect], flip: Flip, container: &Rect) {
 /// Rotates an array of [`Rect`] inside the container, according to the provided `rotation` parameter.
 ///
 /// Provided that the array has no gaps (i.e. pixels within the container that
-/// belong to none of the [`Rect`]s in the array), the result after applying this function won't
+/// belong to none of the [`Rect`] in the array), the result after applying this function won't
 /// have gaps either. Similarly, if the array has no overlaps (i.e. pixels that are part of multiple [`Rect`]s
 /// in the array), neither will the result.
 pub fn rotate(rects: &mut [Rect], rotation: Rotation, container: &Rect) {

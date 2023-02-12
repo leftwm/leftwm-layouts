@@ -2,6 +2,14 @@ use std::cmp;
 
 use crate::geometry::{Rect, Reserve, Size};
 
+/// Calculate a two column layout (ie. layout with a main and stack part)
+/// based on the provided parameters.
+///
+/// * `window_count` - Amount of windows to account for
+/// * `container` - Container [`Rect`] in which the windows shall be displayed
+/// * `main_window_count` - How many of the windows shall be in the main column
+/// * `main_size` - Size of the main column
+/// * `reserve_column_space` - How to handle unused column space
 pub fn two_column(
     window_count: usize,
     container: &Rect,

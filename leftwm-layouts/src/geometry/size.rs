@@ -5,7 +5,10 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, PartialEq, Copy, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum Size {
+    /// Size in pixels (ie. 10 means 10 pixels)
     Pixel(i32),
+
+    /// Relative size as a ratio between 0 to 1 (ie. 0.5 means 50%)
     Ratio(f32),
 }
 

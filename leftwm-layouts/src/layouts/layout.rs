@@ -185,6 +185,16 @@ impl Default for Layout {
 /// Describes the columns of a layout. There are only 3 columns which are a fixed part of
 /// `leftwm_layouts`, those are `main`, `stack`, and `second_stack`.
 ///
+/// ```txt
+/// +------+------+------+
+/// |      |      |      |
+/// |      |      |      |
+/// |      |      |      |
+/// +------+------+------+
+///  stack   main  second
+///                stack
+/// ```
+///
 /// ## Modifiers
 /// Modifiers like [`Flip`] and [`Rotation`] are applied only to the columns themselves and not their contents.
 ///
