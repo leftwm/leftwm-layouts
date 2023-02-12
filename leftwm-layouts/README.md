@@ -44,7 +44,7 @@ Those layouts have only a single stack and no main column.
 
 **Monocle**
 
-```txt
+```texts
 +-----------+
 |           |   only ever displays
 |           |   one window at
@@ -54,7 +54,7 @@ Those layouts have only a single stack and no main column.
 
 **EvenHorizontal**
 
-```txt
+```text
 +--+--+--+--+
 |  |  |  |  |
 |  |  |  |  |
@@ -64,7 +64,7 @@ Those layouts have only a single stack and no main column.
 
 **EvenVertical**
 
-```txt
+```text
 +-----------+
 |-----------|
 |-----------|
@@ -74,7 +74,7 @@ Those layouts have only a single stack and no main column.
 
 **Grid**
 
-```txt
+```text
 +-----+-----+   +---+---+---+   +---+---+---+   +---+---+---+
 |     |     |   |   |   |   |   |   |   |   |   |   |   |   |
 |     |     |   |   |   |   |   |   |   |   |   |   |   +---+
@@ -91,7 +91,7 @@ Those layouts have a main and one stack column
 
 **MainAndDeck**
 
-```txt
+```text
 +-------+-----+
 |       |     |   only ever displays
 |       |     |   two windows at
@@ -102,7 +102,7 @@ Those layouts have a main and one stack column
 
 **MainAndVertStack**
 
-```txt
+```text
 +-------+-----+
 |       |     |
 |       +-----+
@@ -113,7 +113,7 @@ Those layouts have a main and one stack column
 
 **MainAndHorizontalStack**
 
-```txt
+```text
 +-------+--+--+
 |       |  |  |
 |       |  |  |
@@ -124,7 +124,7 @@ Those layouts have a main and one stack column
 
 **RightMainAndVertStack**
 
-```txt
+```text
 +-----+-------+
 |     |       |
 +-----+       |
@@ -135,7 +135,7 @@ Those layouts have a main and one stack column
 
 **Fibonacci**
 
-```txt
+```text
 +-------+-----+
 |       |     |
 |       +--+--+
@@ -146,7 +146,7 @@ Those layouts have a main and one stack column
 
 **Dwindle**
 
-```txt
+```text
 +-------+-----+
 |       |     |
 |       +--+--+
@@ -265,7 +265,7 @@ and two stack columns surrounding it.
 
 ### Build and test the project
 
-> **Info** Requires Rust >= 1.56.0
+> **Note** Requires Rust >= 1.56.0
 
 ```shell
 make
@@ -273,7 +273,7 @@ make
 
 ### Run the demo application
 
-> **Info** Running the demo requires you to have GTK (`gtk3`) and pango (`?`) installed
+> **Note** Running the demo requires you to have GTK (`gtk3`) and pango (`?`) installed
 
 ```shell
 make dev
