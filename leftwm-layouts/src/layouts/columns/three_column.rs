@@ -2,7 +2,7 @@ use std::cmp;
 
 use crate::geometry::{remainderless_division, Rect, Reserve, Size};
 
-/// Calculate a three column layout (ie. layout with one main and two stacks like "CenterMain")
+/// Calculate a three column layout (ie. layout with one main and two stacks like `CenterMain`)
 /// based on the provided parameters.
 ///
 /// * `window_count` - Amount of windows to account for
@@ -85,7 +85,7 @@ pub fn three_column(
 
     let main = if main_has_windows {
         Some(Rect {
-            x: main_offset as i32,
+            x: container.x + main_offset as i32,
             w: main_width as u32,
             ..*container
         })
@@ -95,7 +95,7 @@ pub fn three_column(
 
     let left_stack = if left_stack_has_windows {
         Some(Rect {
-            x: left_stack_offset as i32,
+            x: container.x + left_stack_offset as i32,
             w: left_stack_width as u32,
             ..*container
         })
@@ -105,7 +105,7 @@ pub fn three_column(
 
     let right_stack = if right_stack_has_windows {
         Some(Rect {
-            x: right_stack_offset as i32,
+            x: container.x + right_stack_offset as i32,
             w: right_stack_width as u32,
             ..*container
         })
@@ -583,5 +583,21 @@ mod tests {
         assert_eq!(left_stack, None);
         assert_eq!(main, None);
         assert_eq!(right_stack, None);
+    }
+
+    #[test]
+    fn works_with_offset() {
+        let rect = Rect::new(2560, 1440, 2560, 1440);
+        let (left_stack, main, right_stack) = three_column(
+            3,
+            &rect,
+            1,
+            Size::Ratio(0.5),
+            crate::geometry::Reserve::None,
+            true,
+        );
+        assert_eq!(Some(Rect::new(2560, 1440, 640, 1440)), left_stack);
+        assert_eq!(Some(Rect::new(3200, 1440, 1280, 1440)), main);
+        assert_eq!(Some(Rect::new(4480, 1440, 640, 1440)), right_stack);
     }
 }

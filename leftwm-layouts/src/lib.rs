@@ -180,4 +180,59 @@ fn stack_main_stack(
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use crate::{
+        apply,
+        geometry::{Rect, Split},
+        layouts::{Columns, SecondStack, Stack},
+        Layout,
+    };
+
+    #[test]
+    fn single_column_works_with_offset() {
+        let layout = Layout {
+            columns: Columns {
+                main: None,
+                stack: Stack {
+                    split: Some(Split::Horizontal),
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        let rect = Rect::new(2560, 1440, 2560, 1440);
+        let rects = apply(&layout, 3, &rect);
+
+        assert_eq!(Rect::new(2560, 1440, 2560, 480), rects[0]);
+        assert_eq!(Rect::new(2560, 1920, 2560, 480), rects[1]);
+        assert_eq!(Rect::new(2560, 2400, 2560, 480), rects[2]);
+    }
+
+    #[test]
+    fn main_stack_works_with_offset() {
+        let layout = Layout::default();
+        let rect = Rect::new(2560, 1440, 2560, 1440);
+        let rects = apply(&layout, 3, &rect);
+
+        assert_eq!(Rect::new(2560, 1440, 1280, 1440), rects[0]);
+        assert_eq!(Rect::new(3840, 1440, 1280, 720), rects[1]);
+        assert_eq!(Rect::new(3840, 2160, 1280, 720), rects[2]);
+    }
+
+    #[test]
+    fn stack_main_stack_works_with_offset() {
+        let layout = Layout {
+            columns: Columns {
+                second_stack: Some(SecondStack::default()),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        let rect = Rect::new(2560, 1440, 2560, 1440);
+        let rects = apply(&layout, 3, &rect);
+        assert_eq!(Rect::new(3200, 1440, 1280, 1440), rects[0]);
+        assert_eq!(Rect::new(2560, 1440, 640, 1440), rects[1]);
+        assert_eq!(Rect::new(4480, 1440, 640, 1440), rects[2]);
+    }
+}

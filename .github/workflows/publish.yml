@@ -31,7 +31,13 @@ jobs:
       - name: Run fmt
         run: cargo fmt -- --check
 
-      - name: Publish
+      - name: Publish Crate
         run: cargo publish -p leftwm-layouts
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+      
+      - name: Create Github Release
+        uses: softprops/action-gh-release@v1
+        with:
+          body_path: CHANGELOG.md
+          prerelease: ${{ contains(github.ref, '-rc.') }}

@@ -47,7 +47,7 @@ pub fn two_column(
 
     let main = if main_has_windows {
         Some(Rect {
-            x: main_offset as i32,
+            x: container.x + main_offset as i32,
             y: container.y,
             w: main_width as u32,
             h: container.h,
@@ -58,7 +58,7 @@ pub fn two_column(
 
     let stack = if stack_has_windows {
         Some(Rect {
-            x: stack_offset as i32,
+            x: container.x + stack_offset as i32,
             y: container.y,
             w: stack_width as u32,
             h: container.h,
@@ -294,5 +294,19 @@ mod tests {
             })
         );
         assert_eq!(stack, None);
+    }
+
+    #[test]
+    fn works_with_offset() {
+        let rect = Rect::new(2560, 1440, 2560, 1440);
+        let (main, stack) = two_column(
+            3,
+            &rect,
+            1,
+            Size::Ratio(0.5),
+            crate::geometry::Reserve::None,
+        );
+        assert_eq!(Some(Rect::new(2560, 1440, 1280, 1440)), main);
+        assert_eq!(Some(Rect::new(3840, 1440, 1280, 1440)), stack);
     }
 }
