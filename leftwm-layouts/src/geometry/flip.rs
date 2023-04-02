@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 /// Represents the four states an object can be in,
 /// if it can be flipped horizontally and vertically.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Flip {
     /// Nothing is flipped at all
     ///
@@ -13,6 +13,7 @@ pub enum Flip {
     ///     |C       D|
     ///     +---------+
     /// ```
+    #[default]
     None,
 
     /// Flipped on the horizontal axis
@@ -88,11 +89,5 @@ impl Flip {
             Self::Vertical => Self::None,
             Self::Both => Self::Horizontal,
         }
-    }
-}
-
-impl Default for Flip {
-    fn default() -> Self {
-        Flip::None
     }
 }

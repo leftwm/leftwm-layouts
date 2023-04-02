@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use super::Rect;
 
 /// Represents the four different possibilities of rotation.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Rotation {
     /// A rotation of 0° (ie. no rotation).
     /// This is the default value.
@@ -17,6 +17,7 @@ pub enum Rotation {
     /// +---------+
     ///      0°
     /// ```
+    #[default]
     North,
 
     /// A rotation of 90° clockwise.
@@ -109,12 +110,6 @@ impl Rotation {
             Rotation::South => Rotation::East,
             Rotation::East => Rotation::North,
         }
-    }
-}
-
-impl Default for Rotation {
-    fn default() -> Self {
-        Rotation::North
     }
 }
 
