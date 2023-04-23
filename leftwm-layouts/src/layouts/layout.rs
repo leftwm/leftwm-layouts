@@ -10,6 +10,9 @@ use super::defaults::{
     right_main_and_vert_stack,
 };
 
+const DEFAULT_MAIN_SIZE_CHANGE_PIXEL: i32 = 50;
+const DEFAULT_MAIN_SIZE_CHANGE_PERCENTAGE: i32 = 5;
+
 /// A helper struct that represents a set of layouts and provides
 /// convenience methods
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -94,12 +97,20 @@ pub struct Layout {
 }
 
 impl Layout {
+    /// Returns `true` if the layout must be considered a `Monocle` layout.
+    ///
+    /// The `Monocle` layout is a special layout that always consists
+    /// of 0 or 1 windows. If there is a window, it is shown full screen.
     pub fn is_monocle(&self) -> bool {
         self.columns.main.is_none()
             && self.columns.second_stack.is_none()
             && self.columns.stack.split.is_none()
     }
 
+    /// Returns `true` if the layout must be considered a `MainAndDeck` layout.
+    ///
+    /// The `MainAndDeck` layout is a special layout that always consists
+    /// of 0, 1 or 2 windows.
     pub fn is_main_and_deck(&self) -> bool {
         match &self.columns.main {
             Some(main) => {
@@ -111,42 +122,149 @@ impl Layout {
         }
     }
 
+    // Get the size of the [`Main`] column,
+    // may return [`None`] if there is no [`Main`] column.
+    pub fn main_size(&self) -> Option<Size> {
+        self.columns.main.as_ref().map(|m| m.size)
+    }
+
+    // Get the amount of window spaces of the [`Main`] column,
+    // may return [`None`] if there is no [`Main`] column.
+    pub fn main_window_count(&self) -> Option<usize> {
+        self.columns.main.as_ref().map(|m| m.count)
+    }
+
+    /// Set the [`Size`] of the [`Main`] column to a specific value
+    pub fn set_main_size(&mut self, size: Size) {
+        if let Some(main) = self.columns.main.as_mut() {
+            main.size = size;
+        }
+    }
+
+    /// Increase the [`Size`] of the [`Main`] column, but to no
+    /// larger value than what is set in `upper_bound`.
+    ///
+    /// The column is increased by a default amount,
+    /// either [`DEFAULT_MAIN_SIZE_CHANGE_PIXEL`] or
+    /// [`DEFAULT_MAIN_SIZE_CHANGE_PERCENTAGE`] depending
+    /// on whether the current [`Size`] is a [`Size::Pixel`] or [`Size::Ratio`].
+    ///
+    /// If the current layout has no [`Main`] column, nothing happens
     pub fn increase_main_size(&mut self, upper_bound: i32) {
         if let Some(main) = self.columns.main.as_mut() {
-            main.size = match main.size {
-                Size::Pixel(x) => Size::Pixel(cmp::min(x + 50, upper_bound)),
-                Size::Ratio(x) => Size::Ratio(f32::min(1.0, x + 0.05)),
+            match main.size {
+                Size::Pixel(_) => {
+                    self.change_main_size(DEFAULT_MAIN_SIZE_CHANGE_PIXEL, upper_bound);
+                }
+                Size::Ratio(_) => {
+                    self.change_main_size(DEFAULT_MAIN_SIZE_CHANGE_PERCENTAGE, upper_bound);
+                }
             };
         };
     }
 
+    /// Decrease the [`Size`] of the [`Main`] column, but to no
+    /// smaller value than zero.
+    ///
+    /// The column is decreased by a default amount,
+    /// either [`DEFAULT_MAIN_SIZE_CHANGE_PIXEL`] or
+    /// [`DEFAULT_MAIN_SIZE_CHANGE_PERCENTAGE`] depending
+    /// on whether the current [`Size`] is a [`Size::Pixel`] or [`Size::Ratio`].
+    ///
+    /// If the current layout has no [`Main`] column, nothing happens
     pub fn decrease_main_size(&mut self) {
         if let Some(main) = self.columns.main.as_mut() {
-            main.size = match main.size {
-                Size::Pixel(x) => Size::Pixel(cmp::max(0, x - 50)),
-                Size::Ratio(x) => Size::Ratio(f32::max(0.0, x - 0.05)),
+            // note: upper bound doesn't matter when we're decreasing,
+            // so just set it to i32::MAX
+            match main.size {
+                Size::Pixel(_) => self.change_main_size(-DEFAULT_MAIN_SIZE_CHANGE_PIXEL, i32::MAX),
+                Size::Ratio(_) => {
+                    self.change_main_size(-DEFAULT_MAIN_SIZE_CHANGE_PERCENTAGE, i32::MAX);
+                }
             };
         };
     }
 
-    pub fn set_main_size(&mut self, px: i32) {
+    /// Change the [`Size`] of the [`Main`] column by a `delta` value.
+    ///
+    /// The `delta` value can be positive or negative and is interpreted
+    /// as either [`Size::Pixel`] or [`Size::Ratio`] based on the current
+    /// [`Size`] of the [`Main`] column.
+    ///
+    /// When the current [`Size`] is a [`Size::Pixel`], the delta is
+    /// interpreted as a pixel value.
+    ///
+    /// ```
+    /// use leftwm_layouts::Layout;
+    /// use leftwm_layouts::geometry::Size;
+    ///
+    /// let mut layout = Layout::default();
+    /// layout.set_main_size(Size::Pixel(200));
+    /// layout.change_main_size(100, 500);
+    /// assert_eq!(Size::Pixel(300), layout.columns.main.unwrap().size);
+    /// ```
+    ///
+    /// When the current [`Size`] is a [`Size::Ratio`], the delta is
+    /// interpreted as a percentage value and converted into a ratio
+    /// (i.e. `5` (percent) => `Size::Ratio(0.05)`).
+    ///
+    /// ```
+    /// use leftwm_layouts::Layout;
+    /// use leftwm_layouts::geometry::Size;
+    ///
+    /// let mut layout = Layout::default();
+    /// layout.set_main_size(Size::Ratio(0.5));
+    /// layout.change_main_size(5, 500);
+    /// assert_eq!(Size::Ratio(0.55), layout.columns.main.unwrap().size);
+    /// ```
+    pub fn change_main_size(&mut self, delta: i32, upper_bound: i32) {
         if let Some(main) = self.columns.main.as_mut() {
-            main.size = Size::Pixel(px);
-        };
+            main.size = match main.size {
+                Size::Pixel(px) => Size::Pixel(cmp::max(0, cmp::min(upper_bound, px + delta))),
+                Size::Ratio(ratio) => {
+                    Size::Ratio(f32::max(0.0, f32::min(1.0, ratio + (delta as f32 * 0.01))))
+                }
+            }
+        }
     }
 
+    //pub fn change_main_size_enum(&mut self, amount: Size, upper_bound: i32) {
+    //    if let Some(main) = self.columns.main.as_mut() {
+    //        match (main.size, amount) {
+    //            (Size::Pixel(_), Size::Pixel(px)) => self.change_main_size(px, upper_bound),
+    //            (Size::Pixel(_), Size::Ratio(_)) => todo!(), // ?
+    //            (Size::Ratio(_), Size::Pixel(_)) => todo!(), // ?
+    //            (Size::Ratio(_), Size::Ratio(ratio)) => {
+    //                self.change_main_size((ratio * 100.0).round() as i32, upper_bound)
+    //            }
+    //        }
+    //    };
+    //    amount.into_absolute(upper_bound.unsigned_abs());
+    //}
+
+    // Set the amount of main windows to a specific amount
+    pub fn set_main_window_count(&mut self, count: usize) {
+        if let Some(main) = self.columns.main.as_mut() {
+            main.count = cmp::max(0, count);
+        }
+    }
+
+    // Increase the amount of main windows by 1
     pub fn increase_main_window_count(&mut self) {
         if let Some(main) = self.columns.main.as_mut() {
             main.count = main.count.saturating_add(1);
         }
     }
 
+    // Decrease the amount of main windows by 1
     pub fn decrease_main_window_count(&mut self) {
         if let Some(main) = self.columns.main.as_mut() {
             main.count = main.count.saturating_sub(1);
         }
     }
 
+    // Rotate the layout as a whole.
+    // Rotates clockwise if `true` and counter-clockwise if `false`.
     pub fn rotate(&mut self, clockwise: bool) {
         self.rotate = if clockwise {
             self.rotate.clockwise()
@@ -327,5 +445,171 @@ impl Default for SecondStack {
             rotate: Rotation::default(),
             split: Split::Horizontal,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{
+        geometry::Size,
+        layouts::{
+            layout::{DEFAULT_MAIN_SIZE_CHANGE_PERCENTAGE, DEFAULT_MAIN_SIZE_CHANGE_PIXEL},
+            Layouts,
+        },
+        Layout,
+    };
+
+    #[test]
+    fn monocle_layout_is_monocle() {
+        let layouts = Layouts::default();
+        let layout = layouts.get("Monocle").unwrap();
+        assert!(layout.is_monocle());
+    }
+
+    #[test]
+    fn main_and_deck_layout_is_main_and_deck() {
+        let layouts = Layouts::default();
+        let layout = layouts.get("MainAndDeck").unwrap();
+        assert!(layout.is_main_and_deck());
+    }
+
+    #[test]
+    fn set_main_size_works() {
+        let mut layout = Layout::default();
+        layout.set_main_size(Size::Ratio(0.5));
+        assert_eq!(Some(Size::Ratio(0.5)), layout.main_size());
+    }
+
+    #[test]
+    fn increase_main_size_percentage_works() {
+        let mut layout = Layout::default();
+        layout.set_main_size(Size::Ratio(0.5));
+        layout.increase_main_size(500);
+        assert_eq!(
+            Some(Size::Ratio(
+                0.5 + (DEFAULT_MAIN_SIZE_CHANGE_PERCENTAGE as f32 * 0.01)
+            )),
+            layout.main_size()
+        );
+    }
+
+    #[test]
+    fn decrease_main_size_percentage_works() {
+        let mut layout = Layout::default();
+        layout.set_main_size(Size::Ratio(0.5));
+        layout.decrease_main_size();
+        assert_eq!(
+            Some(Size::Ratio(
+                0.5 - (DEFAULT_MAIN_SIZE_CHANGE_PERCENTAGE as f32 * 0.01)
+            )),
+            layout.main_size()
+        );
+    }
+
+    #[test]
+    fn increase_main_size_pixel_works() {
+        let mut layout = Layout::default();
+        layout.set_main_size(Size::Pixel(200));
+        layout.increase_main_size(500);
+        assert_eq!(
+            Some(Size::Pixel(200 + DEFAULT_MAIN_SIZE_CHANGE_PIXEL)),
+            layout.main_size()
+        );
+    }
+
+    #[test]
+    fn decrease_main_size_pixel_works() {
+        let mut layout = Layout::default();
+        layout.set_main_size(Size::Pixel(200));
+        layout.decrease_main_size();
+        assert_eq!(
+            Some(Size::Pixel(200 - DEFAULT_MAIN_SIZE_CHANGE_PIXEL)),
+            layout.main_size()
+        );
+    }
+
+    #[test]
+    fn change_main_size_percentage_negative_works() {
+        let mut layout = Layout::default();
+        layout.set_main_size(Size::Ratio(0.5));
+        layout.change_main_size(-5, 500);
+        assert_eq!(Some(Size::Ratio(0.45)), layout.main_size());
+    }
+
+    #[test]
+    fn change_main_size_percentage_positive_works() {
+        let mut layout = Layout::default();
+        layout.set_main_size(Size::Ratio(0.5));
+        layout.change_main_size(5, 500);
+        assert_eq!(Some(Size::Ratio(0.55)), layout.main_size());
+    }
+
+    #[test]
+    fn change_main_size_pixel_negative_works() {
+        let mut layout = Layout::default();
+        layout.set_main_size(Size::Pixel(200));
+        layout.change_main_size(-5, 500);
+        assert_eq!(Some(Size::Pixel(195)), layout.main_size());
+    }
+
+    #[test]
+    fn change_main_size_pixel_positive_works() {
+        let mut layout = Layout::default();
+        layout.set_main_size(Size::Pixel(200));
+        layout.change_main_size(5, 500);
+        assert_eq!(Some(Size::Pixel(205)), layout.main_size());
+    }
+
+    #[test]
+    fn decrease_main_size_does_not_go_below_zero() {
+        let mut layout = Layout::default();
+        layout.set_main_size(Size::Pixel(200));
+        layout.change_main_size(-200, 500);
+        assert_eq!(Some(Size::Pixel(0)), layout.main_size());
+        layout.change_main_size(-200, 500);
+        assert_eq!(Some(Size::Pixel(0)), layout.main_size());
+    }
+
+    #[test]
+    fn decrease_main_size_does_not_go_above_upper_bound() {
+        let mut layout = Layout::default();
+        layout.set_main_size(Size::Pixel(200));
+        layout.change_main_size(200, 500);
+        assert_eq!(Some(Size::Pixel(400)), layout.main_size());
+        layout.change_main_size(200, 500);
+        assert_eq!(Some(Size::Pixel(500)), layout.main_size());
+    }
+
+    #[test]
+    fn set_main_window_count_works() {
+        let mut layout = Layout::default();
+        layout.set_main_window_count(5);
+        assert_eq!(Some(5), layout.main_window_count());
+    }
+
+    #[test]
+    fn increase_main_window_count_works() {
+        let mut layout = Layout::default();
+        layout.set_main_window_count(5);
+        layout.increase_main_window_count();
+        assert_eq!(Some(6), layout.main_window_count());
+    }
+
+    #[test]
+    fn decrease_main_window_count_works() {
+        let mut layout = Layout::default();
+        layout.set_main_window_count(5);
+        layout.decrease_main_window_count();
+        assert_eq!(Some(4), layout.main_window_count());
+    }
+
+    #[test]
+    fn main_window_count_does_not_go_below_zero() {
+        let mut layout = Layout::default();
+        layout.set_main_window_count(1);
+        layout.decrease_main_window_count();
+        assert_eq!(Some(0), layout.main_window_count());
+        layout.decrease_main_window_count();
+        assert_eq!(Some(0), layout.main_window_count());
     }
 }
