@@ -42,74 +42,36 @@ The following layouts are already provided by the library.
 
 Those layouts have only a single stack and no main column.
 
-**Monocle**
-
-> **Note**: Only ever display one window at maximum
-
-![Monocle](/icons/yellow/monocle.svg)
-
-**EvenHorizontal**
-
-![EvenHorizontal](/icons/yellow/even-horizontal.svg)
-
-**EvenVertical**
-
-![EvenVertical](/icons/yellow/even-vertical.svg)
-
-
-**Grid**
-
-![Grid](/icons/yellow/grid.svg)
-
+| Layout | Info | Icon |
+| --- | --- | --- |
+| Monocle | *Only ever display one window at maximum* | ![Monocle](/icons/yellow/monocle.svg) |
+| EvenHorizontal | | ![EvenHorizontal](/icons/yellow/even-horizontal.svg) |
+| EvenVertical | | ![EvenVertical](/icons/yellow/even-vertical.svg) |
+| Grid | | ![Grid](/icons/yellow/grid.svg) |
 
 ### Main and Stack / Two-Column
 
 Those layouts have a main and one stack column
 
-**MainAndDeck**
-
-> **Note**: Only ever displays two windows at maximum
-
-![MainAndDeck](/icons/yellow/main-and-deck.svg)
-
-**MainAndVertStack**
-
-![MainAndVertStack](/icons/yellow/main-and-vert-stack.svg)
-
-**MainAndHorizontalStack**
-
-![MainAndHorizontalStack](/icons/yellow/main-and-horizontal-stack.svg)
-
-**RightMainAndVertStack**
-
-![RightMainAndVertStack](/icons/yellow/right-main-and-vert-stack.svg)
-
-**Fibonacci**
-
-![Fibonacci](/icons/yellow/fibonacci.svg)
-
-**Dwindle**
-
-![Dwindle](/icons/yellow/dwindle.svg)
+| Layout | Info | Icon |
+| --- | --- | --- |
+| MainAndDeck | *Only ever displays two windows at maximum* | ![MainAndDeck](/icons/yellow/main-and-deck.svg) |
+| MainAndVertStack | | ![MainAndVertStack](/icons/yellow/main-and-vert-stack.svg) |
+| MainAndHorizontalStack | | ![MainAndHorizontalStack](/icons/yellow/main-and-horizontal-stack.svg) |
+| RightMainAndVertStack | | ![RightMainAndVertStack](/icons/yellow/right-main-and-vert-stack.svg) |
+| Fibonacci | | ![Fibonacci](/icons/yellow/fibonacci.svg) |
+| Dwindle | | ![Dwindle](/icons/yellow/dwindle.svg) |
 
 ### Center Main / Three-Column
 
 Those layouts have the main column in the center
 and two stack columns surrounding it.
 
-**CenterMain**
-
-![CenterMain](/icons/yellow/center-main.svg)
-
-**CenterMainBalanced**
-
-![CenterMainBalanced](/icons/yellow/center-main-balanced.svg)
-
-**CenterMainFluid**
-
-> **Note**: Unoccupied column space is reserved
-
-![CenterMainFluid](/icons/yellow/center-main-fluid.svg)
+| Layout | Info | Icon |
+| --- | --- | --- |
+| CenterMain | | ![CenterMain](/icons/yellow/center-main.svg) |
+| CenterMainBalanced | | ![CenterMainBalanced](/icons/yellow/center-main-balanced.svg) |
+| CenterMainFluid | *Unoccupied column space is reserved* | ![CenterMainFluid](/icons/yellow/center-main-fluid.svg) |
 
 ---
 
