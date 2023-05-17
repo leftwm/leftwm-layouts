@@ -44,46 +44,23 @@ Those layouts have only a single stack and no main column.
 
 **Monocle**
 
-```texts
-+-----------+
-|           |   only ever displays
-|           |   one window at
-|           |   maximum
-+-----------+
-```
+> **Note**: Only ever display one window at maximum
+
+![Monocle](/icons/yellow/monocle.svg)
 
 **EvenHorizontal**
 
-```text
-+--+--+--+--+
-|  |  |  |  |
-|  |  |  |  |
-|  |  |  |  |
-+--+--+--+--+
-```
+![EvenHorizontal](/icons/yellow/even-horizontal.svg)
 
 **EvenVertical**
 
-```text
-+-----------+
-|-----------|
-|-----------|
-|-----------|
-+-----------+
-```
+![EvenVertical](/icons/yellow/even-vertical.svg)
+
 
 **Grid**
 
-```text
-+-----+-----+   +---+---+---+   +---+---+---+   +---+---+---+
-|     |     |   |   |   |   |   |   |   |   |   |   |   |   |
-|     |     |   |   |   |   |   |   |   |   |   |   |   +---+
-+-----+-----+   |   +---+---+   +---+---+---+   +---+---|   |
-|     |     |   |   |   |   |   |   |   |   |   |   |   +---+
-|     |     |   |   |   |   |   |   |   |   |   |   |   |   |
-+-----+-----+   +---+---+---+   +---+---+---+   +---+---+---+
-  4 windows       5 windows       6 windows       7 windows
-```
+![Grid](/icons/yellow/grid.svg)
+
 
 ### Main and Stack / Two-Column
 
@@ -91,69 +68,29 @@ Those layouts have a main and one stack column
 
 **MainAndDeck**
 
-```text
-+-------+-----+
-|       |     |   only ever displays
-|       |     |   two windows at
-|       |     |   maximum
-+-------+-----+
-  main   stack
-```
+> **Note**: Only ever displays two windows at maximum
+
+![MainAndDeck](/icons/yellow/main-and-deck.svg)
 
 **MainAndVertStack**
 
-```text
-+-------+-----+
-|       |     |
-|       +-----+
-|       |     |
-+-------+-----+
-  main   stack
-```
+![MainAndVertStack](/icons/yellow/main-and-vert-stack.svg)
 
 **MainAndHorizontalStack**
 
-```text
-+-------+--+--+
-|       |  |  |
-|       |  |  |
-|       |  |  |
-+-------+--+--+
-  main   stack
-```
+![MainAndHorizontalStack](/icons/yellow/main-and-horizontal-stack.svg)
 
 **RightMainAndVertStack**
 
-```text
-+-----+-------+
-|     |       |
-+-----+       |
-|     |       |
-+-----+-------+
- stack   main
-```
+![RightMainAndVertStack](/icons/yellow/right-main-and-vert-stack.svg)
 
 **Fibonacci**
 
-```text
-+-------+-----+
-|       |     |
-|       +--+--+
-|       |--|  |
-+-------+--+--+
-  main   stack
-```
+![Fibonacci](/icons/yellow/fibonacci.svg)
 
 **Dwindle**
 
-```text
-+-------+-----+
-|       |     |
-|       +--+--+
-|       |  |--|
-+-------+--+--+
-  main   stack
-```
+![Dwindle](/icons/yellow/dwindle.svg)
 
 ### Center Main / Three-Column
 
@@ -162,102 +99,17 @@ and two stack columns surrounding it.
 
 **CenterMain**
 
-```text
-+-----+-----------+-----+
-|     |           |     |
-|     |           +-----+
-|     |           |     |
-|     |           +-----+
-|     |           |     |
-+-----+-----------+-----+
-  1st      main     2nd
- stack             stack
-
-+-----------+-----------+
-|           |           |
-|           |           |  unoccupied
-|           |           |  space is
-|           |           |  taken over
-|           |           |
-+-----------+-----------+
-  1st stack      main
-
-+-----------------------+
-|                       |
-|                       |  unoccupied
-|                       |  space is
-|                       |  taken over
-|                       |
-+-----------------------+
-           main
-```
+![CenterMain](/icons/yellow/center-main.svg)
 
 **CenterMainBalanced**
 
-```text
-+-----+-----------+-----+
-|     |           |     |
-|     |           |     |
-+-----+           +--+--+
-|  |__|           |  |__|
-|  |  |           |  |  |
-+-----+-----------+--+--+
-  1st      main     2nd
- stack             stack
-
-+-----------+-----------+
-|           |           |
-|           |           |  unoccupied
-|           |           |  space is
-|           |           |  taken over
-|           |           |
-+-----------+-----------+
-  1st stack      main
-
-+-----------------------+
-|                       |
-|                       |  unoccupied
-|                       |  space is
-|                       |  taken over
-|                       |
-+-----------------------+
-           main
-```
+![CenterMainBalanced](/icons/yellow/center-main-balanced.svg)
 
 **CenterMainFluid**
 
-```text
- 1st               2nd
- stack     main    stack
-+-----+-----------+-----+
-|     |           |     |
-|     |           +-----+
-|     |           |     |
-|     |           +-----+
-|     |           |     |
-+-----+-----------+-----+
-  1st      main     2nd
- stack             stack
+> **Note**: Unoccupied column space is reserved
 
-+-----+-----------+-----+
-|     |           |.....|
-|     |           |.....|  unoccupied
-|     |           |.....|  space is
-|     |           |.....|  reserved
-|     |           |.....|
-+-----+-----------+-----+
-  1st      main
- stack
-
-+-----+-----------+-----+
-|.....|           |.....|
-|.....|           |.....|  unoccupied
-|.....|           |.....|  space is
-|.....|           |.....|  reserved
-|.....|           |.....|
-+-----+-----------+-----+
-           main
-```
+![CenterMainFluid](/icons/yellow/center-main-fluid.svg)
 
 ---
 
