@@ -32,3 +32,6 @@ test-full: test
 
 dev: 
 	cd $(ROOT_DIR) && cargo run --package demo
+
+ascii: 
+	cd $(ROOT_DIR) && cargo run --package demo-ascii
