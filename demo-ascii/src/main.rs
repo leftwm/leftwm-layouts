@@ -1,6 +1,9 @@
-use ascii_canvas::{style::{Style, BOLD, FG_BLUE}, AsciiCanvas, AsciiView};
+use ascii_canvas::{
+    style::{Style, BOLD, FG_BLUE},
+    AsciiCanvas, AsciiView,
+};
 use leftwm_layouts::{
-    geometry::{Flip, Rect, Reserve, Rotation},
+    geometry::{Flip, Rect, Reserve, Rotation, Split},
     layouts::{Columns, Main, Stack},
     Layout,
 };
@@ -22,14 +25,14 @@ fn draw(layout: &Layout, windows: usize, w: usize, h: usize) -> String {
     let mut canvas = AsciiCanvas::new(h + 2, w + 2);
     {
         let view: &mut dyn AsciiView = &mut canvas;
-        //let canvas: &mut dyn AsciiView = &mut canvas;
-        //let view: &mut dyn AsciiView = &mut canvas.shift(0, 0);
+
+        // draw screen borders
         view.draw_vertical_line(0..h + 1, 0);
         view.draw_vertical_line(0..h + 1, w);
         view.draw_horizontal_line(0, 0..w + 1);
         view.draw_horizontal_line(h, 0..w + 1);
-        
 
+        // draw rects
         for (i, tile) in tiles.iter().enumerate() {
             view.draw_vertical_line(
                 (tile.y as usize)..(tile.y as usize + tile.h as usize + 1),
@@ -47,6 +50,8 @@ fn draw(layout: &Layout, windows: usize, w: usize, h: usize) -> String {
                 tile.y as usize + tile.h as usize,
                 (tile.x as usize)..(tile.x as usize + tile.w as usize + 1),
             );
+
+            // draw window number inside tile
             let (col, row) = tile.center();
             let win_num = i + 1;
             view.write_chars(
@@ -58,16 +63,12 @@ fn draw(layout: &Layout, windows: usize, w: usize, h: usize) -> String {
         }
     }
 
-    /*if let Some(mut stdout) = term::stdout() {
-        canvas.write_to(&mut *stdout);
-    }*/
-
-    let rows: Vec<String> = canvas
+    canvas
         .to_strings()
         .iter()
         .map(|row| row.to_string())
-        .collect();
-    return rows.join("\n");
+        .collect::<Vec<String>>()
+        .join("\n")
 }
 
 fn demo_layout() -> Layout {
@@ -84,6 +85,7 @@ fn demo_layout() -> Layout {
                 ..Default::default()
             }),
             stack: Stack {
+                split: Some(Split::Fibonacci),
                 ..Default::default()
             },
             second_stack: None,
