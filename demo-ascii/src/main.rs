@@ -52,12 +52,10 @@ fn draw(layout: &Layout, windows: usize, w: usize, h: usize) -> String {
             );
 
             // draw window number inside tile
-            let (col, row) = tile.center();
-            let win_num = i + 1;
             view.write_chars(
-                row as usize,
-                col as usize,
-                win_num.to_string().chars(),
+                tile.y as usize + 1,
+                tile.x as usize + 1,
+                (i + 1).to_string().chars(),
                 Style::new(),
             )
         }
