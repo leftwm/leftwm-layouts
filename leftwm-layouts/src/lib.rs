@@ -59,13 +59,13 @@ fn main_stack(
             let mut v = vec![b];
             geometry::rotate(&mut v, definition.columns.rotate, container);
             geometry::flip(&mut v, definition.columns.flip, container);
-            main_tile = Some(v[0]);
+            stack_tile = Some(v[0]);
         }
         (Some(a), None) => {
             let mut v = vec![a];
             geometry::rotate(&mut v, definition.columns.rotate, container);
             geometry::flip(&mut v, definition.columns.flip, container);
-            stack_tile = Some(v[0]);
+            main_tile = Some(v[0]);
         }
         (Some(a), Some(b)) => {
             let mut v = vec![a, b];

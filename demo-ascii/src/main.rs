@@ -9,10 +9,7 @@ use leftwm_layouts::{
 };
 
 fn main() {
-    println!("Hello, world!");
-
     let layout = demo_layout();
-
     for i in 1..6 {
         let ascii = draw(&layout, i, 42, 12);
         print!("{}\n", ascii);
