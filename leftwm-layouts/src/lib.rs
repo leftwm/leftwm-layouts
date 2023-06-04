@@ -80,7 +80,7 @@ fn main_stack(
 
     let mut main_tiles = vec![];
     if let Some(tile) = main_tile {
-        main_tiles.append(&mut geometry::split(&tile, main.count, main.split));
+        main_tiles.append(&mut geometry::split(&tile, usize::min(main.count, window_count), main.split));
         geometry::rotate(&mut main_tiles, main.rotate, container);
         geometry::flip(&mut main_tiles, main.flip, container);
     }
@@ -184,7 +184,7 @@ mod tests {
     use crate::{
         apply,
         geometry::{Rect, Split},
-        layouts::{Columns, SecondStack, Stack},
+        layouts::{Columns, SecondStack, Stack, Layouts},
         Layout,
     };
 
@@ -234,5 +234,32 @@ mod tests {
         assert_eq!(Rect::new(3200, 1440, 1280, 1440), rects[0]);
         assert_eq!(Rect::new(2560, 1440, 640, 1440), rects[1]);
         assert_eq!(Rect::new(4480, 1440, 640, 1440), rects[2]);
+    }
+
+    #[test]
+    fn should_never_return_more_rects_than_windows_for_any_layout() {
+        let container = Rect::new(0,0,40,20);
+        let mut layouts = Layouts::default().layouts;
+
+        // this specific layout does not exists in the defaults, 
+        // but has lead to the issue tested here in the past when user-defined
+        layouts.push(Layout {
+            name: "MultiMain".to_string(),
+            columns: Columns {
+                main: Some(crate::layouts::Main {
+                    count: 2,
+                    ..Default::default()
+                }),
+                ..Default::default()
+            },
+            ..Default::default()
+        });
+
+        for layout in layouts {
+            for i in 0usize..6 {
+                let rects = apply(&layout, i, &container);
+                assert!(rects.len() <= i, "got {}, expected <= {}, layout {}", rects.len(), i, &layout.name);
+            }
+        }
     }
 }

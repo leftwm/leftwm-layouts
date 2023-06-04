@@ -1,3 +1,3 @@
 ## :lady_beetle: Fixes
 
-- Fix issue where column rotation was not properly applied if only the `main` **or** `stack` column was present
+- Fix issue where more rects were returned than windows requested ([#18](https://github.com/leftwm/leftwm-layouts/issues/18))
