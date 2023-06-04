@@ -4,7 +4,7 @@ use ascii_canvas::{
 };
 use leftwm_layouts::{
     geometry::{Flip, Rect, Reserve, Rotation, Split},
-    layouts::{Columns, Main, Stack},
+    layouts::{Columns, Main, SecondStack, Stack},
     Layout,
 };
 
@@ -67,7 +67,7 @@ fn draw(layout: &Layout, windows: usize, w: usize, h: usize) -> String {
 }
 
 fn demo_layout() -> Layout {
-    leftwm_layouts::Layout {
+    /*leftwm_layouts::Layout {
         name: "Demo".to_string(),
         flip: Flip::None,
         rotate: Rotation::North,
@@ -84,6 +84,25 @@ fn demo_layout() -> Layout {
                 ..Default::default()
             },
             second_stack: None,
+        },
+    }*/
+    leftwm_layouts::Layout {
+        name: "Demo".to_string(),
+        flip: Flip::None,
+        rotate: Rotation::North,
+        reserve: Reserve::Reserve,
+        columns: Columns {
+            flip: Flip::Vertical,
+            rotate: Rotation::North,
+            main: Some(Main {
+                ..Default::default()
+            }),
+            stack: Stack {
+                ..Default::default()
+            },
+            second_stack: Some(SecondStack {
+                ..Default::default()
+            }),
         },
     }
 }

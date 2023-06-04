@@ -123,7 +123,7 @@ fn stack_main_stack(
         (1, cmp::max(0, stack_window_count.saturating_sub(1)))
     };
 
-    let (left_column, main_column, right_column) = three_column(
+    let (mut left_column, mut main_column, mut right_column) = three_column(
         window_count,
         container,
         main_window_count,
@@ -132,20 +132,19 @@ fn stack_main_stack(
         balance_stacks,
     );
 
+    // prepare columns to rotate / flip
     let mut columns = vec![];
-    if let Some(col) = left_column {
-        columns.push(col);
-    }
-    if let Some(col) = main_column {
-        columns.push(col);
-    }
-    if let Some(col) = right_column {
-        columns.push(col);
-    }
-
-    // root rotation
+    columns.push(left_column.unwrap_or(Rect::new(0, 0, 0, 0)));
+    columns.push(main_column.unwrap_or(Rect::new(0, 0, 0, 0)));
+    columns.push(right_column.unwrap_or(Rect::new(0, 0, 0, 0)));
     geometry::rotate(&mut columns, definition.columns.rotate, container);
     geometry::flip(&mut columns, definition.columns.flip, container);
+
+    // copy rotated/flipped columns into the variables
+    let non_empty = |rect: &&Rect| rect.surface_area() > 0;
+    left_column = columns.get(0).filter(non_empty).copied();
+    main_column = columns.get(1).filter(non_empty).copied();
+    right_column = columns.get(2).filter(non_empty).copied();
 
     let mut main_tiles = vec![];
     if let Some(tile) = main_column {
