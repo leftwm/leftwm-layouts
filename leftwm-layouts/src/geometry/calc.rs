@@ -43,18 +43,22 @@ pub fn remainderless_division(a: usize, b: usize) -> Vec<usize> {
 
 /// Flip an array of [`Rect`] inside the container, according to the provided `flip` parameter
 pub fn flip(rects: &mut [Rect], flip: Flip, container: &Rect) {
+    if flip == Flip::None {
+        return;
+    }
+
     for rect in rects.iter_mut() {
         if flip.is_flipped_horizontal() {
-            // from left edge as far away as right side is from right edge before being flipped
-            let right_window_edge = rect.x + rect.w as i32;
-            let right_container_edge = container.x + container.w as i32;
-            rect.x = right_container_edge - right_window_edge;
-        }
-        if flip.is_flipped_vertical() {
             // from top edge as far away as bottom side was from bottom edge before being flipped
             let bottom_window_edge = rect.y + rect.h as i32;
             let bottom_container_edge = container.y + container.h as i32;
             rect.y = bottom_container_edge - bottom_window_edge;
+        }
+        if flip.is_flipped_vertical() {
+            // from left edge as far away as right side is from right edge before being flipped
+            let right_window_edge = rect.x + rect.w as i32;
+            let right_container_edge = container.x + container.w as i32;
+            rect.x = right_container_edge - right_window_edge;
         }
     }
 }
@@ -66,6 +70,10 @@ pub fn flip(rects: &mut [Rect], flip: Flip, container: &Rect) {
 /// have gaps either. Similarly, if the array has no overlaps (i.e. pixels that are part of multiple [`Rect`]s
 /// in the array), neither will the result.
 pub fn rotate(rects: &mut [Rect], rotation: Rotation, container: &Rect) {
+    if rotation == Rotation::North {
+        return;
+    }
+
     for rect in rects.iter_mut() {
         rotate_single_rect(rect, rotation, container);
     }
@@ -188,8 +196,8 @@ pub fn split(rect: &Rect, amount: usize, axis: Option<Split>) -> Vec<Rect> {
 #[cfg(test)]
 mod tests {
     use crate::{
-        geometry::calc::{divrem, remainderless_division, split},
-        geometry::{Rect, Rotation, Split},
+        geometry::calc::{divrem, flip, remainderless_division, split},
+        geometry::{Flip, Rect, Rotation, Split},
     };
 
     use super::rotate;
@@ -242,6 +250,142 @@ mod tests {
         let rects = split(&CONTAINER, 1, Some(Split::Vertical));
         assert_eq!(rects.len(), 1);
         assert!(rects[0].eq(&CONTAINER));
+    }
+
+    #[test]
+    fn flip_none() {
+        let container = Rect::new(0, 0, 400, 200);
+
+        // +---------------+
+        // |               |
+        // +-------+-------+  0°
+        // +-------+       |
+        // +-------+-------+
+        let mut rects = vec![
+            Rect::new(0, 0, 400, 100),
+            Rect::new(200, 100, 200, 100),
+            Rect::new(0, 150, 200, 50),
+            Rect::new(0, 100, 200, 50),
+        ];
+
+        flip(&mut rects, Flip::None, &container);
+
+        // +---------------+
+        // |               |
+        // +-------+-------+  0°
+        // +-------+       |
+        // +-------+-------+
+        assert_eq!(
+            rects,
+            vec![
+                Rect::new(0, 0, 400, 100),
+                Rect::new(200, 100, 200, 100),
+                Rect::new(0, 150, 200, 50),
+                Rect::new(0, 100, 200, 50),
+            ]
+        );
+    }
+
+    #[test]
+    fn flip_horizontal() {
+        let container = Rect::new(0, 0, 400, 200);
+
+        // +---------------+
+        // |               |
+        // +-------+-------+
+        // +-------+       |
+        // +-------+-------+
+        let mut rects = vec![
+            Rect::new(0, 0, 400, 100),
+            Rect::new(200, 100, 200, 100),
+            Rect::new(0, 150, 200, 50),
+            Rect::new(0, 100, 200, 50),
+        ];
+
+        flip(&mut rects, Flip::Horizontal, &container);
+
+        // +-------+-------+
+        // +-------+       |
+        // +-------+-------+
+        // |               |
+        // +-------+-------+
+        assert_eq!(
+            rects,
+            vec![
+                Rect::new(0, 100, 400, 100),
+                Rect::new(200, 0, 200, 100),
+                Rect::new(0, 0, 200, 50),
+                Rect::new(0, 50, 200, 50),
+            ]
+        );
+    }
+
+    #[test]
+    fn flip_vertical() {
+        let container = Rect::new(0, 0, 400, 200);
+
+        // +---------------+
+        // |               |
+        // +-------+-------+
+        // +-------+       |
+        // +-------+-------+
+        let mut rects = vec![
+            Rect::new(0, 0, 400, 100),
+            Rect::new(200, 100, 200, 100),
+            Rect::new(0, 150, 200, 50),
+            Rect::new(0, 100, 200, 50),
+        ];
+
+        flip(&mut rects, Flip::Vertical, &container);
+
+        // +---------------+
+        // |               |
+        // +-------+-------+
+        // |       +-------+
+        // +-------+-------+
+        assert_eq!(
+            rects,
+            vec![
+                Rect::new(0, 0, 400, 100),
+                Rect::new(0, 100, 200, 100),
+                Rect::new(200, 150, 200, 50),
+                Rect::new(200, 100, 200, 50),
+            ]
+        );
+    }
+
+    #[test]
+    fn flip_both() {
+        let container = Rect::new(0, 0, 400, 200);
+
+        // +---------------+
+        // |               |
+        // +-------+-------+  0°
+        // +-------+       |
+        // +-------+-------+
+        let mut rects = vec![
+            Rect::new(0, 0, 400, 100),
+            Rect::new(200, 100, 200, 100),
+            Rect::new(0, 150, 200, 50),
+            Rect::new(0, 100, 200, 50),
+        ];
+
+        flip(&mut rects, Flip::Both, &container);
+
+        // +-------+-------+
+        // |       +-------+
+        // +-------+-------+  0°
+        // |               |
+        // +---------------+
+        assert_eq!(
+            rects,
+            vec![
+                Rect::new(0, 100, 400, 100),
+                Rect::new(0, 0, 200, 100),
+                Rect::new(200, 0, 200, 50),
+                Rect::new(200, 50, 200, 50),
+            ]
+        );
     }
 
     #[test]
