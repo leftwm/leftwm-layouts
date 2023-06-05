@@ -76,6 +76,7 @@ type LayoutName = String;
 /// The [`Layout`] allows to describe various types of "fixed" layouts used by a dynamic tiling manager.
 /// Those include layouts like `MainAndStack`, `Fibonacci`, `Dwindle`, `CenterMain`, etc.
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
+#[serde(default)]
 pub struct Layout {
     /// Name and identifier of the layout.
     /// This is user chosen and no two layouts can have the same name.
@@ -320,6 +321,7 @@ impl Default for Layout {
 /// in a `MainAndStack` layout configuration, the [`Flip`] property could be set to [`Flip::Vertical`],
 /// which results in the columns being flipped, **but not their contents**.
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
+#[serde(default)]
 pub struct Columns {
     /// How the columns should be flipped, does not apply to their contents
     pub flip: Flip,
@@ -364,6 +366,7 @@ impl Default for Columns {
 
 /// Configurations concerning the `main` column
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
+#[serde(default)]
 pub struct Main {
     /// The default amount of windows to occupy the `main` column (default: `1`)
     pub count: usize,
@@ -399,6 +402,7 @@ impl Default for Main {
 
 /// Configurations concerning the `stack` column
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
+#[serde(default)]
 pub struct Stack {
     /// Flip modifier to apply only to the `stack` columns' contents
     pub flip: Flip,
@@ -426,6 +430,7 @@ impl Default for Stack {
 
 /// Configurations concerning the `second_stack` column
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
+#[serde(default)]
 pub struct SecondStack {
     /// Flip modifier to apply only to the `second_stack` columns' contents
     pub flip: Flip,
