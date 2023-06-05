@@ -76,27 +76,24 @@ type LayoutName = String;
 /// The [`Layout`] allows to describe various types of "fixed" layouts used by a dynamic tiling manager.
 /// Those include layouts like `MainAndStack`, `Fibonacci`, `Dwindle`, `CenterMain`, etc.
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
+#[serde(default)]
 pub struct Layout {
     /// Name and identifier of the layout.
     /// This is user chosen and no two layouts can have the same name.
     pub name: LayoutName,
 
     /// Flips the entire result of tiles as a whole if specified to be anything other than [`Flip::None`]
-    #[serde(default)]
     pub flip: Flip,
 
     /// Rotate the entire result of tiles as a whole, if specified to be anything other than [`Rotation::North`]
-    #[serde(default)]
     pub rotate: Rotation,
 
     /// Defines the layouts behavior if certain "columns" (eg. main, stack, or second-stack) are empty.
     /// See [`Reserve`] for more information.
-    #[serde(default)]
     pub reserve: Reserve,
 
     /// Configuration concerning the [`Main`], [`Stack`], and [`SecondStack`] columns.
     /// See [`Columns`] for more information.
-    #[serde(default)]
     pub columns: Columns,
 }
 
@@ -337,7 +334,6 @@ pub struct Columns {
     /// will not have a main column. For example, in single-column
     /// layouts like `EvenVertical`, `Monocle`, etc.
     /// See [`Main`] for more information.
-    #[serde(default = "default_opt_main")]
     pub main: Option<Main>,
 
     /// Configurations concerning the `stack` column.
@@ -356,10 +352,6 @@ pub struct Columns {
     pub second_stack: Option<SecondStack>,
 }
 
-fn default_opt_main() -> Option<Main> {
-    Some(Main::default())
-}
-
 impl Default for Columns {
     fn default() -> Self {
         Self {
@@ -374,6 +366,7 @@ impl Default for Columns {
 
 /// Configurations concerning the `main` column
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
+#[serde(default)]
 pub struct Main {
     /// The default amount of windows to occupy the `main` column (default: `1`)
     pub count: usize,
@@ -409,6 +402,7 @@ impl Default for Main {
 
 /// Configurations concerning the `stack` column
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone)]
+#[serde(default)]
 pub struct Stack {
     /// Flip modifier to apply only to the `stack` columns' contents
     pub flip: Flip,
