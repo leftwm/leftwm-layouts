@@ -57,7 +57,7 @@ pub enum Direction {
 // Find the north neighbor starting from a given `Rect` with index `current` in an array of
 // [`Rect`].
 fn find_north(rects: &[Rect], current: usize) -> Option<usize> {
-    let current_rect = rects.get(current).or_else(|| return None).unwrap();
+    let current_rect = rects.get(current).or(None).unwrap();
     // We are all the way up, no neighbor available
     if current_rect.y == 0 {
         return None;
@@ -65,21 +65,21 @@ fn find_north(rects: &[Rect], current: usize) -> Option<usize> {
 
     for x in current_rect.x + 1..=current_rect.x + current_rect.w as i32 - 1 {
         for y in (0..=current_rect.y + 1).rev() {
-            for r in 0..rects.len() {
-                if r != current && rects[r].contains((x, y)) {
+            for (i, r) in rects.iter().enumerate() {
+                if i != current && r.contains((x, y)) {
                     // found north neighbor
-                    return Some(r);
+                    return Some(i);
                 }
             }
         }
     }
-    return None;
+    None
 }
 
 // Find the east neighbor starting from a given `Rect` with index `current` in an array of
 // [`Rect`].
 fn find_east(rects: &[Rect], current: usize, display_width: u32) -> Option<usize> {
-    let current_rect = rects.get(current).or_else(|| return None).unwrap();
+    let current_rect = rects.get(current).or(None).unwrap();
 
     // We are all the way right, no neighbor available
     if current_rect.x + current_rect.w as i32 >= display_width as i32 {
@@ -88,21 +88,21 @@ fn find_east(rects: &[Rect], current: usize, display_width: u32) -> Option<usize
 
     for y in current_rect.y + 1..=current_rect.y + current_rect.h as i32 - 1 {
         for x in current_rect.x + current_rect.w as i32 + 1..=display_width as i32 {
-            for r in 0..rects.len() {
-                if r != current && rects[r].contains((x, y)) {
+            for (i, r) in rects.iter().enumerate() {
+                if i != current && r.contains((x, y)) {
                     // found east neighbor
-                    return Some(r);
+                    return Some(i);
                 }
             }
         }
     }
-    return None;
+    None
 }
 
 // Find the south neighbor starting from a given `Rect` with index `current` in an array of
 // [`Rect`].
 fn find_south(rects: &[Rect], current: usize, display_height: u32) -> Option<usize> {
-    let current_rect = rects.get(current).or_else(|| return None).unwrap();
+    let current_rect = rects.get(current).or( None).unwrap();
 
     // We are at the bottom, no neighbor available
     if current_rect.y + current_rect.h as i32 >= display_height as i32 {
@@ -111,22 +111,22 @@ fn find_south(rects: &[Rect], current: usize, display_height: u32) -> Option<usi
 
     for x in current_rect.x + 1..=current_rect.x + current_rect.w as i32 - 1 {
         for y in current_rect.y + current_rect.h as i32..=display_height as i32 {
-            for r in 0..rects.len() {
-                if r != current && rects[r].contains((x, y)) {
+            for (i, r) in rects.iter().enumerate() {
+                if i != current && r.contains((x, y)) {
                     // found south neighbor
-                    return Some(r);
+                    return Some(i);
                 }
             }
         }
     }
 
-    return None;
+    None
 }
 
 // Find the west neighbor starting from a given `Rect` with index `current` in an array of
 // [`Rect`].
 fn find_west(rects: &[Rect], current: usize) -> Option<usize> {
-    let current_rect = rects.get(current).or_else(|| return None).unwrap();
+    let current_rect = rects.get(current).or(None).unwrap();
 
     // We are all the way left; no neighbor available
     if current_rect.x <= 0 {
@@ -135,14 +135,14 @@ fn find_west(rects: &[Rect], current: usize) -> Option<usize> {
 
     for x in (0..=current_rect.x - 1).rev() {
         for y in current_rect.y + 1..=current_rect.y + current_rect.h as i32 - 1 {
-            for r in 0..rects.len() {
-                if r != current && rects[r].contains((x, y)) {
-                    return Some(r);
+            for (i, r) in rects.iter().enumerate() {
+                if i != current && r.contains((x, y)) {
+                    return Some(i);
                 }
             }
         }
     }
-    return None;
+    None
 }
 
 impl Direction {
@@ -158,14 +158,12 @@ impl Direction {
             return None;
         }
 
-        let ret = match direction {
+        match direction {
             Direction::North => find_north(rects, current),
             Direction::East => find_east(rects, current, container.w),
             Direction::South => find_south(rects, current, container.h),
             Direction::West => find_west(rects, current),
-        };
-
-        return ret;
+        }
     }
 }
 
