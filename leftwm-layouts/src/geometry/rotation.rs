@@ -141,7 +141,7 @@ mod tests {
             Rotation::West,
         ];
         for rotation in rotations {
-            assert!(!rotation.aspect_ratio_changes(&SQUARE))
+            assert!(!rotation.aspect_ratio_changes(&SQUARE));
         }
     }
 
