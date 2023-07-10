@@ -78,7 +78,7 @@ mod tests {
     #[test]
     fn surface_area_calculation() {
         let rect = Rect::new(0, 0, 1920, 1080);
-        assert_eq!(rect.surface_area(), 2073600);
+        assert_eq!(rect.surface_area(), 2_073_600);
     }
 
     #[test]
@@ -102,7 +102,7 @@ mod tests {
     #[test]
     fn center_calculation_at_rounded_position() {
         let rect = Rect::new(100, 100, 387, 399);
-        assert_eq!(rect.center(), (294, 300))
+        assert_eq!(rect.center(), (294, 300));
     }
 
     #[test]
