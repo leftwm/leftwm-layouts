@@ -60,21 +60,18 @@ pub enum Direction {
     West,
 }
 
-// Find the north neighbor starting from a given `Rect` with index `current` in an array of
-// [`Rect`].
-fn find_north(rects: &[Rect], current: usize) -> Option<usize> {
-    let current_rect = rects.get(current).or(None).unwrap();
-    // We are all the way up, no neighbor available
-    if current_rect.y == 0 {
-        return None;
-    }
-
-    for x in current_rect.x + 1..=current_rect.x + current_rect.w as i32 - 1 {
-        for y in (0..=current_rect.y + 1).rev() {
+fn search_loops(first_loop: Vec<i32>, second_loop: Vec<i32>, rects: &[Rect], inverted: bool) -> Option<usize> {
+    for f in first_loop.iter() {
+        for s in second_loop.iter() {
             for (i, r) in rects.iter().enumerate() {
-                if i != current && r.contains((x, y)) {
-                    // found north neighbor
-                    return Some(i);
+                if inverted {
+                    if r.contains((*s, *f)) {
+                        return Some(i);
+                    }
+                } else {
+                    if r.contains((*f, *s)) {
+                        return Some(i);
+                    }
                 }
             }
         }
@@ -82,73 +79,80 @@ fn find_north(rects: &[Rect], current: usize) -> Option<usize> {
     None
 }
 
+// Find the north neighbor starting from a given `Rect` with index `current` in an array of
+// [`Rect`].
+fn find_north(rects: &[Rect], current: usize) -> Option<usize> {
+    let current_rect = match rects.get(current).or(None) {
+        Some(c) => c,
+        None => return None,
+    };
+
+    // We are all the way up, no neighbor available
+    if current_rect.y <= 0 {
+        return None;
+    }
+
+    let first_loop = (current_rect.x + 1..current_rect.x + current_rect.w as i32 - 1).collect();
+    let second_loop = (0..=current_rect.y as i32 - 1).rev().collect();
+
+    return search_loops(first_loop, second_loop, rects, false);
+}
+
 // Find the east neighbor starting from a given `Rect` with index `current` in an array of
 // [`Rect`].
 fn find_east(rects: &[Rect], current: usize, display_width: u32) -> Option<usize> {
-    let current_rect = rects.get(current).or(None).unwrap();
+    let current_rect = match rects.get(current).or(None) {
+        Some(c) => c,
+        None => return None,
+    };
 
     // We are all the way right, no neighbor available
     if current_rect.x + current_rect.w as i32 >= display_width as i32 {
         return None;
     }
 
-    for y in current_rect.y + 1..=current_rect.y + current_rect.h as i32 - 1 {
-        for x in current_rect.x + current_rect.w as i32 + 1..=display_width as i32 {
-            for (i, r) in rects.iter().enumerate() {
-                if i != current && r.contains((x, y)) {
-                    // found east neighbor
-                    return Some(i);
-                }
-            }
-        }
-    }
-    None
+    let first_loop = (current_rect.y + 1..=current_rect.y + current_rect.h as i32 - 1).collect();
+    let second_loop = (current_rect.x + current_rect.w as i32 + 1..=display_width as i32).collect();
+
+    return search_loops(first_loop, second_loop, rects, true);
 }
 
 // Find the south neighbor starting from a given `Rect` with index `current` in an array of
 // [`Rect`].
 fn find_south(rects: &[Rect], current: usize, display_height: u32) -> Option<usize> {
-    let current_rect = rects.get(current).or( None).unwrap();
+    let current_rect = match rects.get(current).or(None) {
+        Some(c) => c,
+        None => return None,
+    };
 
     // We are at the bottom, no neighbor available
     if current_rect.y + current_rect.h as i32 >= display_height as i32 {
         return None;
     }
 
-    for x in current_rect.x + 1..=current_rect.x + current_rect.w as i32 - 1 {
-        for y in current_rect.y + current_rect.h as i32..=display_height as i32 {
-            for (i, r) in rects.iter().enumerate() {
-                if i != current && r.contains((x, y)) {
-                    // found south neighbor
-                    return Some(i);
-                }
-            }
-        }
-    }
+    let first_loop = (current_rect.x + 1..=current_rect.x + current_rect.w as i32 - 1).collect();
+    let second_loop = (current_rect.y + current_rect.h as i32 + 1..=display_height as i32).collect();
 
-    None
+    return search_loops(first_loop, second_loop, rects, false);
 }
 
 // Find the west neighbor starting from a given `Rect` with index `current` in an array of
 // [`Rect`].
 fn find_west(rects: &[Rect], current: usize) -> Option<usize> {
-    let current_rect = rects.get(current).or(None).unwrap();
+    let current_rect = match rects.get(current).or(None) {
+        Some(c) => c,
+        None => return None,
+    };
 
     // We are all the way left; no neighbor available
     if current_rect.x <= 0 {
         return None;
     }
 
-    for x in (0..=current_rect.x - 1).rev() {
-        for y in current_rect.y + 1..=current_rect.y + current_rect.h as i32 - 1 {
-            for (i, r) in rects.iter().enumerate() {
-                if i != current && r.contains((x, y)) {
-                    return Some(i);
-                }
-            }
-        }
-    }
-    None
+    let first_loop = (0..=current_rect.x + - 1).rev().collect();
+    let second_loop = (current_rect.y + 1 as i32 + 1..=current_rect.y + current_rect.h as i32 -1).collect();
+
+    return search_loops(first_loop, second_loop, rects, false);
 }
 
 impl Direction {
