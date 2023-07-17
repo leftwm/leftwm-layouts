@@ -68,7 +68,7 @@ fn find_north(rects: &[Rect], current: usize) -> Option<usize> {
         return None;
     }
 
-    let right_point = (current_rect.x + 1..current_rect.x + current_rect.w as i32 - 1).collect();
+    let right_points = (current_rect.x + 1..current_rect.x + current_rect.w as i32 - 1).collect();
     let up_points = (0..current_rect.y).rev().collect();
 
     search_nearest_neighbor(&right_point, &up_points, rects, false)
