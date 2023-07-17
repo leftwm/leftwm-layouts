@@ -9,10 +9,9 @@ pub enum Direction {
     ///
     /// ```txt
     ///    North
-    ///  ^
-    ///  |
+    ///
     /// +---------+
-    /// |         |
+    /// | ^       |
     /// |         |
     /// |         |
     /// +---------+
@@ -23,9 +22,9 @@ pub enum Direction {
     ///
     /// ```txt
     ///    East
-    ///         ->
+    ///
     /// +---------+
-    /// |         |
+    /// |       > |
     /// |         |
     /// |         |
     /// +---------+
@@ -39,10 +38,9 @@ pub enum Direction {
     /// +---------+
     /// |         |
     /// |         |
-    /// |         |
+    /// | V       |
     /// +---------+
-    ///  |
-    ///  V
+    ///
     /// ```
     South,
 
@@ -50,36 +48,14 @@ pub enum Direction {
     ///
     /// ```txt
     ///     West
-    ///  <-
+    ///
     /// +---------+
-    /// |         |
+    /// | <       |
     /// |         |
     /// |         |
     /// +---------+
     /// ```
     West,
-}
-
-fn search_loops(
-    first_loop: &Vec<i32>,
-    second_loop: &Vec<i32>,
-    rects: &[Rect],
-    inverted: bool,
-) -> Option<usize> {
-    for f in first_loop {
-        for s in second_loop {
-            for (i, r) in rects.iter().enumerate() {
-                if inverted {
-                    if r.contains((*s, *f)) {
-                        return Some(i);
-                    }
-                } else if r.contains((*f, *s)) {
-                    return Some(i);
-                }
-            }
-        }
-    }
-    None
 }
 
 // Find the north neighbor starting from a given `Rect` with index `current` in an array of
@@ -92,10 +68,10 @@ fn find_north(rects: &[Rect], current: usize) -> Option<usize> {
         return None;
     }
 
-    let first_loop = (current_rect.x + 1..current_rect.x + current_rect.w as i32 - 1).collect();
-    let second_loop = (0..current_rect.y).rev().collect();
+    let right_point = (current_rect.x + 1..current_rect.x + current_rect.w as i32 - 1).collect();
+    let up_points = (0..current_rect.y).rev().collect();
 
-    search_loops(&first_loop, &second_loop, rects, false)
+    search_nearest_neighbor(&right_point, &up_points, rects, false)
 }
 
 // Find the east neighbor starting from a given `Rect` with index `current` in an array of
@@ -108,10 +84,10 @@ fn find_east(rects: &[Rect], current: usize, display_width: u32) -> Option<usize
         return None;
     }
 
-    let first_loop = (current_rect.y + 1..current_rect.y + current_rect.h as i32).collect();
-    let second_loop = (current_rect.x + current_rect.w as i32 + 1..=display_width as i32).collect();
+    let down_points = (current_rect.y + 1..current_rect.y + current_rect.h as i32).collect();
+    let right_points = (current_rect.x + current_rect.w as i32 + 1..=display_width as i32).collect();
 
-    search_loops(&first_loop, &second_loop, rects, true)
+    search_nearest_neighbor(&down_points, &right_points, rects, true)
 }
 
 // Find the south neighbor starting from a given `Rect` with index `current` in an array of
@@ -124,11 +100,11 @@ fn find_south(rects: &[Rect], current: usize, display_height: u32) -> Option<usi
         return None;
     }
 
-    let first_loop = (current_rect.x + 1..current_rect.x + current_rect.w as i32).collect();
-    let second_loop =
+    let right_points = (current_rect.x + 1..current_rect.x + current_rect.w as i32).collect();
+    let down_points =
         (current_rect.y + current_rect.h as i32 + 1..=display_height as i32).collect();
 
-    search_loops(&first_loop, &second_loop, rects, false)
+    search_nearest_neighbor(&right_points, &down_points, rects, false)
 }
 
 // Find the west neighbor starting from a given `Rect` with index `current` in an array of
@@ -141,10 +117,32 @@ fn find_west(rects: &[Rect], current: usize) -> Option<usize> {
         return None;
     }
 
-    let first_loop = (0..=current_rect.x + -1).rev().collect();
-    let second_loop = (current_rect.y + 1..current_rect.y + current_rect.h as i32).collect();
+    let left_points = (0..=current_rect.x + -1).rev().collect();
+    let down_points = (current_rect.y + 1..current_rect.y + current_rect.h as i32).collect();
 
-    search_loops(&first_loop, &second_loop, rects, false)
+    search_nearest_neighbor(&left_points, &down_points, rects, false)
+}
+
+fn search_nearest_neighbor(
+    first_direction: &Vec<i32>,
+    second_direction: &Vec<i32>,
+    rects: &[Rect],
+    inverted: bool,
+) -> Option<usize> {
+    for f in first_direction {
+        for s in second_direction {
+            for (i, r) in rects.iter().enumerate() {
+                if inverted {
+                    if r.contains((*s, *f)) {
+                        return Some(i);
+                    }
+                } else if r.contains((*f, *s)) {
+                    return Some(i);
+                }
+            }
+        }
+    }
+    None
 }
 
 impl Direction {
