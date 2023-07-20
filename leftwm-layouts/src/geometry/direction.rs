@@ -64,14 +64,39 @@ fn find_north(rects: &[Rect], current: usize) -> Option<usize> {
     let Some(current_rect) = rects.get(current).or(None) else { return None };
 
     // We are all the way up, no neighbor available
-    if current_rect.y <= 0 {
+    if current_rect.top_edge() <= 0 {
         return None;
     }
 
-    let right_point = (current_rect.x + 1..current_rect.x + current_rect.w as i32 - 1).collect();
-    let up_points = (0..current_rect.y).rev().collect();
+    let mut nearest_rect: Option<usize> = None;
+    let mut min_x: Option<i32> = None;
+    let mut min_y: Option<i32> = None;
 
-    search_nearest_neighbor(&right_point, &up_points, rects, false)
+    for (i, r) in rects.iter().enumerate() {
+        if r == current_rect || // skip current rect
+        r.right_edge() - 1 < current_rect.left_edge() || // skip too right
+        r.left_edge() + 1 > current_rect.right_edge() || // skip too left
+        r.top_edge() + 1 > current_rect.bottom_edge()
+        // skip too low
+        {
+            continue;
+        }
+
+        let x_distance = current_rect.left_edge() - r.right_edge();
+        let y_distance = current_rect.top_edge() - r.bottom_edge();
+
+        find_nearest_rect(
+            &mut min_x,
+            &mut min_y,
+            &mut nearest_rect,
+            x_distance,
+            y_distance,
+            i,
+            true,
+        );
+    }
+
+    nearest_rect
 }
 
 // Find the east neighbor starting from a given `Rect` with index `current` in an array of
@@ -80,14 +105,39 @@ fn find_east(rects: &[Rect], current: usize, display_width: u32) -> Option<usize
     let Some(current_rect) = rects.get(current).or(None) else { return None };
 
     // We are all the way right, no neighbor available
-    if current_rect.x + current_rect.w as i32 >= display_width as i32 {
+    if current_rect.right_edge() >= display_width as i32 {
         return None;
     }
 
-    let down_points = (current_rect.y + 1..current_rect.y + current_rect.h as i32).collect();
-    let right_points = (current_rect.x + current_rect.w as i32 + 1..=display_width as i32).collect();
+    let mut nearest_rect: Option<usize> = None;
+    let mut min_x: Option<i32> = None;
+    let mut min_y: Option<i32> = None;
 
-    search_nearest_neighbor(&down_points, &right_points, rects, true)
+    for (i, r) in rects.iter().enumerate() {
+        if r == current_rect || // skip current rect
+        r.right_edge() - 1 < current_rect.right_edge() || // skip too left
+        r.bottom_edge() - 1 < current_rect.top_edge() || // skip too high
+        r.top_edge() + 1 > current_rect.bottom_edge()
+        // skip too low
+        {
+            continue;
+        }
+
+        let x_distance = r.left_edge() - current_rect.right_edge();
+        let y_distance = r.top_edge() - current_rect.bottom_edge();
+
+        find_nearest_rect(
+            &mut min_x,
+            &mut min_y,
+            &mut nearest_rect,
+            x_distance,
+            y_distance,
+            i,
+            false,
+        );
+    }
+
+    nearest_rect
 }
 
 // Find the south neighbor starting from a given `Rect` with index `current` in an array of
@@ -100,11 +150,36 @@ fn find_south(rects: &[Rect], current: usize, display_height: u32) -> Option<usi
         return None;
     }
 
-    let right_points = (current_rect.x + 1..current_rect.x + current_rect.w as i32).collect();
-    let down_points =
-        (current_rect.y + current_rect.h as i32 + 1..=display_height as i32).collect();
+    let mut nearest_rect: Option<usize> = None;
+    let mut min_x: Option<i32> = None;
+    let mut min_y: Option<i32> = None;
 
-    search_nearest_neighbor(&right_points, &down_points, rects, false)
+    for (i, r) in rects.iter().enumerate() {
+        if r == current_rect || // skip current rect
+        r.right_edge() - 1 < current_rect.left_edge() || // skip too left
+        r.left_edge() + 1 > current_rect.right_edge() || // skip too right
+        r.bottom_edge() - 1 < current_rect.top_edge()
+        // skip too high
+        {
+            // skip current rect
+            continue;
+        }
+
+        let x_distance = current_rect.left_edge() - r.right_edge();
+        let y_distance = r.top_edge() - current_rect.bottom_edge();
+
+        find_nearest_rect(
+            &mut min_x,
+            &mut min_y,
+            &mut nearest_rect,
+            x_distance,
+            y_distance,
+            i,
+            true,
+        );
+    }
+
+    nearest_rect
 }
 
 // Find the west neighbor starting from a given `Rect` with index `current` in an array of
@@ -113,36 +188,82 @@ fn find_west(rects: &[Rect], current: usize) -> Option<usize> {
     let Some(current_rect) = rects.get(current).or(None) else { return None };
 
     // We are all the way left; no neighbor available
-    if current_rect.x <= 0 {
+    if current_rect.left_edge() <= 0 {
         return None;
     }
 
-    let left_points = (0..=current_rect.x + -1).rev().collect();
-    let down_points = (current_rect.y + 1..current_rect.y + current_rect.h as i32).collect();
+    let mut nearest_rect: Option<usize> = None;
+    let mut min_x: Option<i32> = None;
+    let mut min_y: Option<i32> = None;
 
-    search_nearest_neighbor(&left_points, &down_points, rects, false)
+    for (i, r) in rects.iter().enumerate() {
+        if r == current_rect || // skip current rect
+         r.left_edge() + 1 > current_rect.right_edge() || // skip too right
+         r.bottom_edge() - 1 < current_rect.top_edge() || // skip too high
+         r.top_edge() + 1 > current_rect.bottom_edge()
+        // skip too low
+        {
+            // skip current rect
+            continue;
+        }
+
+        let x_distance = current_rect.left_edge() - r.right_edge();
+        let y_distance = r.top_edge() - current_rect.bottom_edge();
+
+        find_nearest_rect(
+            &mut min_x,
+            &mut min_y,
+            &mut nearest_rect,
+            x_distance,
+            y_distance,
+            i,
+            false,
+        );
+    }
+
+    nearest_rect
 }
 
-fn search_nearest_neighbor(
-    first_direction: &Vec<i32>,
-    second_direction: &Vec<i32>,
-    rects: &[Rect],
-    inverted: bool,
-) -> Option<usize> {
-    for f in first_direction {
-        for s in second_direction {
-            for (i, r) in rects.iter().enumerate() {
-                if inverted {
-                    if r.contains((*s, *f)) {
-                        return Some(i);
-                    }
-                } else if r.contains((*f, *s)) {
-                    return Some(i);
-                }
-            }
-        }
+// Find the nearest `Rect`. If updown is true, evaluate y_distance and then x_distance. If updown
+// is false, evaluate x_distance and then y_distance.
+fn find_nearest_rect(
+    min_x: &mut Option<i32>,
+    min_y: &mut Option<i32>,
+    nearest_rect: &mut Option<usize>,
+    x_distance: i32,
+    y_distance: i32,
+    index: usize,
+    updown: bool,
+) {
+    if min_x.is_none() {
+        *min_x = Some(x_distance);
+        *nearest_rect = Some(index);
     }
-    None
+
+    if min_y.is_none() {
+        *min_y = Some(y_distance);
+        *nearest_rect = Some(index);
+    }
+
+    if updown {
+        if y_distance < min_y.unwrap() {
+            // take the nearest up/down
+            *min_y = Some(y_distance);
+            *nearest_rect = Some(index);
+        } else if y_distance == min_y.unwrap() && x_distance < min_x.unwrap() {
+            // take the left most
+            *min_x = Some(x_distance);
+            *nearest_rect = Some(index);
+        }
+    } else if x_distance < min_x.unwrap() {
+        // take the nearest left/right
+        *min_x = Some(x_distance);
+        *nearest_rect = Some(index);
+    } else if x_distance == min_x.unwrap() && y_distance < min_y.unwrap() {
+        // take the higher
+        *min_y = Some(y_distance);
+        *nearest_rect = Some(index);
+    }
 }
 
 impl Direction {
@@ -183,14 +304,14 @@ mod tests {
     // |+---+ +---+ +---+|
     // || 0 | | 3 | | 4 ||
     // |+---+ +---+ +---+|
-    // |+---+       +---+|
-    // || 1 |       |   ||
-    // |+---+       |   ||
+    // |+---+ +---+ +---+|
+    // || 1 | | 6 | |   ||
+    // |+---+ +---+ |   ||
     // |+---+       | 5 ||
     // || 2 |       |   ||
     // |+---+       +---+|
     // +-----------------+
-    const ARRAY: [Rect; 6] = [
+    const ARRAY: [Rect; 7] = [
         Rect {
             x: 0,
             y: 0,
@@ -227,6 +348,12 @@ mod tests {
             w: 200,
             h: 400,
         },
+        Rect {
+            x: 200,
+            y: 200,
+            w: 200,
+            h: 400,
+        },
     ];
 
     #[test]
@@ -243,6 +370,8 @@ mod tests {
         assert_eq!(res, None);
         let res = Direction::find_neighbor(&ARRAY, 5, Direction::North, &CONTAINER);
         assert_eq!(res, Some(4));
+        let res = Direction::find_neighbor(&ARRAY, 6, Direction::North, &CONTAINER);
+        assert_eq!(res, Some(3));
     }
 
     #[test]
@@ -250,15 +379,17 @@ mod tests {
         let res = Direction::find_neighbor(&ARRAY, 0, Direction::East, &CONTAINER);
         assert_eq!(res, Some(3));
         let res = Direction::find_neighbor(&ARRAY, 1, Direction::East, &CONTAINER);
-        assert_eq!(res, Some(5));
+        assert_eq!(res, Some(6));
         let res = Direction::find_neighbor(&ARRAY, 2, Direction::East, &CONTAINER);
-        assert_eq!(res, Some(5));
+        assert_eq!(res, Some(6));
         let res = Direction::find_neighbor(&ARRAY, 3, Direction::East, &CONTAINER);
         assert_eq!(res, Some(4));
         let res = Direction::find_neighbor(&ARRAY, 4, Direction::East, &CONTAINER);
         assert_eq!(res, None);
         let res = Direction::find_neighbor(&ARRAY, 5, Direction::East, &CONTAINER);
         assert_eq!(res, None);
+        let res = Direction::find_neighbor(&ARRAY, 6, Direction::East, &CONTAINER);
+        assert_eq!(res, Some(5));
     }
 
     #[test]
@@ -270,10 +401,12 @@ mod tests {
         let res = Direction::find_neighbor(&ARRAY, 2, Direction::South, &CONTAINER);
         assert_eq!(res, None);
         let res = Direction::find_neighbor(&ARRAY, 3, Direction::South, &CONTAINER);
-        assert_eq!(res, None);
+        assert_eq!(res, Some(6));
         let res = Direction::find_neighbor(&ARRAY, 4, Direction::South, &CONTAINER);
         assert_eq!(res, Some(5));
         let res = Direction::find_neighbor(&ARRAY, 5, Direction::South, &CONTAINER);
+        assert_eq!(res, None);
+        let res = Direction::find_neighbor(&ARRAY, 6, Direction::South, &CONTAINER);
         assert_eq!(res, None);
     }
 
@@ -290,6 +423,8 @@ mod tests {
         let res = Direction::find_neighbor(&ARRAY, 4, Direction::West, &CONTAINER);
         assert_eq!(res, Some(3));
         let res = Direction::find_neighbor(&ARRAY, 5, Direction::West, &CONTAINER);
+        assert_eq!(res, Some(6));
+        let res = Direction::find_neighbor(&ARRAY, 6, Direction::West, &CONTAINER);
         assert_eq!(res, Some(1));
     }
 }
