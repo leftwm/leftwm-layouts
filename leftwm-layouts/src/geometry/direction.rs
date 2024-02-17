@@ -61,7 +61,7 @@ pub enum Direction {
 // Find the north neighbor starting from a given `Rect` with index `current` in an array of
 // [`Rect`].
 fn find_north(rects: &[Rect], current: usize) -> Option<usize> {
-    let Some(current_rect) = rects.get(current).or(None) else { return None };
+    let current_rect = rects.get(current).or(None)?;
 
     // We are all the way up, no neighbor available
     if current_rect.top_edge() <= 0 {
@@ -102,7 +102,7 @@ fn find_north(rects: &[Rect], current: usize) -> Option<usize> {
 // Find the east neighbor starting from a given `Rect` with index `current` in an array of
 // [`Rect`].
 fn find_east(rects: &[Rect], current: usize, display_width: u32) -> Option<usize> {
-    let Some(current_rect) = rects.get(current).or(None) else { return None };
+    let current_rect = rects.get(current).or(None)?;
 
     // We are all the way right, no neighbor available
     if current_rect.right_edge() >= display_width as i32 {
@@ -143,7 +143,7 @@ fn find_east(rects: &[Rect], current: usize, display_width: u32) -> Option<usize
 // Find the south neighbor starting from a given `Rect` with index `current` in an array of
 // [`Rect`].
 fn find_south(rects: &[Rect], current: usize, display_height: u32) -> Option<usize> {
-    let Some(current_rect) = rects.get(current).or(None) else { return None };
+    let current_rect = rects.get(current).or(None)?;
 
     // We are at the bottom, no neighbor available
     if current_rect.y + current_rect.h as i32 >= display_height as i32 {
@@ -185,7 +185,7 @@ fn find_south(rects: &[Rect], current: usize, display_height: u32) -> Option<usi
 // Find the west neighbor starting from a given `Rect` with index `current` in an array of
 // [`Rect`].
 fn find_west(rects: &[Rect], current: usize) -> Option<usize> {
-    let Some(current_rect) = rects.get(current).or(None) else { return None };
+    let current_rect = rects.get(current).or(None)?;
 
     // We are all the way left; no neighbor available
     if current_rect.left_edge() <= 0 {

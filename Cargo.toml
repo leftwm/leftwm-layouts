@@ -1,3 +1,4 @@
 [workspace]
 members = ["leftwm-layouts", "demo", "demo-ascii"]
 default-members = ["leftwm-layouts"]
+resolver = "2"
