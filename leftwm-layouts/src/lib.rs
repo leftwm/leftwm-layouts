@@ -142,7 +142,7 @@ fn stack_main_stack(
 
     // copy rotated/flipped columns into the variables
     let non_empty = |rect: &&Rect| rect.surface_area() > 0;
-    left_column = columns.get(0).filter(non_empty).copied();
+    left_column = columns.first().filter(non_empty).copied();
     main_column = columns.get(1).filter(non_empty).copied();
     right_column = columns.get(2).filter(non_empty).copied();
 
