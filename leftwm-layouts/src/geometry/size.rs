@@ -39,7 +39,7 @@ mod tests {
         let i = 256i32;
         let size = Size::Pixel(i);
         let absolute = size.into_absolute(1000);
-        assert_eq!(absolute, i)
+        assert_eq!(absolute, i);
     }
 
     #[test]

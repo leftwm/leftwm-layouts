@@ -58,6 +58,114 @@ impl Rect {
             && self.y <= point.1
             && point.1 <= self.y + self.h as i32
     }
+
+    /// Get the top left corner point of the [`Rect`].
+    ///
+    /// ```txt
+    /// O---------+
+    /// |         |
+    /// |         |
+    /// |         |
+    /// +---------+
+    /// ```
+    pub fn top_left_corner(&self) -> (i32, i32) {
+        (self.x, self.y)
+    }
+
+    /// Get the top right corner point of the [`Rect`].
+    ///
+    /// ```txt
+    /// +---------O
+    /// |         |
+    /// |         |
+    /// |         |
+    /// +---------+
+    /// ```
+    pub fn top_right_corner(&self) -> (i32, i32) {
+        (self.x + self.w as i32, self.y)
+    }
+
+    /// Get the bottom right corner point of the [`Rect`].
+    ///
+    /// ```txt
+    /// +---------+
+    /// |         |
+    /// |         |
+    /// |         |
+    /// +---------O
+    /// ```
+    pub fn bottom_right_corner(&self) -> (i32, i32) {
+        (self.x + self.w as i32, self.y + self.h as i32)
+    }
+
+    /// Get the bottom left corner point of the [`Rect`].
+    ///
+    /// ```txt
+    /// +---------+
+    /// |         |
+    /// |         |
+    /// |         |
+    /// O---------+
+    /// ```
+    pub fn bottom_left_corner(&self) -> (i32, i32) {
+        (self.x, self.y + self.h as i32)
+    }
+
+    /// Get the top edge of the [`Rect`].
+    ///
+    /// ```txt
+    /// ^
+    /// |
+    /// V
+    /// +---------+
+    /// |         |
+    /// |         |
+    /// |         |
+    /// +---------+
+    /// ```
+    pub fn top_edge(&self) -> i32 {
+        self.y
+    }
+
+    /// Get the right edge of the [`Rect`].
+    ///
+    /// ```txt
+    /// <--------->
+    /// +---------+
+    /// |         |
+    /// |         |
+    /// |         |
+    /// +---------+
+    /// ```
+    pub fn right_edge(&self) -> i32 {
+        self.x + self.w as i32
+    }
+
+    /// Get the bottom edge of the [`Rect`].
+    ///
+    /// ```txt
+    /// +---------+ ^
+    /// |         | |
+    /// |         | |
+    /// |         | |
+    /// +---------+ V
+    /// ```
+    pub fn bottom_edge(&self) -> i32 {
+        self.y + self.h as i32
+    }
+
+    /// Get the left edge of the [`Rect`].
+    ///
+    /// ```txt
+    /// <---> +---------+
+    ///       |         |
+    ///       |         |
+    ///       |         |
+    ///       +---------+
+    /// ```
+    pub fn left_edge(&self) -> i32 {
+        self.x
+    }
 }
 
 impl Default for Rect {
@@ -78,7 +186,7 @@ mod tests {
     #[test]
     fn surface_area_calculation() {
         let rect = Rect::new(0, 0, 1920, 1080);
-        assert_eq!(rect.surface_area(), 2073600);
+        assert_eq!(rect.surface_area(), 2_073_600);
     }
 
     #[test]
@@ -102,7 +210,7 @@ mod tests {
     #[test]
     fn center_calculation_at_rounded_position() {
         let rect = Rect::new(100, 100, 387, 399);
-        assert_eq!(rect.center(), (294, 300))
+        assert_eq!(rect.center(), (294, 300));
     }
 
     #[test]
