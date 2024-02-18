@@ -1,3 +1,4 @@
-## :lady_beetle: Fixes
+## :sparkles: Features
 
-- Add `#[serde(default)]` to the layout structs to make specifying layouts less verbose (via [#21](https://github.com/leftwm/leftwm-layouts/pull/21) by @Eskaan)
+- Add functions (`Direction::find_neighbor()`) to find directional neighbours on `Rect` (via [#22](https://github.com/leftwm/leftwm-layouts/pull/22) by @marianomarciello)
+
