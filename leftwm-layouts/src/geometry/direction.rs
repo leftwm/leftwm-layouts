@@ -1,7 +1,9 @@
 use super::Rect;
 
+use serde::{Deserialize, Serialize};
+
 /// Represents the four different direction where we can search for a neighbor
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Deserialize, Serialize)]
 pub enum Direction {
     #[default]
     /// Search for neighbor starting from the top left of the current rect
