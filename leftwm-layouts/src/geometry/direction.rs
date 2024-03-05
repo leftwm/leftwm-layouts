@@ -1,6 +1,7 @@
 use super::Rect;
 
 use serde::{Deserialize, Serialize};
+use std::str::FromStr;
 
 /// Represents the four different direction where we can search for a neighbor
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Deserialize, Serialize)]
@@ -58,6 +59,20 @@ pub enum Direction {
     /// +---------+
     /// ```
     West,
+}
+
+impl FromStr for Direction {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "North" => Ok(Direction::North),
+            "South" => Ok(Direction::South),
+            "East" => Ok(Direction::East),
+            "West" => Ok(Direction::West),
+            _ => Err(()),
+        }
+    }
 }
 
 // Find the north neighbor starting from a given `Rect` with index `current` in an array of
